@@ -25,12 +25,12 @@ public class Manager {
         public void unload() {}
     };
     public ClientData get(Player player){
-        return player != null ? get(player.getUniqueId()) : null;
+        return player != null ? get(player.getUniqueId()) : empty;
     }
 
     public ClientData get(UUID player){
         if (player != null && (!map.containsKey(player) || map.get(player).isUnload())) map.put(player, new ClientData(player));
-        return map.get(player);
+        return map.getOrDefault(player,empty);
     }
 
     public void clearAll() {
