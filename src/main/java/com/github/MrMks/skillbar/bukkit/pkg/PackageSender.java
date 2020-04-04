@@ -402,10 +402,9 @@ public class PackageSender {
         sendMessage(player, builder);
     }
 
-    private byte partId = 0;
     private void sendMessage(Player player, ByteBuilder builder){
-        for (byte[] data : builder.build(partId++)) player.sendPluginMessage(plugin,Constants.CHANNEL_NAME,data);
-        if (partId == Byte.MAX_VALUE) partId = 0;
+        byte partId = manager.get(player).getPackageIndex();
+        for (byte[] data : builder.build(partId)) player.sendPluginMessage(plugin,Constants.CHANNEL_NAME,data);
     }
 
     private boolean checkValid(Player player){

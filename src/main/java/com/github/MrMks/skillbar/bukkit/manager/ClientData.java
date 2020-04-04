@@ -63,4 +63,9 @@ public class ClientData {
         return status;
     }
 
+    private byte index = 0;
+    public byte getPackageIndex(){
+        if (index == Byte.MAX_VALUE) index = 0;
+        return index++;
+    }
 }

@@ -16,6 +16,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 
+@SuppressWarnings("unused")
 public class SkillBar extends JavaPlugin implements Listener {
     private LoopThread task;
     private PackageSender sender;
