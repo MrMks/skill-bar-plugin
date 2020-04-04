@@ -65,7 +65,7 @@ public class MainListener implements Listener {
             // PackageSender.sendDisable(e.getPlayer());
             PlayerBar.unloadSave(p);
             task.removeName(m);
-            m.disable();
+            m.unload();
         }
     }
 

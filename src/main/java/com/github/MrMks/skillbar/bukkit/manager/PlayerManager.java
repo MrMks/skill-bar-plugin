@@ -23,6 +23,7 @@ public class PlayerManager {
 
     private UUID uid;
     private boolean discovered = false;
+    private boolean blocked = false;
     private ClientStatus status = ClientStatus.Discovering;
     private PlayerManager(UUID uuid){
         this.uid = uuid;
@@ -40,6 +41,18 @@ public class PlayerManager {
         return discovered;
     }
 
+    public void block(){
+        blocked = true;
+    }
+
+    public void unblock(){
+        blocked = false;
+    }
+
+    public boolean isBlocked(){
+        return blocked;
+    }
+
     // will never work before discover invoked
     public void enable(){
         if (!discovered) return;
@@ -50,8 +63,8 @@ public class PlayerManager {
         status = ClientStatus.Disabled;
     }
 
-    public PlayerBar getBar(){
-        return PlayerBar.get(uid);
+    public void unload(){
+        map.remove(uid);
     }
 
     /**
