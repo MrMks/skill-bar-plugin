@@ -1,0 +1,22 @@
+plugins {
+    id 'java'
+}
+
+group 'com.github.MrMks'
+version '1.1-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven {url "https://hub.spigotmc.org/nexus/content/repositories/snapshots/"}
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compileOnly 'org.bukkit:bukkit:1.12.2-R0.1-SNAPSHOT'
+    compileOnly files('../Libraries/SkillAPI v1.9.jar')
+    compileOnly files('../Libraries/MCCore.jar')
+    implementation 'io.netty:netty-all:4.1.9.Final'
+}

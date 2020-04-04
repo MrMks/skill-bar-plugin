@@ -1,0 +1,5 @@
+name: SecondSkillBar
+main: com.github.MrMks.skillbar.bukkit.SkillBar
+version: 1.0-SNAPSHOT
+depend:
+  - SkillAPI
