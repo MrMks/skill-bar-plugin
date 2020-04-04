@@ -1,8 +1,6 @@
 package com.github.MrMks.skillbar.bukkit.pkg;
 
-import com.github.MrMks.skillbar.bukkit.manager.ClientStatus;
-import com.github.MrMks.skillbar.bukkit.manager.PlayerBar;
-import com.github.MrMks.skillbar.bukkit.manager.PlayerManager;
+import com.github.MrMks.skillbar.bukkit.manager.*;
 import com.github.MrMks.skillbar.common.ByteBuilder;
 import com.github.MrMks.skillbar.common.Constants;
 import com.rit.sucy.version.VersionManager;
@@ -27,10 +25,12 @@ public class PackageSender {
 
     private Logger logger;
     private Plugin plugin;
+    private Manager manager;
     private byte itemMethodFlag = 0;
-    public PackageSender(Plugin plugin){
+    public PackageSender(Plugin plugin, Manager manager){
         this.plugin = plugin;
         this.logger = plugin.getLogger();
+        this.manager = manager;
         try {
             Skill.class.getMethod("getIndicator", PlayerSkill.class, boolean.class);
             itemMethodFlag += 1;
@@ -47,12 +47,12 @@ public class PackageSender {
     }
 
     public void sendDiscover(Player player){
-        if (!PlayerManager.get(player).isDiscovered()) sendMessage(player, new BukkitByteBuilder(Constants.DISCOVER));
+        if (!manager.get(player).isDiscovered()) sendMessage(player, new BukkitByteBuilder(Constants.DISCOVER));
     }
 
     public void sendEnable(Player player){
         if (checkValid(player)){
-            PlayerManager m = PlayerManager.get(player);
+            ClientData m = manager.get(player);
             if (m.getStatus() != ClientStatus.Enabled) {
                 ByteBuilder builder = new BukkitByteBuilder(Constants.ENABLE);
                 builder.writeInt(SkillAPI.getPlayerAccountData(player).getActiveId());
@@ -291,7 +291,7 @@ public class PackageSender {
 
     public void sendDisable(Player player){
         sendMessage(player,new BukkitByteBuilder(Constants.DISABLE));
-        PlayerManager.get(player).disable();
+        manager.get(player).disable();
     }
 
     public void sendCoolDown(Player player){
@@ -418,10 +418,10 @@ public class PackageSender {
     }
 
     private boolean checkClient(Player player){
-        return checkClient(PlayerManager.get(player));
+        return checkClient(manager.get(player));
     }
 
-    private boolean checkClient(PlayerManager manager){
+    private boolean checkClient(ClientData manager){
         return manager != null && manager.getStatus() == ClientStatus.Enabled;
     }
 }

@@ -1,8 +1,9 @@
 package com.github.MrMks.skillbar.bukkit.pkg;
 
+import com.github.MrMks.skillbar.bukkit.manager.ClientData;
 import com.github.MrMks.skillbar.bukkit.manager.ClientStatus;
+import com.github.MrMks.skillbar.bukkit.manager.Manager;
 import com.github.MrMks.skillbar.bukkit.manager.PlayerBar;
-import com.github.MrMks.skillbar.bukkit.manager.PlayerManager;
 import com.github.MrMks.skillbar.common.ByteDecoder;
 import com.github.MrMks.skillbar.common.Constants;
 import com.sucy.skill.SkillAPI;
@@ -19,15 +20,17 @@ import java.util.HashMap;
 public class PackageListener implements PluginMessageListener {
     private PackageSender sd;
     private Plugin plugin;
-    public PackageListener(Plugin plugin, PackageSender sender){
+    private Manager manager;
+    public PackageListener(Plugin plugin, PackageSender sender, Manager manager){
         this.sd = sender;
         this.plugin = plugin;
+        this.manager = manager;
     }
 
     @Override
     public void onPluginMessageReceived(String s, Player player, byte[] bytes) {
         if (!s.equals(Constants.CHANNEL_NAME) || player == null) return;
-        PlayerManager m = PlayerManager.get(player);
+        ClientData m = manager.get(player);
         if (m.getStatus() == ClientStatus.Disabled){
             if (m.isDiscovered()) sd.sendDisable(player);
             return;
@@ -67,7 +70,7 @@ public class PackageListener implements PluginMessageListener {
     }
 
     private void onDiscover(Player player){
-        PlayerManager.get(player).discover();
+        manager.get(player).discover();
         sd.sendEnable(player);
     }
 

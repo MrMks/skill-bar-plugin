@@ -1,6 +1,6 @@
 package com.github.MrMks.skillbar.bukkit.task;
 
-import com.github.MrMks.skillbar.bukkit.manager.PlayerManager;
+import com.github.MrMks.skillbar.bukkit.manager.ClientData;
 import com.github.MrMks.skillbar.bukkit.pkg.PackageSender;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ClientDiscoverTask extends RepeatTask {
-    private final HashMap<PlayerManager, Integer> list = new HashMap<>();
+    private final HashMap<ClientData, Integer> list = new HashMap<>();
     private final PackageSender ps;
     public ClientDiscoverTask(PackageSender sender){
         super(5 * 1000,5 * 1000);
@@ -20,8 +20,8 @@ public class ClientDiscoverTask extends RepeatTask {
     protected void runTask() {
         synchronized (list){
             if (list.isEmpty()) return;
-            ArrayList<PlayerManager> re = new ArrayList<>();
-            for (PlayerManager m : list.keySet()){
+            ArrayList<ClientData> re = new ArrayList<>();
+            for (ClientData m : list.keySet()){
                 if (!m.isDiscovered()) {
                     int times = list.get(m);
                     if (times > 5) {
@@ -35,7 +35,7 @@ public class ClientDiscoverTask extends RepeatTask {
                     re.add(m);
                 }
             }
-            for (PlayerManager m : re) {
+            for (ClientData m : re) {
                 list.remove(m);
                 if (!m.isDiscovered()) m.disable();
             }
@@ -47,13 +47,13 @@ public class ClientDiscoverTask extends RepeatTask {
         return false;
     }
 
-    public void addName(PlayerManager m){
+    public void addName(ClientData m){
         synchronized (list) {
             if (!list.containsKey(m)) list.put(m,0);
         }
     }
 
-    public void removeName(PlayerManager m){
+    public void removeName(ClientData m){
         synchronized (list) {
             list.remove(m);
         }

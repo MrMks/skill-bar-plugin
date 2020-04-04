@@ -1,7 +1,7 @@
 package com.github.MrMks.skillbar.bukkit;
 
+import com.github.MrMks.skillbar.bukkit.manager.Manager;
 import com.github.MrMks.skillbar.bukkit.manager.PlayerBar;
-import com.github.MrMks.skillbar.bukkit.manager.PlayerManager;
 import com.github.MrMks.skillbar.bukkit.pkg.PackageListener;
 import com.github.MrMks.skillbar.bukkit.pkg.PackageSender;
 import com.github.MrMks.skillbar.bukkit.task.ClientDiscoverTask;
@@ -19,6 +19,7 @@ import java.io.File;
 public class SkillBar extends JavaPlugin implements Listener {
     private LoopThread task;
     private PackageSender sender;
+    private Manager manager;
 
     @Override
     public void onLoad() {
@@ -32,7 +33,8 @@ public class SkillBar extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         super.onEnable();
-        sender = new PackageSender(this);
+        manager = new Manager();
+        sender = new PackageSender(this, manager);
         task = new LoopThread();
         if (!sender.isLoad()) {
             getPluginLoader().disablePlugin(this);
@@ -40,14 +42,14 @@ public class SkillBar extends JavaPlugin implements Listener {
         }
 
         Bukkit.getMessenger().registerOutgoingPluginChannel(this, Constants.CHANNEL_NAME);
-        Bukkit.getMessenger().registerIncomingPluginChannel(this,Constants.CHANNEL_NAME,new PackageListener(this, sender));
+        Bukkit.getMessenger().registerIncomingPluginChannel(this,Constants.CHANNEL_NAME,new PackageListener(this, sender, manager));
 
         ClientDiscoverTask cdt = new ClientDiscoverTask(sender);
 
         HandlerList.unregisterAll((Plugin) this);
-        Bukkit.getPluginManager().registerEvents(new MainListener(this, sender, cdt), this);
+        Bukkit.getPluginManager().registerEvents(new MainListener(this, sender, manager, cdt), this);
 
-        task.addTask(new CoolDownTask(sender));
+        task.addTask(new CoolDownTask(sender, manager));
         task.addTask(cdt);
         sender.sendAllDiscover();
     }
@@ -61,7 +63,8 @@ public class SkillBar extends JavaPlugin implements Listener {
         sender = null;
         Bukkit.getMessenger().unregisterIncomingPluginChannel(this);
         Bukkit.getMessenger().unregisterOutgoingPluginChannel(this);
-        PlayerManager.clearAll();
+        manager.clearAll();
+        manager = null;
         PlayerBar.unloadSaveAll();
     }
 }

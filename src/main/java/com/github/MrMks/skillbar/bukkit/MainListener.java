@@ -1,8 +1,6 @@
 package com.github.MrMks.skillbar.bukkit;
 
-import com.github.MrMks.skillbar.bukkit.manager.ClientStatus;
-import com.github.MrMks.skillbar.bukkit.manager.PlayerBar;
-import com.github.MrMks.skillbar.bukkit.manager.PlayerManager;
+import com.github.MrMks.skillbar.bukkit.manager.*;
 import com.github.MrMks.skillbar.bukkit.pkg.PackageSender;
 import com.github.MrMks.skillbar.bukkit.task.ClientDiscoverTask;
 import com.github.MrMks.skillbar.bukkit.task.ReloadCheckTask;
@@ -27,10 +25,12 @@ public class MainListener implements Listener {
 
     private Plugin plugin;
     private PackageSender sender;
+    private Manager manager;
     private ClientDiscoverTask task;
-    public MainListener(Plugin plugin, PackageSender sender, ClientDiscoverTask cdt){
+    public MainListener(Plugin plugin, PackageSender sender, Manager manager, ClientDiscoverTask cdt){
         this.plugin = plugin;
         this.sender = sender;
+        this.manager = manager;
         this.task = cdt;
     }
 
@@ -42,7 +42,7 @@ public class MainListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent e){
         Player p = e.getPlayer();
-        PlayerManager m = PlayerManager.get(p);
+        ClientData m = manager.get(p);
         if (!m.isDiscovered()) {
             Bukkit.getScheduler().runTaskLater(plugin, ()->{
                 sender.sendDiscover(p);
@@ -59,7 +59,7 @@ public class MainListener implements Listener {
     public void onPlayerExit(PlayerQuitEvent e){
         //Player exit server, clear instances;
         Player p = e.getPlayer();
-        PlayerManager m = PlayerManager.get(p);
+        ClientData m = manager.get(p);
         if (checkClient(m)){
             // Client will disable when client handle disconnect event
             // PackageSender.sendDisable(e.getPlayer());
@@ -98,7 +98,7 @@ public class MainListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerChangeAccount(PlayerAccountChangeEvent e){
         if (e.isCancelled()) return;
-        if (!PlayerManager.get(e.getAccountData().getPlayer()).isDiscovered()) return;
+        if (!manager.get(e.getAccountData().getPlayer()).isDiscovered()) return;
         boolean p = !(e.getPreviousAccount() == null || e.getPreviousAccount().getSkills().size() == 0);
         boolean n = !(e.getNewAccount() == null || e.getNewAccount().getSkills().size() == 0);
         Player player = e.getAccountData().getPlayer();
@@ -114,7 +114,7 @@ public class MainListener implements Listener {
     public void onPlayerChangeWorld(PlayerChangedWorldEvent e){
         //Player changed the world, the new world may now allowed to use Skill
         Player player = e.getPlayer();
-        PlayerManager m = PlayerManager.get(player);
+        ClientData m = manager.get(player);
         if (m.isDiscovered()) {
             boolean f = SkillAPI.getSettings().isWorldEnabled(player.getWorld());
             if (f){
@@ -128,14 +128,14 @@ public class MainListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerSkillDowngrade(PlayerSkillDowngradeEvent e){
         if (e.isCancelled()) return;
-        if (!PlayerManager.get(e.getPlayerData().getPlayer()).isDiscovered()) return;
+        if (!manager.get(e.getPlayerData().getPlayer()).isDiscovered()) return;
         Bukkit.getScheduler().runTaskLater(plugin, ()-> sender.sendEnforceUpdateSkill(e.getPlayerData().getPlayer(), e.getDowngradedSkill().getData().getKey()),2);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerSkillUpgrade(PlayerSkillUpgradeEvent e){
         if (e.isCancelled()) return;
-        if (!PlayerManager.get(e.getPlayerData().getPlayer()).isDiscovered()) return;
+        if (!manager.get(e.getPlayerData().getPlayer()).isDiscovered()) return;
         Bukkit.getScheduler().runTaskLater(plugin,
                 ()-> sender.sendEnforceUpdateSkill(e.getPlayerData().getPlayer(), e.getUpgradedSkill().getData().getKey()),
                 2);
@@ -143,7 +143,7 @@ public class MainListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerSkillUnlock(PlayerSkillUnlockEvent e){
-        if (!PlayerManager.get(e.getPlayerData().getPlayer()).isDiscovered()) return;
+        if (!manager.get(e.getPlayerData().getPlayer()).isDiscovered()) return;
         Bukkit.getScheduler().runTaskLater(plugin,
                 ()-> sender.sendEnforceUpdateSkill(e.getPlayerData().getPlayer(), e.getUnlockedSkill().getData().getKey()),
                 2);
@@ -187,10 +187,10 @@ public class MainListener implements Listener {
      * @return true if player status is Enabled
      */
     private boolean checkClient(Player player){
-        return checkClient(PlayerManager.get(player));
+        return checkClient(manager.get(player));
     }
 
-    private boolean checkClient(PlayerManager m){
+    private boolean checkClient(ClientData m){
         return m != null && m.getStatus() == ClientStatus.Enabled;
     }
 }
