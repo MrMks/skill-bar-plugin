@@ -415,7 +415,6 @@ public class PackageSender {
     }
 
     private boolean checkClient(Player player){
-        return cm.getClientStatus(player.getName()) == ClientStatus.Request_Enable
-                || cm.getClientStatus(player.getName()) == ClientStatus.Enabled;
+        return cm.getClientStatus(player.getName()) == ClientStatus.Enabled;
     }
 }

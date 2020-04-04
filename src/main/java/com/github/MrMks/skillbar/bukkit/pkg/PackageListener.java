@@ -32,8 +32,6 @@ public class PackageListener implements PluginMessageListener {
         if (cm.getClientStatus(player.getName()) == ClientStatus.Request_Disable){
             sd.sendDisable(player);
             return;
-        } else if (cm.getClientStatus(player.getName()) == ClientStatus.Request_Enable){
-            cm.setClientStatus(player.getName(), ClientStatus.Enabled);
         }
 
         try {
