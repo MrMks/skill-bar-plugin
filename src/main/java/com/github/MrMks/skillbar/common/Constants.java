@@ -16,6 +16,7 @@ public class Constants {
     public static final byte ADD_SKILL = 9;
     public static final byte LIST_BAR = 10;
     public static final byte SAVE_BAR = 11;
+    public static final byte DISCOVER = 12;
 
     public static final byte CAST_SUCCESS = 0;
     public static final byte CAST_FAILED_NO_SKILL = 1;

@@ -1,4 +1,4 @@
-package com.github.MrMks.skillbar.bukkit;
+package com.github.MrMks.skillbar.bukkit.manager;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -14,13 +14,25 @@ public class PlayerBar {
     private static HashMap<UUID, PlayerBar> barMap = new HashMap<>();
     public static PlayerBar get(Player player){
         if (!barMap.containsKey(player.getUniqueId())){
-            barMap.put(player.getUniqueId(), new PlayerBar(player));
+            barMap.put(player.getUniqueId(), new PlayerBar(player.getUniqueId()));
         }
         return barMap.get(player.getUniqueId());
     }
 
+    static PlayerBar get(UUID uid){
+        if (!barMap.containsKey(uid)){
+            barMap.put(uid, new PlayerBar(uid));
+        }
+        return barMap.get(uid);
+    }
+
     public static void unloadSave(Player player){
         PlayerBar bar = barMap.remove(player.getUniqueId());
+        if (bar != null) bar.saveToFile();
+    }
+
+    static void unloadSave(UUID uid){
+        PlayerBar bar = barMap.remove(uid);
         if (bar != null) bar.saveToFile();
     }
 
@@ -39,8 +51,8 @@ public class PlayerBar {
     private UUID uuid;
     private HashMap<Integer, Map<Integer, String>> map;
     private File file;
-    private PlayerBar(Player player){
-        uuid = player.getUniqueId();
+    private PlayerBar(UUID uid){
+        uuid = uid;
         file = new File(f,"player/" + uuid.toString() + ".json");
         readFromFile();
     }

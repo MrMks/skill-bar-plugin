@@ -1,8 +1,8 @@
 package com.github.MrMks.skillbar.bukkit.pkg;
 
-import com.github.MrMks.skillbar.bukkit.PlayerBar;
-import com.github.MrMks.skillbar.bukkit.manager.ClientManager;
 import com.github.MrMks.skillbar.bukkit.manager.ClientStatus;
+import com.github.MrMks.skillbar.bukkit.manager.PlayerBar;
+import com.github.MrMks.skillbar.bukkit.manager.PlayerManager;
 import com.github.MrMks.skillbar.common.ByteDecoder;
 import com.github.MrMks.skillbar.common.Constants;
 import com.sucy.skill.SkillAPI;
@@ -17,11 +17,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class PackageListener implements PluginMessageListener {
-    private ClientManager cm;
     private PackageSender sd;
     private Plugin plugin;
-    public PackageListener(Plugin plugin, PackageSender sender, ClientManager manager){
-        this.cm = manager;
+    public PackageListener(Plugin plugin, PackageSender sender){
         this.sd = sender;
         this.plugin = plugin;
     }
@@ -29,15 +27,16 @@ public class PackageListener implements PluginMessageListener {
     @Override
     public void onPluginMessageReceived(String s, Player player, byte[] bytes) {
         if (!s.equals(Constants.CHANNEL_NAME) || player == null) return;
-        if (cm.getClientStatus(player.getName()) == ClientStatus.Request_Disable){
-            sd.sendDisable(player);
+        PlayerManager m = PlayerManager.get(player);
+        if (m.getStatus() == ClientStatus.Disabled){
+            if (m.isDiscovered()) sd.sendDisable(player);
             return;
         }
 
         try {
             ByteDecoder decoder = new ByteDecoder(bytes);
             switch (decoder.getHeader()){
-                case Constants.ENABLE:
+                case Constants.DISCOVER:
                     onDiscover(player);
                     break;
                 case Constants.LIST_SKILL:
@@ -56,6 +55,7 @@ public class PackageListener implements PluginMessageListener {
                     onSaveBar(player, decoder);
                     break;
                 default:
+                    Bukkit.getLogger().warning("Undefined package header received from player: " + player.getName());
                     break;
             }
         } catch (IndexOutOfBoundsException e){
@@ -67,7 +67,8 @@ public class PackageListener implements PluginMessageListener {
     }
 
     private void onDiscover(Player player){
-        cm.setClientStatus(player.getName(), ClientStatus.Enabled);
+        PlayerManager.get(player).discover();
+        sd.sendEnable(player);
     }
 
     public void onListSkill(Player player, ByteDecoder buf){

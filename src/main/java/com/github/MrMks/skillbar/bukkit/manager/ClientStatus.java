@@ -1,8 +1,7 @@
 package com.github.MrMks.skillbar.bukkit.manager;
 
 public enum ClientStatus {
-    Request_Enable,
+    Discovering,
     Enabled,
-    Request_Disable,
-    //Disabled;
+    Disabled,
 }

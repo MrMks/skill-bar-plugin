@@ -1,7 +1,6 @@
 package com.github.MrMks.skillbar.bukkit.task;
 
-import com.github.MrMks.skillbar.bukkit.manager.ClientManager;
-import com.github.MrMks.skillbar.bukkit.manager.ClientStatus;
+import com.github.MrMks.skillbar.bukkit.manager.PlayerManager;
 import com.github.MrMks.skillbar.bukkit.pkg.PackageSender;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -10,12 +9,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ClientDiscoverTask extends RepeatTask {
-    private final HashMap<String, Integer> list = new HashMap<>();
-    private final ClientManager cm;
+    private final HashMap<PlayerManager, Integer> list = new HashMap<>();
     private final PackageSender ps;
-    public ClientDiscoverTask(ClientManager manager, PackageSender sender){
+    public ClientDiscoverTask(PackageSender sender){
         super(5 * 1000,5 * 1000);
-        this.cm = manager;
         this.ps = sender;
     }
 
@@ -23,23 +20,24 @@ public class ClientDiscoverTask extends RepeatTask {
     protected void runTask() {
         synchronized (list){
             if (list.isEmpty()) return;
-            ArrayList<String> re = new ArrayList<>();
-            for (String name : list.keySet()){
-                if (cm.getClientStatus(name) == ClientStatus.Request_Enable) {
-                    int times = list.get(name);
+            ArrayList<PlayerManager> re = new ArrayList<>();
+            for (PlayerManager m : list.keySet()){
+                if (!m.isDiscovered()) {
+                    int times = list.get(m);
                     if (times > 5) {
-                        re.add(name);
+                        re.add(m);
                         continue;
                     }
-                    Player player = Bukkit.getPlayer(name);
+                    Player player = Bukkit.getPlayer(m.getUid());
                     ps.sendEnable(player);
-                    list.put(name, times + 1);
+                    list.put(m, times + 1);
                 } else {
-                    re.add(name);
+                    re.add(m);
                 }
             }
-            for (String name : re) {
-                if (cm.getClientStatus(name) != ClientStatus.Enabled) cm.setClientStatus(name, ClientStatus.Request_Disable);
+            for (PlayerManager m : re) {
+                list.remove(m);
+                if (!m.isDiscovered()) m.disable();
             }
         }
     }
@@ -49,15 +47,15 @@ public class ClientDiscoverTask extends RepeatTask {
         return false;
     }
 
-    public void addName(String name){
+    public void addName(PlayerManager m){
         synchronized (list) {
-            if (!list.containsKey(name)) list.put(name,0);
+            if (!list.containsKey(m)) list.put(m,0);
         }
     }
 
-    public void removeName(String name){
+    public void removeName(PlayerManager m){
         synchronized (list) {
-            list.remove(name);
+            list.remove(m);
         }
     }
 }

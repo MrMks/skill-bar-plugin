@@ -1,8 +1,8 @@
 package com.github.MrMks.skillbar.bukkit.pkg;
 
-import com.github.MrMks.skillbar.bukkit.PlayerBar;
-import com.github.MrMks.skillbar.bukkit.manager.ClientManager;
 import com.github.MrMks.skillbar.bukkit.manager.ClientStatus;
+import com.github.MrMks.skillbar.bukkit.manager.PlayerBar;
+import com.github.MrMks.skillbar.bukkit.manager.PlayerManager;
 import com.github.MrMks.skillbar.common.ByteBuilder;
 import com.github.MrMks.skillbar.common.Constants;
 import com.rit.sucy.version.VersionManager;
@@ -27,11 +27,9 @@ public class PackageSender {
 
     private Logger logger;
     private Plugin plugin;
-    private ClientManager cm;
     private byte itemMethodFlag = 0;
-    public PackageSender(Plugin plugin, ClientManager manager){
+    public PackageSender(Plugin plugin){
         this.plugin = plugin;
-        this.cm = manager;
         this.logger = plugin.getLogger();
         try {
             Skill.class.getMethod("getIndicator", PlayerSkill.class, boolean.class);
@@ -48,14 +46,19 @@ public class PackageSender {
         return !(itemMethodFlag == 0);
     }
 
+    public void sendDiscover(Player player){
+        if (!PlayerManager.get(player).isDiscovered()) sendMessage(player, new BukkitByteBuilder(Constants.DISCOVER));
+    }
+
     public void sendEnable(Player player){
         if (checkValid(player)){
-            if (cm.getClientStatus(player.getName()) != ClientStatus.Enabled) {
+            PlayerManager m = PlayerManager.get(player);
+            if (m.getStatus() != ClientStatus.Enabled) {
                 ByteBuilder builder = new BukkitByteBuilder(Constants.ENABLE);
                 builder.writeInt(SkillAPI.getPlayerAccountData(player).getActiveId());
                 builder.writeInt(SkillAPI.getPlayerData(player).getSkills().size());
-                cm.setClientStatus(player.getName(), ClientStatus.Request_Enable);
                 sendMessage(player, builder);
+                m.enable();
             }
         } else {
             if (checkClient(player)){
@@ -64,9 +67,9 @@ public class PackageSender {
         }
     }
 
-    public void sendAllEnable() {
+    public void sendAllDiscover() {
         for (Player player : VersionManager.getOnlinePlayers()){
-            sendEnable(player);
+            sendDiscover(player);
         }
     }
 
@@ -280,7 +283,7 @@ public class PackageSender {
     public void sendAllDisable(){
         Player[] players = VersionManager.getOnlinePlayers();
         for (Player player : players){
-            if (cm.getClientStatus(player.getName()) != ClientStatus.Request_Disable){
+            if (checkClient(player)){
                 sendDisable(player);
             }
         }
@@ -288,7 +291,7 @@ public class PackageSender {
 
     public void sendDisable(Player player){
         sendMessage(player,new BukkitByteBuilder(Constants.DISABLE));
-        cm.setClientStatus(player.getName(),ClientStatus.Request_Disable);
+        PlayerManager.get(player).disable();
     }
 
     public void sendCoolDown(Player player){
@@ -415,6 +418,10 @@ public class PackageSender {
     }
 
     private boolean checkClient(Player player){
-        return cm.getClientStatus(player.getName()) == ClientStatus.Enabled;
+        return checkClient(PlayerManager.get(player));
+    }
+
+    private boolean checkClient(PlayerManager manager){
+        return manager != null && manager.getStatus() == ClientStatus.Enabled;
     }
 }

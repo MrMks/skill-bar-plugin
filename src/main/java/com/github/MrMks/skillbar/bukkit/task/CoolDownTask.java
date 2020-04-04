@@ -1,17 +1,15 @@
 package com.github.MrMks.skillbar.bukkit.task;
 
-import com.github.MrMks.skillbar.bukkit.pkg.PackageSender;
-import com.github.MrMks.skillbar.bukkit.manager.ClientManager;
 import com.github.MrMks.skillbar.bukkit.manager.ClientStatus;
+import com.github.MrMks.skillbar.bukkit.manager.PlayerManager;
+import com.github.MrMks.skillbar.bukkit.pkg.PackageSender;
 import com.rit.sucy.version.VersionManager;
 import org.bukkit.entity.Player;
 
 public class CoolDownTask extends RepeatTask {
-    private ClientManager c;
     private PackageSender p;
-    public CoolDownTask(ClientManager cm, PackageSender ps){
+    public CoolDownTask(PackageSender ps){
         super(500,500);
-        this.c = cm;
         this.p = ps;
     }
 
@@ -19,7 +17,7 @@ public class CoolDownTask extends RepeatTask {
     public void runTask() {
         Player[] players = VersionManager.getOnlinePlayers();
         for (Player player : players){
-            if (c.getClientStatus(player.getName()) != ClientStatus.Request_Disable){
+            if (PlayerManager.get(player).getStatus() == ClientStatus.Enabled){
                 p.sendCoolDown(player);
             }
         }
