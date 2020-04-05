@@ -13,14 +13,12 @@ import com.sucy.skill.api.player.PlayerSkill;
 import com.sucy.skill.api.skills.Skill;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class PackageSender {
 
@@ -303,12 +301,19 @@ public class PackageSender {
         if (stack == null) {
             builder.writeInt(0).writeShort((short) 0).writeInt(0).writeInt(0);
         } else {
+            ItemMeta meta = stack.getItemMeta();
             //noinspection deprecation
             builder.writeInt(stack.getData().getItemType().getId())
                     //.writeInt(stack.getAmount())
-                    .writeShort(stack.getDurability())
-                    .writeCharSequence(stack.getItemMeta().getDisplayName())
-                    .writeCharSequenceList(stack.getItemMeta().getLore());
+                    .writeShort(stack.getDurability());
+            if (meta == null) {
+                builder.writeCharSequence("")
+                        .writeCharSequenceList(Collections.emptyList());
+            } else {
+                builder.writeCharSequence(meta.getDisplayName())
+                        .writeCharSequenceList(meta.getLore());
+            }
+
         }
     }
 }
