@@ -107,11 +107,11 @@ public class MainListener implements Listener {
         if (cData == null || !cData.isDiscovered()) return;
         boolean p = !(e.getPreviousAccount() == null || e.getPreviousAccount().getSkills().size() == 0);
         boolean n = !(e.getNewAccount() == null || e.getNewAccount().getSkills().size() == 0);
-        if (p) {
-            Bukkit.getScheduler().runTaskLater(plugin, ()->sender.sendAccount(player),2);
+        if (n) {
+            if (p) Bukkit.getScheduler().runTaskLater(plugin, ()->sender.sendAccount(player),2);
+            else Bukkit.getScheduler().runTaskLater(plugin, ()->sender.sendEnable(player),2);
         } else {
-            if (n) Bukkit.getScheduler().runTaskLater(plugin, ()->sender.sendEnable(player),2);
-            else Bukkit.getScheduler().runTaskLater(plugin, ()->sender.sendDisable(player),2);
+            if (p) Bukkit.getScheduler().runTaskLater(plugin, ()->sender.sendDisable(player),2);
         }
     }
 
