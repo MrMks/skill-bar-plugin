@@ -12,6 +12,7 @@ import com.sucy.skill.api.player.PlayerSkill;
 import com.sucy.skill.api.skills.Skill;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.InvocationTargetException;
@@ -192,9 +193,13 @@ public class PackageSender {
         } else {
             builder.writeInt(stack.getData().getItemType().getId())
                     //.writeInt(stack.getAmount())
-                    .writeShort(stack.getDurability())
-                    .writeCharSequence(stack.getItemMeta().getDisplayName())
-                    .writeCharSequenceList(stack.getItemMeta().getLore());
+                    .writeShort(stack.getDurability());
+            ItemMeta meta = stack.getItemMeta();
+            if (meta == null) {
+                builder.writeCharSequence("").writeInt(0);
+            } else {
+                builder.writeCharSequence(meta.getDisplayName()).writeCharSequenceList(meta.getLore());
+            }
         }
     }
 
