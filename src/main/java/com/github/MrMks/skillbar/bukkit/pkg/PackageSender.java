@@ -1,6 +1,9 @@
 package com.github.MrMks.skillbar.bukkit.pkg;
 
-import com.github.MrMks.skillbar.bukkit.manager.*;
+import com.github.MrMks.skillbar.bukkit.manager.ClientData;
+import com.github.MrMks.skillbar.bukkit.manager.ClientStatus;
+import com.github.MrMks.skillbar.bukkit.manager.Manager;
+import com.github.MrMks.skillbar.bukkit.manager.PlayerBar;
 import com.github.MrMks.skillbar.common.ByteBuilder;
 import com.github.MrMks.skillbar.common.Constants;
 import com.rit.sucy.version.VersionManager;
@@ -18,17 +21,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Logger;
 
 public class PackageSender {
 
-    private Logger logger;
     private Plugin plugin;
     private Manager manager;
     private byte itemMethodFlag = 0;
     public PackageSender(Plugin plugin, Manager manager){
         this.plugin = plugin;
-        this.logger = plugin.getLogger();
         this.manager = manager;
         try {
             Skill.class.getMethod("getIndicator", PlayerSkill.class, boolean.class);
@@ -46,11 +46,10 @@ public class PackageSender {
     }
 
     public void sendDiscover(Player player){
-        if (!manager.get(player).isDiscovered()) sendMessage(player, new BukkitByteBuilder(Constants.DISCOVER));
+        if (player != null) sendMessage(player, new BukkitByteBuilder(Constants.DISCOVER));
     }
 
     public void sendEnable(Player player){
-
         if (checkValid(player)){
             ClientData m = manager.get(player);
             if (m.getStatus() != ClientStatus.Enabled) {
@@ -60,265 +59,155 @@ public class PackageSender {
                 sendMessage(player, builder);
                 m.enable();
             }
-        } else {
-            if (checkClient(player)){
-                sendDisable(player);
-            }
         }
     }
 
     public void sendListSkill(Player player, List<CharSequence> req){
-        int v = 0;
-        if (checkValid(player)) v += 1;
-        if (checkClient(player)) v += 2;
-        switch (v){
-            case 0:
-            case 1:
-                logger.warning("\u00A7cRequest send listSkill to a disabled client");
-                break;
-            case 2:
-                sendDisable(player);
-                break;
-            case 3:
-                ByteBuilder builder = new BukkitByteBuilder(Constants.LIST_SKILL);
-                Collection<PlayerSkill> fullList = SkillAPI.getPlayerData(player).getSkills();
-                HashMap<String, PlayerSkill> fullMap = new HashMap<>();
-                List<String> remove = new ArrayList<>();
-                for (PlayerSkill skill : fullList){
-                    fullMap.put(skill.getData().getKey(), skill);
-                }
-                for (CharSequence sequence : req){
-                    if (fullMap.containsKey(sequence.toString())) fullMap.remove(sequence.toString());
-                    else remove.add(sequence.toString());
-                }
-                builder.writeInt(fullMap.size());
-                for (PlayerSkill skill : fullMap.values()){
-                    buildSkill(builder,skill);
-                }
-                builder.writeCharSequenceList(remove);
+        if (checkValid(player)) {
+            ByteBuilder builder = new BukkitByteBuilder(Constants.LIST_SKILL);
+            Collection<PlayerSkill> fullList = SkillAPI.getPlayerData(player).getSkills();
+            HashMap<String, PlayerSkill> fullMap = new HashMap<>();
+            List<String> remove = new ArrayList<>();
+            for (PlayerSkill skill : fullList){
+                fullMap.put(skill.getData().getKey(), skill);
+            }
+            for (CharSequence sequence : req){
+                if (fullMap.containsKey(sequence.toString())) fullMap.remove(sequence.toString());
+                else remove.add(sequence.toString());
+            }
+            builder.writeInt(fullMap.size());
+            for (PlayerSkill skill : fullMap.values()){
+                buildSkill(builder,skill);
+            }
+            builder.writeCharSequenceList(remove);
 
-                sendMessage(player,builder);
-                break;
+            sendMessage(player,builder);
         }
     }
 
     public void sendRemoveList(Player player, List<? extends CharSequence> req){
-        int v = 0;
-        if (checkValid(player)) v += 1;
-        if (checkClient(player)) v += 2;
-        switch (v){
-            case 0:
-            case 1:
-                logger.warning("§cRequest send listSkill to a disabled client");
-                break;
-            case 2:
-                sendDisable(player);
-                break;
-            case 3:
-                ByteBuilder builder = new BukkitByteBuilder(Constants.LIST_SKILL);
-                builder.writeInt(0); // add skill list
-                builder.writeCharSequenceList(req);
-                sendMessage(player,builder);
-                break;
+        if (checkValid(player)) {
+            ByteBuilder builder = new BukkitByteBuilder(Constants.LIST_SKILL);
+            builder.writeInt(0); // add skill list
+            builder.writeCharSequenceList(req);
+            sendMessage(player,builder);
         }
     }
 
     public void sendEnforceListSkill(Player player){
-        int v = 0;
-        if (checkValid(player)) v += 1;
-        if (checkClient(player)) v += 2;
-        switch (v){
-            case 0:
-            case 1:
-                logger.warning("§cRequest send enforceListSkill to a disabled client");
-                break;
-            case 2:
-                sendDisable(player);
-                break;
-            case 3:
-                ByteBuilder builder = new BukkitByteBuilder(Constants.ENFORCE_LIST_SKILL);
-                builder.writeInt(SkillAPI.getPlayerAccountData(player).getActiveId());
-                listSkill(builder,player);
-                sendMessage(player,builder);
-                break;
+        if (checkValid(player)) {
+            ByteBuilder builder = new BukkitByteBuilder(Constants.ENFORCE_LIST_SKILL);
+            builder.writeInt(SkillAPI.getPlayerAccountData(player).getActiveId());
+            listSkill(builder,player);
+            sendMessage(player,builder);
         }
     }
 
     public void sendUpdateSkill(Player player, String key){
-        int v = 0;
-        if (checkValid(player)) v += 1;
-        if (checkClient(player)) v += 2;
-        switch (v){
-            case 0:
-            case 1:
-                logger.warning("§cRequest send updateSkill to a disabled client");
-                break;
-            case 2:
-                sendDisable(player);
-                break;
-            case 3:
-                ByteBuilder builder = new BukkitByteBuilder(Constants.UPDATE_SKILL);
-                PlayerSkill skill = SkillAPI.getPlayerData(player).getSkill(key);
-                boolean exist = skill != null;
-                builder.writeBoolean(exist);
-                if (exist){
-                    builder.writeBoolean(skill.isUnlocked()).writeBoolean(skill.getData().canCast());
-                    buildStack(builder,skill);
-                }
-                sendMessage(player,builder);
-                break;
+        if (checkValid(player)) {
+            ByteBuilder builder = new BukkitByteBuilder(Constants.UPDATE_SKILL);
+            PlayerSkill skill = SkillAPI.getPlayerData(player).getSkill(key);
+            boolean exist = skill != null;
+            builder.writeBoolean(exist);
+            if (exist){
+                builder.writeBoolean(skill.isUnlocked()).writeBoolean(skill.getData().canCast());
+                buildStack(builder,skill);
+            }
+            sendMessage(player,builder);
         }
     }
 
     public void sendEnforceUpdateSkill(Player player, String key){
-        int v = 0;
-        if (checkValid(player)) v += 1;
-        if (checkClient(player)) v += 2;
-        switch (v){
-            case 0:
-            case 1:
-                logger.warning("§cRequest send enforceUpdateSkill to a disabled client");
-                break;
-            case 2:
-                sendDisable(player);
-                break;
-            case 3:
-                PlayerSkill skill = SkillAPI.getPlayerData(player).getSkill(key);
-                boolean exist = skill != null;
-                if (exist){
-                    ByteBuilder builder = new BukkitByteBuilder(Constants.ENFORCE_UPDATE_SKILL);
-                    builder.writeInt(SkillAPI.getPlayerAccountData(player).getActiveId());
-                    buildSkill(builder,skill);
-                    sendMessage(player,builder);
-                }
-                break;
+        if (checkValid(player)) {
+            PlayerSkill skill = SkillAPI.getPlayerData(player).getSkill(key);
+            boolean exist = skill != null;
+            if (exist){
+                ByteBuilder builder = new BukkitByteBuilder(Constants.ENFORCE_UPDATE_SKILL);
+                builder.writeInt(SkillAPI.getPlayerAccountData(player).getActiveId());
+                buildSkill(builder,skill);
+                sendMessage(player,builder);
+            }
         }
     }
 
     public void sendCast(Player player, String key, boolean suc, byte code){
-        int v = 0;
-        if (checkValid(player)) v += 1;
-        if (checkClient(player)) v+= 2;
-        switch (v){
-            case 0:
-            case 1:
-                logger.warning("§cRequest send cast to a disabled client");
-                break;
-            case 2:
-                sendDisable(player);
-                break;
-            case 3:
-                ByteBuilder builder = new BukkitByteBuilder(Constants.CAST);
-                builder.writeCharSequence(key);
-                builder.writeBoolean(SkillAPI.getPlayerData(player).hasSkill(key));
-                builder.writeBoolean(suc);
-                builder.write(code);
-                sendMessage(player,builder);
-                break;
+        if (checkValid(player)) {
+            ByteBuilder builder = new BukkitByteBuilder(Constants.CAST);
+            builder.writeCharSequence(key);
+            builder.writeBoolean(SkillAPI.getPlayerData(player).hasSkill(key));
+            builder.writeBoolean(suc);
+            builder.write(code);
+            sendMessage(player,builder);
         }
     }
 
     public void sendDisable(Player player){
-        sendMessage(player,new BukkitByteBuilder(Constants.DISABLE));
-        manager.get(player).disable();
+        if (player != null) {
+            sendMessage(player,new BukkitByteBuilder(Constants.DISABLE));
+            manager.get(player).disable();
+        }
     }
 
     public void sendCoolDown(Player player){
-        int v = 0;
-        if (checkValid(player)) v += 1;
-        if (checkClient(player)) v+= 2;
-        switch (v){
-            case 0:
-            case 1:
-                logger.warning("§cRequest send cooldown to a disabled client");
-                break;
-            case 2:
-                sendDisable(player);
-                break;
-            case 3:
-                PlayerData data = SkillAPI.getPlayerData(player);
-                PlayerBar bar = PlayerBar.get(player);
-                if (bar.size() == 0) return;
-                ByteBuilder builder = new BukkitByteBuilder(Constants.COOLDOWN);
-                ArrayList<String> list = new ArrayList<>(9);
-                for (int i = 0; i < 9 ; i++){
-                    String key = bar.getSkill(i);
-                    if (!list.contains(key) && key != null && !key.isEmpty() && data.hasSkill(key)) list.add(key);
-                }
-                builder.writeLong(System.currentTimeMillis())
-                        .writeInt(list.size());
-                for (String key : list){
-                    PlayerSkill skill = data.getSkill(key);
-                    builder.writeCharSequence(key)
-                            .writeInt(skill.getCooldown());
-                }
-                sendMessage(player,builder);
-                break;
+        if (checkValid(player)) {
+            PlayerData data = SkillAPI.getPlayerData(player);
+            PlayerBar bar = PlayerBar.get(player);
+            if (bar.size() == 0) return;
+            ByteBuilder builder = new BukkitByteBuilder(Constants.COOLDOWN);
+            ArrayList<String> list = new ArrayList<>(9);
+            for (int i = 0; i < 9 ; i++){
+                String key = bar.getSkill(i);
+                if (!list.contains(key) && key != null && !key.isEmpty() && data.hasSkill(key)) list.add(key);
+            }
+            builder.writeLong(System.currentTimeMillis())
+                    .writeInt(list.size());
+            for (String key : list){
+                PlayerSkill skill = data.getSkill(key);
+                builder.writeCharSequence(key)
+                        .writeInt(skill.getCooldown());
+            }
+            sendMessage(player,builder);
         }
     }
 
     public void sendAccount(Player player){
-        int v = 0;
-        if (checkValid(player)) v += 1;
-        if (checkClient(player)) v+= 2;
-        switch (v){
-            case 0:
-            case 1:
-                logger.warning("§cRequest send account to a disabled client");
-                break;
-            case 2:
-                sendDisable(player);
-                break;
-            case 3:
-                ByteBuilder builder = new BukkitByteBuilder(Constants.ACCOUNT);
-                builder.writeInt(SkillAPI.getPlayerAccountData(player).getActiveId())
-                        .writeInt(SkillAPI.getPlayerData(player).getSkills().size());
-                sendMessage(player,builder);
-                break;
+        if (checkValid(player)) {
+            ByteBuilder builder = new BukkitByteBuilder(Constants.ACCOUNT);
+            builder.writeInt(SkillAPI.getPlayerAccountData(player).getActiveId())
+                    .writeInt(SkillAPI.getPlayerData(player).getSkills().size());
+            sendMessage(player,builder);
         }
     }
 
     public void sendAddSkill(Player p) {
-        int v = 0;
-        if (checkValid(p)) v += 1;
-        if (checkClient(p)) v += 2;
-        switch (v){
-            case 0:
-            case 1:
-                logger.warning("§cRequest send account to a disabled client");
-                break;
-            case 2:
-                sendDisable(p);
-                break;
-            case 3:
-                ByteBuilder builder = new BukkitByteBuilder(Constants.ADD_SKILL);
-                builder.writeInt(SkillAPI.getPlayerAccountData(p).getActiveId())
-                        .writeInt(SkillAPI.getPlayerData(p).getSkills().size());
-                sendMessage(p,builder);
-                break;
+        if (checkValid(p)) {
+            ByteBuilder builder = new BukkitByteBuilder(Constants.ADD_SKILL);
+            builder.writeInt(SkillAPI.getPlayerAccountData(p).getActiveId())
+                    .writeInt(SkillAPI.getPlayerData(p).getSkills().size());
+            sendMessage(p,builder);
         }
     }
 
     public void sendListBar(Player player){
-        if (!checkValid(player) || !checkClient(player)) return;
-
-        ByteBuilder builder = new BukkitByteBuilder(Constants.LIST_BAR);
-        PlayerBar bar = PlayerBar.get(player);
-        PlayerData data = SkillAPI.getPlayerData(player);
-        boolean exist = !bar.isEmpty() && data != null;
-        builder.writeBoolean(exist);
-        if (exist){
-            HashMap<Integer, String> map = new HashMap<>(9);
-            for (Integer key : bar.keys()){
-                if (data.hasSkill(bar.getSkill(key))) map.put(key, bar.getSkill(key));
+        if (checkValid(player)) {
+            ByteBuilder builder = new BukkitByteBuilder(Constants.LIST_BAR);
+            PlayerBar bar = PlayerBar.get(player);
+            PlayerData data = SkillAPI.getPlayerData(player);
+            boolean exist = !bar.isEmpty() && data != null;
+            builder.writeBoolean(exist);
+            if (exist) {
+                HashMap<Integer, String> map = new HashMap<>(9);
+                for (Integer key : bar.keys()) {
+                    if (data.hasSkill(bar.getSkill(key))) map.put(key, bar.getSkill(key));
+                }
+                if (map.size() != bar.size()) bar.setBar(SkillAPI.getPlayerAccountData(player).getActiveId(), map);
+                builder.writeInt(map.size());
+                for (HashMap.Entry<Integer, String> entry : map.entrySet()) {
+                    builder.writeInt(entry.getKey()).writeCharSequence(entry.getValue());
+                }
             }
-            if (map.size() != bar.size()) bar.setBar(SkillAPI.getPlayerAccountData(player).getActiveId(), map);
-            builder.writeInt(map.size());
-            for (HashMap.Entry<Integer, String> entry : map.entrySet()){
-                builder.writeInt(entry.getKey()).writeCharSequence(entry.getValue());
-            }
+            sendMessage(player, builder);
         }
-        sendMessage(player, builder);
     }
 
     private void sendMessage(Player player, ByteBuilder builder){
@@ -397,6 +286,8 @@ public class PackageSender {
                 break;
             case 2:
                 try {
+                    // method used in non-premium skillapi
+                    @SuppressWarnings("JavaReflectionMemberAccess")
                     Method method = Skill.class.getMethod("getIndicator", PlayerSkill.class);
                     stack = (ItemStack) method.invoke(skill.getData(), skill);
                 } catch (Exception ignored){}
@@ -412,6 +303,7 @@ public class PackageSender {
         if (stack == null) {
             builder.writeInt(0).writeShort((short) 0).writeInt(0).writeInt(0);
         } else {
+            //noinspection deprecation
             builder.writeInt(stack.getData().getItemType().getId())
                     //.writeInt(stack.getAmount())
                     .writeShort(stack.getDurability())
