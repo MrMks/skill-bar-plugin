@@ -70,20 +70,30 @@ public class PackageListener implements PluginMessageListener {
     }
 
     private void onDiscover(Player player){
-        manager.get(player).discover();
-        sd.sendEnable(player);
+        ClientData data = manager.get(player);
+        if (data != null && !data.isDiscovered()){
+            data.discover();
+            sd.sendEnable(player);
+        }
     }
 
     public void onListSkill(Player player, ByteDecoder buf){
-        sd.sendListSkill(player, buf.readCharSequenceList());
+        ClientData data = manager.get(player);
+        if (data != null && data.getStatus() == ClientStatus.Enabled){
+            sd.sendListSkill(player, buf.readCharSequenceList());
+        }
     }
 
     public void onUpdateSkill(Player player, ByteDecoder buf){
-        String key = buf.readCharSequence().toString();
-        sd.sendUpdateSkill(player,key);
+        ClientData data = manager.get(player);
+        if (data != null && data.getStatus() == ClientStatus.Enabled){
+            String key = buf.readCharSequence().toString();
+            sd.sendUpdateSkill(player,key);
+        }
     }
 
     public void onCast(Player player, ByteDecoder buf){
+        if (manager.get(player) == null || manager.get(player).getStatus() != ClientStatus.Enabled) return;
         boolean hasPlayer = SkillAPI.hasPlayerData(player);
         String key = buf.readCharSequence().toString();
         if (hasPlayer){
@@ -109,10 +119,12 @@ public class PackageListener implements PluginMessageListener {
     }
 
     public void onListBar(Player player){
-        sd.sendBarList(player);
+        ClientData cData = manager.get(player);
+        if (cData != null && cData.getStatus() == ClientStatus.Enabled) sd.sendListBar(player);
     }
 
     public void onSaveBar(Player player, ByteDecoder buf){
+        if (manager.get(player) == null || manager.get(player).getStatus() != ClientStatus.Enabled) return;
         PlayerBar bar = PlayerBar.get(player);
         PlayerData data = SkillAPI.getPlayerData(player);
         int activeId = buf.readInt();

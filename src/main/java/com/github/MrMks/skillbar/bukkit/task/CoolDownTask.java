@@ -19,7 +19,7 @@ public class CoolDownTask extends RepeatTask {
     public void runTask() {
         Player[] players = VersionManager.getOnlinePlayers();
         for (Player player : players){
-            if (m.get(player).getStatus() == ClientStatus.Enabled){
+            if (m.get(player) != null && m.get(player).getStatus() == ClientStatus.Enabled){
                 p.sendCoolDown(player);
             }
         }

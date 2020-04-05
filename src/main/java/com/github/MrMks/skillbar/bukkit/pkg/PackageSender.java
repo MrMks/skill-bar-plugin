@@ -10,7 +10,6 @@ import com.sucy.skill.api.player.PlayerSkill;
 import com.sucy.skill.api.skills.Skill;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.InvocationTargetException;
@@ -51,6 +50,7 @@ public class PackageSender {
     }
 
     public void sendEnable(Player player){
+
         if (checkValid(player)){
             ClientData m = manager.get(player);
             if (m.getStatus() != ClientStatus.Enabled) {
@@ -64,12 +64,6 @@ public class PackageSender {
             if (checkClient(player)){
                 sendDisable(player);
             }
-        }
-    }
-
-    public void sendAllDiscover() {
-        for (Player player : VersionManager.getOnlinePlayers()){
-            sendDiscover(player);
         }
     }
 
@@ -150,62 +144,6 @@ public class PackageSender {
         }
     }
 
-    private void listSkill(ByteBuilder builder, Player player){
-        boolean has = SkillAPI.hasPlayerData(player) && SkillAPI.getPlayerData(player).hasClass();
-        if (has){
-            PlayerData data = SkillAPI.getPlayerData(player);
-            builder.writeInt(data.getSkills().size());
-            for (PlayerSkill ps : data.getSkills()) {
-                buildSkill(builder,ps);
-            }
-        }
-    }
-
-    private void buildSkill(ByteBuilder builder, PlayerSkill skill) {
-        builder.writeCharSequence(skill.getData().getKey())
-                .writeBoolean(skill.isUnlocked())
-                .writeBoolean(skill.getData().canCast());
-        buildStack(builder,skill);
-    }
-
-    private void buildStack(ByteBuilder builder, PlayerSkill skill){
-        ItemStack stack = null;
-        switch (itemMethodFlag){
-            case 1:
-                try {
-                    Method method = Skill.class.getMethod("getIndicator", PlayerSkill.class, boolean.class);
-                    stack = (ItemStack) method.invoke(skill.getData(),skill, true);
-                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
-                break;
-            case 2:
-                try {
-                    Method method = Skill.class.getMethod("getIndicator", PlayerSkill.class);
-                    stack = (ItemStack) method.invoke(skill.getData(), skill);
-                } catch (Exception ignored){}
-                break;
-            default:
-                stack = null;
-                break;
-        }
-        buildStack(builder, stack);
-    }
-
-    private void buildStack(ByteBuilder builder, ItemStack stack){
-        if (stack == null) {
-            builder.writeInt(0).writeShort((short) 0).writeInt(0).writeInt(0);
-        } else {
-            builder.writeInt(stack.getData().getItemType().getId())
-                    //.writeInt(stack.getAmount())
-                    .writeShort(stack.getDurability());
-            ItemMeta meta = stack.getItemMeta();
-            if (meta == null) {
-                builder.writeCharSequence("").writeInt(0);
-            } else {
-                builder.writeCharSequence(meta.getDisplayName()).writeCharSequenceList(meta.getLore());
-            }
-        }
-    }
-
     public void sendUpdateSkill(Player player, String key){
         int v = 0;
         if (checkValid(player)) v += 1;
@@ -277,15 +215,6 @@ public class PackageSender {
                 builder.write(code);
                 sendMessage(player,builder);
                 break;
-        }
-    }
-
-    public void sendAllDisable(){
-        Player[] players = VersionManager.getOnlinePlayers();
-        for (Player player : players){
-            if (checkClient(player)){
-                sendDisable(player);
-            }
         }
     }
 
@@ -370,17 +299,7 @@ public class PackageSender {
         }
     }
 
-    public void sendClearClientList(Player p) {
-        ByteBuilder builder = new BukkitByteBuilder(Constants.ENFORCE_LIST_SKILL);
-        builder.writeInt(SkillAPI.getPlayerAccountData(p).getActiveId());
-        builder.writeInt(0);
-        sendMessage(p, builder);
-        builder = new BukkitByteBuilder(Constants.LIST_BAR);
-        builder.writeBoolean(true).writeInt(0);
-        sendMessage(p, builder);
-    }
-
-    public void sendBarList(Player player){
+    public void sendListBar(Player player){
         if (!checkValid(player) || !checkClient(player)) return;
 
         ByteBuilder builder = new BukkitByteBuilder(Constants.LIST_BAR);
@@ -407,6 +326,31 @@ public class PackageSender {
         for (byte[] data : builder.build(partId)) player.sendPluginMessage(plugin,Constants.CHANNEL_NAME,data);
     }
 
+    public void sendAllDiscover() {
+        for (Player player : VersionManager.getOnlinePlayers()){
+            if (manager.get(player) != null && !manager.get(player).isDiscovered()) sendDiscover(player);
+        }
+    }
+
+    public void sendAllDisable(){
+        Player[] players = VersionManager.getOnlinePlayers();
+        for (Player player : players){
+            if (checkClient(player)){
+                sendDisable(player);
+            }
+        }
+    }
+
+    public void sendClearClientList(Player p) {
+        ByteBuilder builder = new BukkitByteBuilder(Constants.ENFORCE_LIST_SKILL);
+        builder.writeInt(SkillAPI.getPlayerAccountData(p).getActiveId());
+        builder.writeInt(0);
+        sendMessage(p, builder);
+        builder = new BukkitByteBuilder(Constants.LIST_BAR);
+        builder.writeBoolean(true).writeInt(0);
+        sendMessage(p, builder);
+    }
+
     private boolean checkValid(Player player){
         return SkillAPI.isLoaded()
                 && player != null
@@ -422,5 +366,57 @@ public class PackageSender {
 
     private boolean checkClient(ClientData manager){
         return manager != null && manager.getStatus() == ClientStatus.Enabled;
+    }
+
+    private void listSkill(ByteBuilder builder, Player player){
+        boolean has = SkillAPI.hasPlayerData(player) && SkillAPI.getPlayerData(player).hasClass();
+        if (has){
+            PlayerData data = SkillAPI.getPlayerData(player);
+            builder.writeInt(data.getSkills().size());
+            for (PlayerSkill ps : data.getSkills()) {
+                buildSkill(builder,ps);
+            }
+        }
+    }
+
+    private void buildSkill(ByteBuilder builder, PlayerSkill skill) {
+        builder.writeCharSequence(skill.getData().getKey())
+                .writeBoolean(skill.isUnlocked())
+                .writeBoolean(skill.getData().canCast());
+        buildStack(builder,skill);
+    }
+
+    private void buildStack(ByteBuilder builder, PlayerSkill skill){
+        ItemStack stack = null;
+        switch (itemMethodFlag){
+            case 1:
+                try {
+                    Method method = Skill.class.getMethod("getIndicator", PlayerSkill.class, boolean.class);
+                    stack = (ItemStack) method.invoke(skill.getData(),skill, true);
+                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
+                break;
+            case 2:
+                try {
+                    Method method = Skill.class.getMethod("getIndicator", PlayerSkill.class);
+                    stack = (ItemStack) method.invoke(skill.getData(), skill);
+                } catch (Exception ignored){}
+                break;
+            default:
+                stack = null;
+                break;
+        }
+        buildStack(builder, stack);
+    }
+
+    private void buildStack(ByteBuilder builder, ItemStack stack){
+        if (stack == null) {
+            builder.writeInt(0).writeShort((short) 0).writeInt(0).writeInt(0);
+        } else {
+            builder.writeInt(stack.getData().getItemType().getId())
+                    //.writeInt(stack.getAmount())
+                    .writeShort(stack.getDurability())
+                    .writeCharSequence(stack.getItemMeta().getDisplayName())
+                    .writeCharSequenceList(stack.getItemMeta().getLore());
+        }
     }
 }

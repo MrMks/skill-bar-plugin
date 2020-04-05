@@ -29,7 +29,7 @@ public class ClientDiscoverTask extends RepeatTask {
                         continue;
                     }
                     Player player = Bukkit.getPlayer(m.getUid());
-                    ps.sendEnable(player);
+                    ps.sendDiscover(player);
                     list.put(m, times + 1);
                 } else {
                     re.add(m);

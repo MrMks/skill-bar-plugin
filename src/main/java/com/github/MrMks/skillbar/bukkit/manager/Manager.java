@@ -8,29 +8,13 @@ import java.util.UUID;
 
 public class Manager {
     private final Map<UUID, ClientData> map = new HashMap<>();
-    private ClientData empty = new ClientData(UUID.randomUUID()){
-        @Override
-        public ClientStatus getStatus() {
-            return ClientStatus.Disabled;
-        }
-        @Override
-        public void discover() {}
-        @Override
-        public void block() {}
-        @Override
-        public void disable() {}
-        @Override
-        public void enable() {}
-        @Override
-        public void unload() {}
-    };
     public ClientData get(Player player){
-        return player != null ? get(player.getUniqueId()) : empty;
+        return player != null ? get(player.getUniqueId()) : null;
     }
 
     public ClientData get(UUID player){
         if (player != null && (!map.containsKey(player) || map.get(player).isUnload())) map.put(player, new ClientData(player));
-        return map.getOrDefault(player,empty);
+        return map.getOrDefault(player,null);
     }
 
     public void clearAll() {

@@ -38,6 +38,7 @@ public class SkillBar extends JavaPlugin implements Listener {
         sender = new PackageSender(this, manager);
         task = new LoopThread();
         if (!sender.isLoad()) {
+            getLogger().severe("Can't find method to use, plugin will disable");
             getPluginLoader().disablePlugin(this);
             return;
         }
