@@ -1,9 +1,9 @@
 package com.github.MrMks.skillbar.bukkit.pkg;
 
-import com.github.MrMks.skillbar.bukkit.manager.ClientData;
-import com.github.MrMks.skillbar.bukkit.manager.ClientStatus;
-import com.github.MrMks.skillbar.bukkit.manager.Manager;
-import com.github.MrMks.skillbar.bukkit.manager.PlayerBar;
+import com.github.MrMks.skillbar.bukkit.data.ClientData;
+import com.github.MrMks.skillbar.bukkit.data.ClientStatus;
+import com.github.MrMks.skillbar.bukkit.data.Manager;
+import com.github.MrMks.skillbar.bukkit.data.PlayerBar;
 import com.github.MrMks.skillbar.common.ByteDecoder;
 import com.github.MrMks.skillbar.common.Constants;
 import com.sucy.skill.SkillAPI;

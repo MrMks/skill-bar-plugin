@@ -1,6 +1,6 @@
 package com.github.MrMks.skillbar.bukkit;
 
-import com.github.MrMks.skillbar.bukkit.manager.*;
+import com.github.MrMks.skillbar.bukkit.data.*;
 import com.github.MrMks.skillbar.bukkit.pkg.PackageSender;
 import com.github.MrMks.skillbar.bukkit.task.ClientDiscoverTask;
 import com.github.MrMks.skillbar.bukkit.task.ReloadCheckTask;

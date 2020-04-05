@@ -1,7 +1,7 @@
 package com.github.MrMks.skillbar.bukkit;
 
-import com.github.MrMks.skillbar.bukkit.manager.Manager;
-import com.github.MrMks.skillbar.bukkit.manager.PlayerBar;
+import com.github.MrMks.skillbar.bukkit.data.Manager;
+import com.github.MrMks.skillbar.bukkit.data.PlayerBar;
 import com.github.MrMks.skillbar.bukkit.pkg.PackageListener;
 import com.github.MrMks.skillbar.bukkit.pkg.PackageSender;
 import com.github.MrMks.skillbar.bukkit.task.ClientDiscoverTask;
