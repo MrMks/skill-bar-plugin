@@ -17,7 +17,11 @@ public class Manager {
         return map.getOrDefault(player,null);
     }
 
-    public void clearAll() {
+    public void clearSaveAll(){
+        for (ClientData data : map.values()){
+            data.save();
+            data.clean();
+        }
         map.clear();
     }
 }

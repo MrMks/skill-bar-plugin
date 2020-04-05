@@ -60,12 +60,8 @@ public class MainListener implements Listener {
         //Player exit server, clear instances;
         Player p = e.getPlayer();
         ClientData m = manager.get(p);
-        if (checkClient(m)){
-            // Client will disable when client handle disconnect event
-            // PackageSender.sendDisable(e.getPlayer());
-            PlayerBar.unloadSave(p);
-        }
         if (m != null) {
+            m.save();
             m.unload();
             task.removeName(m);
         }
@@ -90,7 +86,7 @@ public class MainListener implements Listener {
         } else if (c) {
             sender.sendClearClientList(p);
             sender.sendDisable(p);
-            PlayerBar.get(p).setBar(SkillAPI.getPlayerAccountData(p).getActiveId(), Collections.emptyMap());
+            manager.get(p).getBar().setBar(SkillAPI.getPlayerAccountData(p).getActiveId(), Collections.emptyMap());
         }
     }
 

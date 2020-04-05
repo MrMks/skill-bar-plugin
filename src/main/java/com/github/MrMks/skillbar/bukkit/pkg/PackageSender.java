@@ -149,7 +149,7 @@ public class PackageSender {
     public void sendCoolDown(Player player){
         if (checkValid(player)) {
             PlayerData data = SkillAPI.getPlayerData(player);
-            PlayerBar bar = PlayerBar.get(player);
+            PlayerBar bar = manager.get(player).getBar();
             if (bar.size() == 0) return;
             ByteBuilder builder = new BukkitByteBuilder(Constants.COOLDOWN);
             ArrayList<String> list = new ArrayList<>(9);
@@ -189,7 +189,7 @@ public class PackageSender {
     public void sendListBar(Player player){
         if (checkValid(player)) {
             ByteBuilder builder = new BukkitByteBuilder(Constants.LIST_BAR);
-            PlayerBar bar = PlayerBar.get(player);
+            PlayerBar bar = manager.get(player).getBar();
             PlayerData data = SkillAPI.getPlayerData(player);
             boolean exist = !bar.isEmpty() && data != null;
             builder.writeBoolean(exist);

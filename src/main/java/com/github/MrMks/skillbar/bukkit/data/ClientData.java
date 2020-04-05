@@ -8,6 +8,7 @@ public class ClientData {
     private boolean blocked = false;
     private boolean unload = false;
     private ClientStatus status = ClientStatus.Discovering;
+    private PlayerBar bar;
     ClientData(UUID uuid){
         this.uid = uuid;
     }
@@ -18,6 +19,7 @@ public class ClientData {
 
     public void discover(){
         discovered = true;
+        bar = new PlayerBar(uid);
     }
 
     public boolean isDiscovered() {
@@ -67,5 +69,17 @@ public class ClientData {
     public byte getPackageIndex(){
         if (index == Byte.MAX_VALUE) index = 0;
         return index++;
+    }
+
+    public PlayerBar getBar(){
+        return bar;
+    }
+
+    public void save(){
+        if (bar != null) bar.saveToFile();
+    }
+
+    public void clean(){
+        bar = null;
     }
 }

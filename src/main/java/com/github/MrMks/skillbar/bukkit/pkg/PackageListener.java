@@ -125,7 +125,7 @@ public class PackageListener implements PluginMessageListener {
 
     public void onSaveBar(Player player, ByteDecoder buf){
         if (manager.get(player) == null || manager.get(player).getStatus() != ClientStatus.Enabled) return;
-        PlayerBar bar = PlayerBar.get(player);
+        PlayerBar bar = manager.get(player).getBar();
         PlayerData data = SkillAPI.getPlayerData(player);
         int activeId = buf.readInt();
         int size = buf.readInt();

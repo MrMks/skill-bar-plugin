@@ -16,7 +16,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 
-@SuppressWarnings("unused")
 public class SkillBar extends JavaPlugin implements Listener {
     private LoopThread task;
     private PackageSender sender;
@@ -59,14 +58,13 @@ public class SkillBar extends JavaPlugin implements Listener {
     @Override
     public void onDisable() {
         super.onDisable();
-        task.disable();
+        if (task != null) task.disable();
         task = null;
         if (isEnabled()) sender.sendAllDisable();
         sender = null;
         Bukkit.getMessenger().unregisterIncomingPluginChannel(this);
         Bukkit.getMessenger().unregisterOutgoingPluginChannel(this);
-        manager.clearAll();
+        if (manager != null) manager.clearSaveAll();
         manager = null;
-        PlayerBar.unloadSaveAll();
     }
 }

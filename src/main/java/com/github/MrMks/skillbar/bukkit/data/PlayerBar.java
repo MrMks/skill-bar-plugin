@@ -4,45 +4,15 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.sucy.skill.SkillAPI;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.*;
 
 public class PlayerBar {
-    private static HashMap<UUID, PlayerBar> barMap = new HashMap<>();
-    public static PlayerBar get(Player player){
-        if (!barMap.containsKey(player.getUniqueId())){
-            barMap.put(player.getUniqueId(), new PlayerBar(player.getUniqueId()));
-        }
-        return barMap.get(player.getUniqueId());
-    }
-
-    static PlayerBar get(UUID uid){
-        if (!barMap.containsKey(uid)){
-            barMap.put(uid, new PlayerBar(uid));
-        }
-        return barMap.get(uid);
-    }
-
-    public static void unloadSave(Player player){
-        PlayerBar bar = barMap.remove(player.getUniqueId());
-        if (bar != null) bar.saveToFile();
-    }
-
-    static void unloadSave(UUID uid){
-        PlayerBar bar = barMap.remove(uid);
-        if (bar != null) bar.saveToFile();
-    }
-
-    public static void unloadSaveAll(){
-        for (UUID key : barMap.keySet()){
-            barMap.get(key).saveToFile();
-        }
-        barMap.clear();
-    }
-
     private static File f;
     public static void setPath(File folder){
         f = folder;
@@ -51,7 +21,7 @@ public class PlayerBar {
     private UUID uuid;
     private HashMap<Integer, Map<Integer, String>> map;
     private File file;
-    private PlayerBar(UUID uid){
+    PlayerBar(UUID uid){
         uuid = uid;
         file = new File(f,"player/" + uuid.toString() + ".json");
         readFromFile();
