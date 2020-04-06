@@ -3,6 +3,7 @@ package com.github.MrMks.skillbar.bukkit.data;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.sucy.skill.SkillAPI;
+import com.sucy.skill.api.player.PlayerData;
 import org.bukkit.Bukkit;
 
 import java.io.File;
@@ -69,6 +70,14 @@ public class PlayerBar {
             }
         }
         if (map == null) map = new HashMap<>();
+        PlayerData data = SkillAPI.getPlayerData(Bukkit.getOfflinePlayer(uuid));
+        for (Map<Integer, String> sMap : map.values()){
+            ArrayList<Integer> list = new ArrayList<>(9);
+            for (Map.Entry<Integer, String> entry : sMap.entrySet()){
+                if (data != null && !data.hasSkill(entry.getValue())) list.add(entry.getKey());
+            }
+            for (Integer k : list) sMap.remove(k);
+        }
     }
 
     public void saveToFile(){
