@@ -1,13 +1,13 @@
-package com.github.MrMks.skillbar.bukkit;
+package com.github.MrMks.skillbar;
 
-import com.github.MrMks.skillbar.bukkit.data.Manager;
-import com.github.MrMks.skillbar.bukkit.data.PlayerBar;
-import com.github.MrMks.skillbar.bukkit.pkg.PackageListener;
-import com.github.MrMks.skillbar.bukkit.pkg.PackageSender;
-import com.github.MrMks.skillbar.bukkit.task.ClientDiscoverTask;
-import com.github.MrMks.skillbar.bukkit.task.CoolDownTask;
-import com.github.MrMks.skillbar.bukkit.task.LoopThread;
 import com.github.MrMks.skillbar.common.Constants;
+import com.github.MrMks.skillbar.data.Manager;
+import com.github.MrMks.skillbar.data.PlayerBar;
+import com.github.MrMks.skillbar.pkg.PackageListener;
+import com.github.MrMks.skillbar.pkg.PackageSender;
+import com.github.MrMks.skillbar.task.ClientDiscoverTask;
+import com.github.MrMks.skillbar.task.CoolDownTask;
+import com.github.MrMks.skillbar.task.LoopThread;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;

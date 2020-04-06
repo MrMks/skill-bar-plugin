@@ -1,9 +1,9 @@
-package com.github.MrMks.skillbar.bukkit.pkg;
+package com.github.MrMks.skillbar.pkg;
 
-import com.github.MrMks.skillbar.bukkit.data.ClientData;
-import com.github.MrMks.skillbar.bukkit.data.ClientStatus;
-import com.github.MrMks.skillbar.bukkit.data.Manager;
-import com.github.MrMks.skillbar.bukkit.data.PlayerBar;
+import com.github.MrMks.skillbar.data.ClientData;
+import com.github.MrMks.skillbar.data.ClientStatus;
+import com.github.MrMks.skillbar.data.Manager;
+import com.github.MrMks.skillbar.data.PlayerBar;
 import com.github.MrMks.skillbar.common.ByteBuilder;
 import com.github.MrMks.skillbar.common.Constants;
 import com.rit.sucy.version.VersionManager;
@@ -44,7 +44,7 @@ public class PackageSender {
     }
 
     public void sendDiscover(Player player){
-        if (player != null) sendMessage(player, new BukkitByteBuilder(Constants.DISCOVER));
+        if (player != null) sendMessage(player, new BukkitByteBuilder(Constants.DISCOVER).writeInt(Constants.VERSION));
     }
 
     public void sendEnable(Player player){

@@ -1,9 +1,9 @@
-package com.github.MrMks.skillbar.bukkit;
+package com.github.MrMks.skillbar;
 
-import com.github.MrMks.skillbar.bukkit.data.*;
-import com.github.MrMks.skillbar.bukkit.pkg.PackageSender;
-import com.github.MrMks.skillbar.bukkit.task.ClientDiscoverTask;
-import com.github.MrMks.skillbar.bukkit.task.ReloadCheckTask;
+import com.github.MrMks.skillbar.data.*;
+import com.github.MrMks.skillbar.pkg.PackageSender;
+import com.github.MrMks.skillbar.task.ClientDiscoverTask;
+import com.github.MrMks.skillbar.task.ReloadCheckTask;
 import com.sucy.skill.SkillAPI;
 import com.sucy.skill.api.event.*;
 import org.bukkit.Bukkit;

@@ -1,7 +1,7 @@
-package com.github.MrMks.skillbar.bukkit.task;
+package com.github.MrMks.skillbar.task;
 
-import com.github.MrMks.skillbar.bukkit.data.ClientData;
-import com.github.MrMks.skillbar.bukkit.pkg.PackageSender;
+import com.github.MrMks.skillbar.data.ClientData;
+import com.github.MrMks.skillbar.pkg.PackageSender;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 

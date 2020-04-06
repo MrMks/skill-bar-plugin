@@ -1,4 +1,4 @@
-package com.github.MrMks.skillbar.bukkit.data;
+package com.github.MrMks.skillbar.data;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;

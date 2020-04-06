@@ -1,8 +1,8 @@
-package com.github.MrMks.skillbar.bukkit.task;
+package com.github.MrMks.skillbar.task;
 
-import com.github.MrMks.skillbar.bukkit.data.ClientStatus;
-import com.github.MrMks.skillbar.bukkit.data.Manager;
-import com.github.MrMks.skillbar.bukkit.pkg.PackageSender;
+import com.github.MrMks.skillbar.data.ClientStatus;
+import com.github.MrMks.skillbar.data.Manager;
+import com.github.MrMks.skillbar.pkg.PackageSender;
 import com.rit.sucy.version.VersionManager;
 import org.bukkit.entity.Player;
 

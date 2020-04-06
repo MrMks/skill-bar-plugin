@@ -1,4 +1,4 @@
-package com.github.MrMks.skillbar.bukkit.task;
+package com.github.MrMks.skillbar.task;
 
 public interface Task {
     void run();

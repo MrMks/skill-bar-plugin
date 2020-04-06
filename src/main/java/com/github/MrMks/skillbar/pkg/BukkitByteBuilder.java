@@ -1,4 +1,4 @@
-package com.github.MrMks.skillbar.bukkit.pkg;
+package com.github.MrMks.skillbar.pkg;
 
 import com.github.MrMks.skillbar.common.ByteBuilder;
 import com.github.MrMks.skillbar.common.Constants;

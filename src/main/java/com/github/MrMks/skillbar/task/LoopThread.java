@@ -1,4 +1,4 @@
-package com.github.MrMks.skillbar.bukkit.task;
+package com.github.MrMks.skillbar.task;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

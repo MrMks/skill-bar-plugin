@@ -1,4 +1,4 @@
-package com.github.MrMks.skillbar.bukkit.data;
+package com.github.MrMks.skillbar.data;
 
 import java.util.UUID;
 
