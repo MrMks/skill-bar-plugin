@@ -244,6 +244,7 @@ public class PackageSender {
                 && player.isOnline()
                 && SkillAPI.getSettings().isWorldEnabled(player.getWorld())
                 && SkillAPI.hasPlayerData(player)
+                && !SkillAPI.getPlayerData(player).getClasses().isEmpty()
                 && !SkillAPI.getPlayerData(player).getSkills().isEmpty();
     }
 

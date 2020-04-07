@@ -8,7 +8,6 @@ import com.github.MrMks.skillbar.data.Manager;
 import com.github.MrMks.skillbar.data.PlayerBar;
 import com.sucy.skill.SkillAPI;
 import com.sucy.skill.api.player.PlayerData;
-import com.sucy.skill.api.player.PlayerSkill;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -98,16 +97,15 @@ public class PackageListener implements PluginMessageListener {
         String key = buf.readCharSequence().toString();
         if (hasPlayer){
             PlayerData data = SkillAPI.getPlayerData(player);
-            PlayerSkill skill = data.getSkill(key);
-            boolean exist = skill != null;
-            boolean unlock = exist && skill.isUnlocked();
-            boolean cd = exist && skill.isOnCooldown();
+            //PlayerSkill skill = data.getSkill(key);
+            boolean exist = data.hasSkill(key);
+            boolean unlock = exist && data.getSkillLevel(key) != 0;
+            //boolean cd = exist && skill.isOnCooldown();
 
             if (!exist) sd.sendCast(player,key, false,Constants.CAST_FAILED_NO_SKILL);
             else if (!unlock) sd.sendCast(player,key,false,Constants.CAST_FAILED_UNLOCK);
-            else if (cd) sd.sendCast(player,key, false, Constants.CAST_FAILED_COOLDOWN);
             else {
-                boolean suc = data.cast(skill);
+                boolean suc = data.cast(key);
                 if (suc){
                     sd.sendCast(player,key, true,Constants.CAST_SUCCESS);
                     sd.sendCoolDown(player);

@@ -101,8 +101,8 @@ public class MainListener implements Listener {
         Player player = e.getAccountData().getPlayer();
         ClientData cData = manager.get(player);
         if (cData == null || !cData.isDiscovered()) return;
-        boolean p = !(e.getPreviousAccount() == null || e.getPreviousAccount().getSkills().size() == 0);
-        boolean n = !(e.getNewAccount() == null || e.getNewAccount().getSkills().size() == 0);
+        boolean p = !(e.getPreviousAccount() == null || e.getPreviousAccount().getClasses().isEmpty() || e.getPreviousAccount().getSkills().isEmpty());
+        boolean n = !(e.getNewAccount() == null || e.getNewAccount().getClasses().isEmpty() || e.getNewAccount().getSkills().isEmpty());
         if (n) {
             if (p) Bukkit.getScheduler().runTaskLater(plugin, ()->sender.sendAccount(player),2);
             else Bukkit.getScheduler().runTaskLater(plugin, ()->sender.sendEnable(player),2);
@@ -183,6 +183,7 @@ public class MainListener implements Listener {
                 && SkillAPI.isLoaded()
                 && SkillAPI.getSettings().isWorldEnabled(player.getWorld())
                 && SkillAPI.hasPlayerData(player)
+                && !SkillAPI.getPlayerData(player).getClasses().isEmpty()
                 && !SkillAPI.getPlayerData(player).getSkills().isEmpty();
     }
 
