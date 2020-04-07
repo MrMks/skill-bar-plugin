@@ -132,7 +132,6 @@ public class PackageSender {
         if (checkValid(player)) {
             ByteBuilder builder = new BukkitByteBuilder(Constants.CAST);
             builder.writeCharSequence(key);
-            builder.writeBoolean(SkillAPI.getPlayerData(player).hasSkill(key));
             builder.writeBoolean(suc);
             builder.write(code);
             sendMessage(player,builder);
