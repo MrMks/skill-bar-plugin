@@ -30,6 +30,8 @@ public class PackageListener implements PluginMessageListener {
     public void onPluginMessageReceived(String s, Player player, byte[] bytes) {
         if (!s.equals(Constants.CHANNEL_NAME) || player == null) return;
         ClientData m = manager.get(player);
+        m.onReceive();
+        if (m.isBlocked()) return;
         if (m.getStatus() == ClientStatus.Disabled){
             if (m.isDiscovered()) sd.sendDisable(player);
             return;
@@ -62,9 +64,11 @@ public class PackageListener implements PluginMessageListener {
             }
         } catch (IndexOutOfBoundsException e){
             Bukkit.getLogger().warning("Bad Package Received");
+            m.onReceiveBad();
         } catch (Throwable tr){
             Bukkit.getLogger().severe("Unexpected Error happened while executing client message from player: " + player.getName());
             tr.printStackTrace();
+            m.onReceiveBad();
         }
     }
 

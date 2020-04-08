@@ -44,12 +44,12 @@ public class PackageSender {
     }
 
     public void sendDiscover(Player player){
-        if (player != null) sendMessage(player, new BukkitByteBuilder(Constants.DISCOVER).writeInt(Constants.VERSION));
+        if (player != null && !manager.get(player).isBlocked()) sendMessage(player, new BukkitByteBuilder(Constants.DISCOVER).writeInt(Constants.VERSION));
     }
 
     public void sendEnable(Player player){
-        if (checkValid(player)){
-            ClientData m = manager.get(player);
+        ClientData m = manager.get(player);
+        if (checkValid(player) && !m.isBlocked()){
             if (m.getStatus() != ClientStatus.Enabled) {
                 ByteBuilder builder = new BukkitByteBuilder(Constants.ENABLE);
                 builder.writeInt(SkillAPI.getPlayerAccountData(player).getActiveId());
@@ -61,7 +61,7 @@ public class PackageSender {
     }
 
     public void sendListSkill(Player player, List<CharSequence> req){
-        if (checkValid(player)) {
+        if (checkValid(player) && !manager.get(player).isBlocked()) {
             ByteBuilder builder = new BukkitByteBuilder(Constants.LIST_SKILL);
             Collection<PlayerSkill> fullList = SkillAPI.getPlayerData(player).getSkills();
             HashMap<String, PlayerSkill> fullMap = new HashMap<>();
@@ -84,7 +84,7 @@ public class PackageSender {
     }
 
     public void sendRemoveList(Player player, List<? extends CharSequence> req){
-        if (checkValid(player)) {
+        if (checkValid(player) && !manager.get(player).isBlocked()) {
             ByteBuilder builder = new BukkitByteBuilder(Constants.LIST_SKILL);
             builder.writeInt(0); // add skill list
             builder.writeCharSequenceList(req);
@@ -93,7 +93,7 @@ public class PackageSender {
     }
 
     public void sendEnforceListSkill(Player player){
-        if (checkValid(player)) {
+        if (checkValid(player) && !manager.get(player).isBlocked()) {
             ByteBuilder builder = new BukkitByteBuilder(Constants.ENFORCE_LIST_SKILL);
             builder.writeInt(SkillAPI.getPlayerAccountData(player).getActiveId());
             listSkill(builder,player);
@@ -102,7 +102,7 @@ public class PackageSender {
     }
 
     public void sendUpdateSkill(Player player, String key){
-        if (checkValid(player)) {
+        if (checkValid(player) && !manager.get(player).isBlocked()) {
             ByteBuilder builder = new BukkitByteBuilder(Constants.UPDATE_SKILL);
             PlayerSkill skill = SkillAPI.getPlayerData(player).getSkill(key);
             boolean exist = skill != null;
@@ -116,7 +116,7 @@ public class PackageSender {
     }
 
     public void sendEnforceUpdateSkill(Player player, String key){
-        if (checkValid(player)) {
+        if (checkValid(player) && !manager.get(player).isBlocked()) {
             PlayerSkill skill = SkillAPI.getPlayerData(player).getSkill(key);
             boolean exist = skill != null;
             if (exist){
@@ -129,7 +129,7 @@ public class PackageSender {
     }
 
     public void sendCast(Player player, String key, boolean suc, byte code){
-        if (checkValid(player)) {
+        if (checkValid(player) && !manager.get(player).isBlocked()) {
             ByteBuilder builder = new BukkitByteBuilder(Constants.CAST);
             builder.writeCharSequence(key);
             builder.writeBoolean(suc);
@@ -139,14 +139,14 @@ public class PackageSender {
     }
 
     public void sendDisable(Player player){
-        if (player != null) {
+        if (player != null && !manager.get(player).isBlocked()) {
             sendMessage(player,new BukkitByteBuilder(Constants.DISABLE));
             manager.get(player).disable();
         }
     }
 
     public void sendCoolDown(Player player){
-        if (checkValid(player)) {
+        if (checkValid(player) && !manager.get(player).isBlocked()) {
             PlayerData data = SkillAPI.getPlayerData(player);
             PlayerBar bar = manager.get(player).getBar();
             if (bar.size() == 0) return;
@@ -168,7 +168,7 @@ public class PackageSender {
     }
 
     public void sendAccount(Player player){
-        if (checkValid(player)) {
+        if (checkValid(player) && !manager.get(player).isBlocked()) {
             ByteBuilder builder = new BukkitByteBuilder(Constants.ACCOUNT);
             builder.writeInt(SkillAPI.getPlayerAccountData(player).getActiveId())
                     .writeInt(SkillAPI.getPlayerData(player).getSkills().size());
@@ -177,7 +177,7 @@ public class PackageSender {
     }
 
     public void sendAddSkill(Player p) {
-        if (checkValid(p)) {
+        if (checkValid(p) && !manager.get(p).isBlocked()) {
             ByteBuilder builder = new BukkitByteBuilder(Constants.ADD_SKILL);
             builder.writeInt(SkillAPI.getPlayerAccountData(p).getActiveId())
                     .writeInt(SkillAPI.getPlayerData(p).getSkills().size());
@@ -186,7 +186,7 @@ public class PackageSender {
     }
 
     public void sendListBar(Player player){
-        if (checkValid(player)) {
+        if (checkValid(player) && !manager.get(player).isBlocked()) {
             ByteBuilder builder = new BukkitByteBuilder(Constants.LIST_BAR);
             PlayerBar bar = manager.get(player).getBar();
             PlayerData data = SkillAPI.getPlayerData(player);

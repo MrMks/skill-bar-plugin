@@ -82,4 +82,26 @@ public class ClientData {
     public void clean(){
         bar = null;
     }
+
+    private int timesInSeconds = 0;
+    private long timeLastUpdate = System.currentTimeMillis();
+    public void onReceive(){
+        long now = System.currentTimeMillis();
+        if (now - timeLastUpdate >= 1000){
+            timesInSeconds = 0;
+            timeLastUpdate = now;
+        }
+        timesInSeconds += 1;
+        if (timesInSeconds > 20) blocked = true;
+    }
+
+    public void onReceiveBad(){
+        long now = System.currentTimeMillis();
+        if (now - timeLastUpdate >= 1000){
+            timesInSeconds = 0;
+            timeLastUpdate = now;
+        }
+        timesInSeconds += 3;
+        if (timesInSeconds > 20) blocked = true;
+    }
 }
