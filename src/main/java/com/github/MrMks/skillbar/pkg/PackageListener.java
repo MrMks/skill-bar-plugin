@@ -76,6 +76,7 @@ public class PackageListener implements PluginMessageListener {
         ClientData data = manager.get(player);
         if (data != null && !data.isDiscovered()){
             data.discover();
+            sd.sendSetting(player);
             sd.sendEnable(player);
         }
     }

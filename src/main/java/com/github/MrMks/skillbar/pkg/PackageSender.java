@@ -1,5 +1,6 @@
 package com.github.MrMks.skillbar.pkg;
 
+import com.github.MrMks.skillbar.Setting;
 import com.github.MrMks.skillbar.data.ClientData;
 import com.github.MrMks.skillbar.data.ClientStatus;
 import com.github.MrMks.skillbar.data.Manager;
@@ -47,6 +48,14 @@ public class PackageSender {
         if (player != null && !manager.get(player).isBlocked()) sendMessage(player, new BukkitByteBuilder(Constants.DISCOVER).writeInt(Constants.VERSION));
     }
 
+    public void sendSetting(Player player){
+        if (player != null && !manager.get(player).isBlocked()) {
+            Setting setting = Setting.getInstance();
+            ByteBuilder builder = new BukkitByteBuilder(Constants.SETTING).writeInt(setting.getBarMaxLine());
+            sendMessage(player, builder);
+        }
+    }
+
     public void sendEnable(Player player){
         ClientData m = manager.get(player);
         if (checkValid(player) && !m.isBlocked()){
@@ -57,6 +66,13 @@ public class PackageSender {
                 sendMessage(player, builder);
                 m.enable();
             }
+        }
+    }
+
+    public void sendDisable(Player player){
+        if (player != null && !manager.get(player).isBlocked()) {
+            sendMessage(player,new BukkitByteBuilder(Constants.DISABLE));
+            manager.get(player).disable();
         }
     }
 
@@ -135,13 +151,6 @@ public class PackageSender {
             builder.writeBoolean(suc);
             builder.write(code);
             sendMessage(player,builder);
-        }
-    }
-
-    public void sendDisable(Player player){
-        if (player != null && !manager.get(player).isBlocked()) {
-            sendMessage(player,new BukkitByteBuilder(Constants.DISABLE));
-            manager.get(player).disable();
         }
     }
 

@@ -9,6 +9,7 @@ import com.github.MrMks.skillbar.task.ClientDiscoverTask;
 import com.github.MrMks.skillbar.task.CoolDownTask;
 import com.github.MrMks.skillbar.task.LoopThread;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
@@ -28,11 +29,14 @@ public class SkillBar extends JavaPlugin implements Listener {
         File file = new File(getDataFolder(), "player");
         if (!file.exists()) file.mkdir();
         PlayerBar.setPath(getDataFolder());
+        if (!new File(getDataFolder(), "config.yml").exists()) this.saveDefaultConfig();
     }
 
     @Override
     public void onEnable() {
         super.onEnable();
+        Setting.getInstance().readConfig(getConfig());
+
         manager = new Manager();
         sender = new PackageSender(this, manager);
         task = new LoopThread();
@@ -66,5 +70,6 @@ public class SkillBar extends JavaPlugin implements Listener {
         Bukkit.getMessenger().unregisterOutgoingPluginChannel(this);
         if (manager != null) manager.clearSaveAll();
         manager = null;
+        reloadConfig();
     }
 }

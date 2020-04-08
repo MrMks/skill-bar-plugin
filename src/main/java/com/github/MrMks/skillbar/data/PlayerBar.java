@@ -1,7 +1,7 @@
 package com.github.MrMks.skillbar.data;
 
+import com.github.MrMks.skillbar.Setting;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.sucy.skill.SkillAPI;
 import com.sucy.skill.api.player.PlayerData;
 import org.bukkit.Bukkit;
@@ -10,7 +10,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.*;
 
 public class PlayerBar {
@@ -20,11 +19,16 @@ public class PlayerBar {
     }
 
     private UUID uuid;
-    private HashMap<Integer, Map<Integer, String>> map;
     private File file;
+    private Map<Integer, Map<Integer, String>> map;
+    // global setting
+    private int maxLine;
+    // setting related to activeAcc
+    private int nowLine = 0;
     PlayerBar(UUID uid){
         uuid = uid;
         file = new File(f,"player/" + uuid.toString() + ".json");
+        maxLine = Setting.getInstance().getBarMaxLine();
         readFromFile();
     }
 
@@ -42,6 +46,19 @@ public class PlayerBar {
         return (map == null || map.get(id) == null) ? 0 : map.get(id).size();
     }
 
+    public int max(){
+        return max();
+    }
+
+    //this two method may not be used in short time;
+    public int getNowLine(){
+        return nowLine;
+    }
+
+    public void setNowLine(int nLine){
+        nowLine = Math.min(nLine, maxLine);
+    }
+
     public Set<Integer> keys(){
         int id = getActiveId();
         return (map == null || map.get(id) == null) ? Collections.emptySet() : map.get(id).keySet();
@@ -55,6 +72,12 @@ public class PlayerBar {
 
     public void setBar(int activeId, Map<Integer, String> map) {
         if (this.map == null) this.map = new HashMap<>();
+        if (map == null) return;
+        ArrayList<Integer> list = new ArrayList<>();
+        for (Map.Entry<Integer,String> entry : map.entrySet()){
+            if (entry.getKey() >= (maxLine + 1) * 9) list.add(entry.getKey());
+        }
+        for (Integer key : list) map.remove(key);
         this.map.put(activeId, map);
     }
 
@@ -62,9 +85,9 @@ public class PlayerBar {
         if (file.exists()) {
             try (FileReader reader = new FileReader(file)) {
                 Gson gson = new Gson();
-                Type type = new TypeToken<HashMap<Integer, HashMap<Integer, String>>>() {
-                }.getType();
-                map = gson.fromJson(reader, type);
+                SaveFile saveFile = gson.fromJson(reader, SaveFile.class);
+                nowLine = saveFile.nowLine;
+                map = saveFile.map;
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -72,9 +95,10 @@ public class PlayerBar {
         if (map == null) map = new HashMap<>();
         PlayerData data = SkillAPI.getPlayerData(Bukkit.getOfflinePlayer(uuid));
         for (Map<Integer, String> sMap : map.values()){
-            ArrayList<Integer> list = new ArrayList<>(9);
+            ArrayList<Integer> list = new ArrayList<>();
             for (Map.Entry<Integer, String> entry : sMap.entrySet()){
                 if (data != null && !data.hasSkill(entry.getValue())) list.add(entry.getKey());
+                if (entry.getKey() >= (maxLine + 1) * 9) list.add(entry.getKey());
             }
             for (Integer k : list) sMap.remove(k);
         }
@@ -90,10 +114,24 @@ public class PlayerBar {
         if (flag) return;
         try (FileWriter writer = new FileWriter(file)){
             Gson gson = new Gson();
-            gson.toJson(map,writer);
+            gson.toJson(new SaveFile(Math.min(nowLine, maxLine), map),writer);
             writer.flush();
         } catch (IOException e){
             e.printStackTrace();
+        }
+    }
+
+    private static class SaveFile {
+        // save file format version, may have no need to use
+        // this means delete previous format file after every update
+        //private int version = 3;
+
+        // considering do not save this value; return to 0 every time the client join;
+        private int nowLine;
+        private Map<Integer, Map<Integer, String>> map;
+        SaveFile(int nowLine, Map<Integer, Map<Integer, String>> map){
+            this.nowLine = nowLine;
+            this.map = map;
         }
     }
 }
