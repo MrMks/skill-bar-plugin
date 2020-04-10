@@ -13,8 +13,16 @@ public class Manager {
     }
 
     public ClientData get(UUID player){
-        if (player != null && (!map.containsKey(player) || map.get(player).isUnload())) map.put(player, new ClientData(player));
+        if (player != null && !map.containsKey(player)) map.put(player, new ClientData(player));
         return map.getOrDefault(player,null);
+    }
+
+    public void unload(UUID uuid){
+        ClientData data = map.remove(uuid);
+        if (data != null){
+            data.save();
+            data.clean();
+        }
     }
 
     public void clearSaveAll(){

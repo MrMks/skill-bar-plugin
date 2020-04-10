@@ -48,15 +48,6 @@ public class ClientData {
         status = ClientStatus.Disabled;
     }
 
-    public void unload(){
-        //PlayerManager.remove(uid);
-        unload = true;
-    }
-
-    public boolean isUnload(){
-        return unload;
-    }
-
     /**
      * client status
      * @return <code>ClientStatus.Enabled</code> if enable was invoked, <code>ClientStatus.Disabled</code> otherwise;
