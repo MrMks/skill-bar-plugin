@@ -8,6 +8,7 @@ import com.github.MrMks.skillbar.pkg.PackageSender;
 import com.github.MrMks.skillbar.task.ClientDiscoverTask;
 import com.github.MrMks.skillbar.task.CoolDownTask;
 import com.github.MrMks.skillbar.task.LoopThread;
+import com.rit.sucy.commands.CommandManager;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -36,6 +37,7 @@ public class SkillBar extends JavaPlugin implements Listener {
     public void onEnable() {
         super.onEnable();
         Setting.getInstance().readConfig(getConfig());
+        BlackList.init(getDataFolder());
 
         manager = new Manager();
         sender = new PackageSender(this, manager);
@@ -54,6 +56,8 @@ public class SkillBar extends JavaPlugin implements Listener {
         HandlerList.unregisterAll((Plugin) this);
         Bukkit.getPluginManager().registerEvents(new MainListener(this, sender, manager, cdt), this);
 
+        CmdManager.init(this, manager,sender);
+
         task.addTask(new CoolDownTask(sender, manager));
         task.addTask(cdt);
         sender.sendAllDiscover();
@@ -62,6 +66,7 @@ public class SkillBar extends JavaPlugin implements Listener {
     @Override
     public void onDisable() {
         super.onDisable();
+        CmdManager.unload(this);
         if (task != null) task.disable();
         task = null;
         if (isEnabled()) sender.sendAllDisable();
@@ -69,6 +74,7 @@ public class SkillBar extends JavaPlugin implements Listener {
         Bukkit.getMessenger().unregisterIncomingPluginChannel(this);
         Bukkit.getMessenger().unregisterOutgoingPluginChannel(this);
         if (manager != null) manager.clearSaveAll();
+        BlackList.saveUnload();
         manager = null;
         reloadConfig();
     }

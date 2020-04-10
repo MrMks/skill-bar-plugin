@@ -85,7 +85,7 @@ public class PlayerBar {
         if (file.exists()) {
             try (FileReader reader = new FileReader(file)) {
                 Gson gson = new Gson();
-                SaveFile saveFile = gson.fromJson(reader, SaveFile.class);
+                Save saveFile = gson.fromJson(reader, Save.class);
                 nowLine = saveFile.nowLine;
                 map = saveFile.map;
             } catch (IOException e) {
@@ -114,14 +114,14 @@ public class PlayerBar {
         if (flag) return;
         try (FileWriter writer = new FileWriter(file)){
             Gson gson = new Gson();
-            gson.toJson(new SaveFile(Math.min(nowLine, maxLine), map),writer);
+            gson.toJson(new Save(Math.min(nowLine, maxLine), map),writer);
             writer.flush();
         } catch (IOException e){
             e.printStackTrace();
         }
     }
 
-    private static class SaveFile {
+    private static class Save {
         // save file format version, may have no need to use
         // this means delete previous format file after every update
         //private int version = 3;
@@ -129,7 +129,7 @@ public class PlayerBar {
         // considering do not save this value; return to 0 every time the client join;
         private int nowLine;
         private Map<Integer, Map<Integer, String>> map;
-        SaveFile(int nowLine, Map<Integer, Map<Integer, String>> map){
+        Save(int nowLine, Map<Integer, Map<Integer, String>> map){
             this.nowLine = nowLine;
             this.map = map;
         }

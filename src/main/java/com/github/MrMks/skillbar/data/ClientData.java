@@ -1,12 +1,14 @@
 package com.github.MrMks.skillbar.data;
 
+import com.github.MrMks.skillbar.BlackList;
+import org.bukkit.Bukkit;
+
 import java.util.UUID;
 
 public class ClientData {
     private UUID uid;
     private boolean discovered = false;
-    private boolean blocked = false;
-    private boolean unload = false;
+    private boolean justBlock = false;
     private ClientStatus status = ClientStatus.Discovering;
     private PlayerBar bar;
     ClientData(UUID uuid){
@@ -15,6 +17,11 @@ public class ClientData {
 
     public UUID getUid(){
         return uid;
+    }
+
+    public void startDiscover(){
+        discovered = false;
+        status = ClientStatus.Discovering;
     }
 
     public void discover(){
@@ -27,15 +34,27 @@ public class ClientData {
     }
 
     public void block(){
-        blocked = true;
+        if (!isBlocked()) {
+            BlackList.getInstance().add(Bukkit.getOfflinePlayer(uid).getName());
+            justBlock = true;
+        }
     }
 
     public void unblock(){
-        blocked = false;
+        BlackList.getInstance().remove(Bukkit.getOfflinePlayer(uid).getName());
+        justBlock = false;
     }
 
     public boolean isBlocked(){
-        return blocked;
+        return BlackList.getInstance().contain(Bukkit.getOfflinePlayer(uid).getName());
+    }
+
+    public boolean isSendDisable(){
+        if (justBlock){
+            justBlock = false;
+            return true;
+        }
+        return false;
     }
 
     // will never work before discover invoked
@@ -83,7 +102,7 @@ public class ClientData {
             timeLastUpdate = now;
         }
         timesInSeconds += 1;
-        if (timesInSeconds > 20) blocked = true;
+        if (timesInSeconds > 20) block();
     }
 
     public void onReceiveBad(){
@@ -93,6 +112,6 @@ public class ClientData {
             timeLastUpdate = now;
         }
         timesInSeconds += 3;
-        if (timesInSeconds > 20) blocked = true;
+        if (timesInSeconds > 20) block();
     }
 }

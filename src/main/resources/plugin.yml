@@ -1,5 +1,26 @@
 name: SecondSkillBar
 main: com.github.MrMks.skillbar.SkillBar
-version: 1.2.2-SNAPSHOT
+version: 1.2.3-SNAPSHOT
 depend:
   - SkillAPI
+permissions:
+  skillbar.ban:
+    default: op
+    description: permission to bar / unban a player in skillbar
+  skillbar.reload:
+    default: op
+    description: permission to reload bar plugin
+  skillbar.forceban:
+    default: false
+    description: permission to add / remove a player in black list without any check
+  skillbar.info:
+    default: true
+    description: permission to see info related to a player
+  skillbar.*:
+    default: op
+    description: permission to use all command
+    children:
+      skillbar.reload: true
+      skillbar.ban: true
+      skillbar.info: true
+      skillbar.forceban: true

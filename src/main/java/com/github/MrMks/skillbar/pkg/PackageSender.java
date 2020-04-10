@@ -45,6 +45,7 @@ public class PackageSender {
     }
 
     public void sendDiscover(Player player){
+        manager.get(player).startDiscover();
         if (player != null && !manager.get(player).isBlocked()) sendMessage(player, new BukkitByteBuilder(Constants.DISCOVER).writeInt(Constants.VERSION));
     }
 
