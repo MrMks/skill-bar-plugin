@@ -63,16 +63,16 @@ public class PackageSender {
                 ByteBuilder builder = new BukkitByteBuilder(Constants.ENABLE);
                 builder.writeInt(SkillAPI.getPlayerAccountData(player).getActiveId());
                 builder.writeInt(SkillAPI.getPlayerData(player).getSkills().size());
-                sendMessage(player, builder);
                 m.enable();
+                sendMessage(player, builder);
             }
         }
     }
 
     public void sendDisable(Player player){
         if (player != null && !manager.get(player).isBlocked()) {
-            sendMessage(player,new BukkitByteBuilder(Constants.DISABLE));
             manager.get(player).disable();
+            sendMessage(player,new BukkitByteBuilder(Constants.DISABLE));
         }
     }
 
