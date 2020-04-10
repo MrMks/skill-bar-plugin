@@ -16,8 +16,4 @@ public class Setting {
     public int getBarMaxLine(){
         return barMaxLine;
     }
-
-    public void setBarMaxLine(int barMaxLine) {
-        this.barMaxLine = barMaxLine;
-    }
 }

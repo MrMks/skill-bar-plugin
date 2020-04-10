@@ -47,7 +47,7 @@ public class PlayerBar {
     }
 
     public int max(){
-        return max();
+        return maxLine;
     }
 
     //this two method may not be used in short time;

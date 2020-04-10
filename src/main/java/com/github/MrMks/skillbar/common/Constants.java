@@ -22,6 +22,7 @@ public class Constants {
     public static final byte CAST = 11;
     public static final byte COOLDOWN = 12;
     public static final byte ACCOUNT = 13;
+    public static final byte CLEAN = 14;
 
     public static final byte CAST_SUCCESS = 0;
     public static final byte CAST_FAILED_NO_SKILL = 1;
