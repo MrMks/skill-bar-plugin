@@ -54,8 +54,8 @@ public class PackageSender {
                 ByteBuilder builder = new BukkitByteBuilder(Constants.ENABLE);
                 builder.writeInt(SkillAPI.getPlayerAccountData(player).getActiveId());
                 builder.writeInt(SkillAPI.getPlayerData(player).getSkills().size());
-                sendMessage(player, builder);
                 cm.setClientStatus(player.getName(), ClientStatus.Request_Enable);
+                sendMessage(player, builder);
             }
         } else {
             if (checkClient(player)){
