@@ -5,6 +5,7 @@ import com.github.MrMks.skillbar.data.Manager;
 import com.github.MrMks.skillbar.data.PlayerBar;
 import com.github.MrMks.skillbar.pkg.PackageListener;
 import com.github.MrMks.skillbar.pkg.PackageSender;
+import com.github.MrMks.skillbar.task.AutoSaveTask;
 import com.github.MrMks.skillbar.task.ClientDiscoverTask;
 import com.github.MrMks.skillbar.task.CoolDownTask;
 import com.github.MrMks.skillbar.task.LoopThread;
@@ -60,6 +61,7 @@ public class SkillBar extends JavaPlugin implements Listener {
 
         task.addTask(new CoolDownTask(sender, manager));
         task.addTask(cdt);
+        task.addTask(new AutoSaveTask());
         sender.sendAllDiscover();
     }
 

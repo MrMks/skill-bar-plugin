@@ -32,7 +32,7 @@ public class PackageListener implements PluginMessageListener {
         ClientData m = manager.get(player);
         m.onReceive();
         if (m.isBlocked()) {
-            if (m.isSendDisable()) sd.sendDisable(player);
+            if (m.isSendDisable() && m.isDiscovered()) sd.sendDisable(player);
             return;
         }
         if (m.getStatus() == ClientStatus.Disabled){
