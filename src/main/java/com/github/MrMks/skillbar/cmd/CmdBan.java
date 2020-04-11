@@ -33,9 +33,13 @@ public class CmdBan implements IFunction {
                 if (data == null) {
                     commandSender.sendMessage("player data doesn't exist");
                 } else {
-                    sender.sendDisable(player);
-                    data.block();
-                    commandSender.sendMessage("player " + strings[0] + " has been banned to use skill bar");
+                    if (!data.isBlocked()) {
+                        sender.sendDisable(player);
+                        data.block();
+                        commandSender.sendMessage("player " + strings[0] + " has been banned to use skill bar");
+                    } else {
+                        commandSender.sendMessage("player " + strings[0] + " has been banned to use skill bar");
+                    }
                 }
             }
         }

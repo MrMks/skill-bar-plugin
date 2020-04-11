@@ -27,14 +27,18 @@ public class CmdInfo implements IFunction {
                 boolean hasPlayer = SkillAPI.hasPlayerData(player);
                 PlayerData pData = SkillAPI.getPlayerData(player);
                 boolean passCheck = hasPlayer && pData.getClasses().size() > 0 && pData.getSkills().size() > 0;
+                boolean world = SkillAPI.getSettings().isWorldEnabled(player.getWorld());
                 boolean block = data.isBlocked();
+                boolean discovered = data.isDiscovered();
                 boolean enable = data.getStatus() == ClientStatus.Enabled;
 
                 String builder = "§2Skill Bar info:\n" +
                         "§6=====\n§r" +
                         "Have data in SkillAPI: " + format(hasPlayer) + "\n" +
                         "Valid check about skills: " + format(passCheck) + "\n" +
+                        "World check: " + format(world) + "\n" +
                         "Not banned for reasons: " + format(!block) + "\n" +
+                        "Client discovered: " + format(discovered) + "\n" +
                         "Enabled on Server: " + format(enable) + "\n" +
                         "§6=====";
                 commandSender.sendMessage(builder);

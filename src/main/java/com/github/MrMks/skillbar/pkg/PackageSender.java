@@ -238,12 +238,8 @@ public class PackageSender {
     }
 
     public void sendClearClientList(Player p) {
-        ByteBuilder builder = new BukkitByteBuilder(Constants.ENFORCE_LIST_SKILL);
+        ByteBuilder builder = new BukkitByteBuilder(Constants.CLEAN);
         builder.writeInt(SkillAPI.getPlayerAccountData(p).getActiveId());
-        builder.writeInt(0);
-        sendMessage(p, builder);
-        builder = new BukkitByteBuilder(Constants.LIST_BAR);
-        builder.writeBoolean(true).writeInt(0);
         sendMessage(p, builder);
     }
 
