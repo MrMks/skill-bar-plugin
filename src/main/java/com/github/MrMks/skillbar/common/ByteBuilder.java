@@ -14,6 +14,13 @@ public abstract class ByteBuilder {
         buf.writeByte(header);
     }
 
+    public ByteBuilder(){}
+
+    public ByteBuilder header(byte header){
+        buf.writeByte(header);
+        return this;
+    }
+
     public ByteBuilder write(byte v){
         buf.writeByte(v);
         return this;
@@ -58,6 +65,23 @@ public abstract class ByteBuilder {
                 writeCharSequence(c);
             }
         }
+        return this;
+    }
+
+    public ByteBuilder writeSkillInfo(SkillInfo info){
+        writeCharSequence(info.getKey());
+        writeBoolean(info.isUnlock());
+        writeBoolean(info.canCast());
+        writeInt(info.getItemId());
+        writeShort(info.getDamage());
+        writeCharSequence(info.getDisplay());
+        writeCharSequenceList(info.getLore());
+        return this;
+    }
+
+    public ByteBuilder writeSkillInfoList(List<SkillInfo> infos){
+        writeInt(infos.size());
+        for (SkillInfo info : infos) writeSkillInfo(info);
         return this;
     }
 

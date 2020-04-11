@@ -60,4 +60,24 @@ public class ByteDecoder {
         }
         return list;
     }
+
+    public SkillInfo readSkillInfo() throws IndexOutOfBoundsException{
+        String key = readCharSequence().toString();
+        boolean isUnlock = readBoolean();
+        boolean canCast = readBoolean();
+        int itemId = readInt();
+        short damage = readShort();
+        String display = readCharSequence().toString();
+        List<CharSequence> lore = readCharSequenceList();
+        return new SkillInfo(key,isUnlock,canCast,itemId,damage,display,lore);
+    }
+
+    public List<SkillInfo> readSkillInfoList() throws IndexOutOfBoundsException{
+        int size = readInt();
+        ArrayList<SkillInfo> list = new ArrayList<>(size);
+        for (int i = 0; i < size; i++){
+            list.add(readSkillInfo());
+        }
+        return list;
+    }
 }
