@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -27,7 +28,7 @@ public class BlackList {
         instance = null;
     }
 
-    private Set<String> strUidList;
+    private final Set<String> strUidList = new HashSet<>();
     private final File file;
     public BlackList(File file){
         this.file = file;
@@ -51,18 +52,21 @@ public class BlackList {
         if (file.exists()) {
             try (FileReader reader = new FileReader(file)) {
                 Type type = new TypeToken<HashSet<String>>(){}.getType();
-                strUidList = gson.fromJson(reader,type);
+                strUidList.addAll(gson.fromJson(reader,type));
             } catch (IOException e){
                 e.printStackTrace();
             }
         }
-        if (strUidList == null) strUidList = new HashSet<>();
     }
 
     public void writeToDisk(){
         Gson gson = new Gson();
+        ArrayList<String> list;
+        synchronized (strUidList){
+            list = new ArrayList<>(strUidList);
+        }
         try (FileWriter writer = new FileWriter(file)){
-            writer.write(gson.toJson(strUidList));
+            writer.write(gson.toJson(list));
         } catch (IOException e){
             e.printStackTrace();
         }
