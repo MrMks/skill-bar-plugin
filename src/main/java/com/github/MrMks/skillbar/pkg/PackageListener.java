@@ -2,10 +2,10 @@ package com.github.MrMks.skillbar.pkg;
 
 import com.github.MrMks.skillbar.common.ByteDecoder;
 import com.github.MrMks.skillbar.common.Constants;
-import com.github.MrMks.skillbar.data.ClientData;
 import com.github.MrMks.skillbar.data.ClientStatus;
-import com.github.MrMks.skillbar.data.Manager;
-import com.github.MrMks.skillbar.data.PlayerBar;
+import com.github.MrMks.skillbar.data.EnumStatus;
+import com.github.MrMks.skillbar.data.ClientManager;
+import com.github.MrMks.skillbar.data.ClientBar;
 import com.sucy.skill.SkillAPI;
 import com.sucy.skill.api.player.PlayerData;
 import org.bukkit.Bukkit;
@@ -19,8 +19,8 @@ import java.util.HashMap;
 public class PackageListener implements PluginMessageListener {
     private PackageSender sd;
     private Plugin plugin;
-    private Manager manager;
-    public PackageListener(Plugin plugin, PackageSender sender, Manager manager){
+    private ClientManager manager;
+    public PackageListener(Plugin plugin, PackageSender sender, ClientManager manager){
         this.sd = sender;
         this.plugin = plugin;
         this.manager = manager;
@@ -29,13 +29,13 @@ public class PackageListener implements PluginMessageListener {
     @Override
     public void onPluginMessageReceived(String s, Player player, byte[] bytes) {
         if (!s.equals(Constants.CHANNEL_NAME) || player == null) return;
-        ClientData m = manager.get(player);
+        ClientStatus m = manager.get(player);
         m.onReceive();
         if (m.isBlocked()) {
             if (m.isSendDisable() && m.isDiscovered()) sd.sendDisable(player);
             return;
         }
-        if (m.getStatus() == ClientStatus.Disabled){
+        if (m.getStatus() == EnumStatus.Disabled){
             if (m.isDiscovered()) sd.sendDisable(player);
             return;
         }
@@ -76,7 +76,7 @@ public class PackageListener implements PluginMessageListener {
     }
 
     private void onDiscover(Player player){
-        ClientData data = manager.get(player);
+        ClientStatus data = manager.get(player);
         if (data != null && !data.isDiscovered()){
             data.discover();
             sd.sendSetting(player);
@@ -85,22 +85,22 @@ public class PackageListener implements PluginMessageListener {
     }
 
     public void onListSkill(Player player, ByteDecoder buf){
-        ClientData data = manager.get(player);
-        if (data != null && data.getStatus() == ClientStatus.Enabled){
+        ClientStatus data = manager.get(player);
+        if (data != null && data.getStatus() == EnumStatus.Enabled){
             sd.sendListSkill(player, buf.readCharSequenceList());
         }
     }
 
     public void onUpdateSkill(Player player, ByteDecoder buf){
-        ClientData data = manager.get(player);
-        if (data != null && data.getStatus() == ClientStatus.Enabled){
+        ClientStatus data = manager.get(player);
+        if (data != null && data.getStatus() == EnumStatus.Enabled){
             String key = buf.readCharSequence().toString();
             sd.sendUpdateSkill(player,key);
         }
     }
 
     public void onCast(Player player, ByteDecoder buf){
-        if (manager.get(player) == null || manager.get(player).getStatus() != ClientStatus.Enabled) return;
+        if (manager.get(player) == null || manager.get(player).getStatus() != EnumStatus.Enabled) return;
         boolean hasPlayer = SkillAPI.hasPlayerData(player);
         String key = buf.readCharSequence().toString();
         if (hasPlayer){
@@ -125,13 +125,13 @@ public class PackageListener implements PluginMessageListener {
     }
 
     public void onListBar(Player player){
-        ClientData cData = manager.get(player);
-        if (cData != null && cData.getStatus() == ClientStatus.Enabled) sd.sendListBar(player);
+        ClientStatus cData = manager.get(player);
+        if (cData != null && cData.getStatus() == EnumStatus.Enabled) sd.sendListBar(player);
     }
 
     public void onSaveBar(Player player, ByteDecoder buf){
-        if (manager.get(player) == null || manager.get(player).getStatus() != ClientStatus.Enabled) return;
-        PlayerBar bar = manager.get(player).getBar();
+        if (manager.get(player) == null || manager.get(player).getStatus() != EnumStatus.Enabled) return;
+        ClientBar bar = manager.get(player).getBar();
         PlayerData data = SkillAPI.getPlayerData(player);
         int activeId = buf.readInt();
         int size = buf.readInt();

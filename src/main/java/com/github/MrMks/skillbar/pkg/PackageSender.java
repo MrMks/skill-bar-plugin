@@ -1,10 +1,10 @@
 package com.github.MrMks.skillbar.pkg;
 
 import com.github.MrMks.skillbar.Setting;
-import com.github.MrMks.skillbar.data.ClientData;
 import com.github.MrMks.skillbar.data.ClientStatus;
-import com.github.MrMks.skillbar.data.Manager;
-import com.github.MrMks.skillbar.data.PlayerBar;
+import com.github.MrMks.skillbar.data.EnumStatus;
+import com.github.MrMks.skillbar.data.ClientManager;
+import com.github.MrMks.skillbar.data.ClientBar;
 import com.github.MrMks.skillbar.common.ByteBuilder;
 import com.github.MrMks.skillbar.common.Constants;
 import com.rit.sucy.version.VersionManager;
@@ -24,9 +24,9 @@ import java.util.*;
 public class PackageSender {
 
     private Plugin plugin;
-    private Manager manager;
+    private ClientManager manager;
     private byte itemMethodFlag = 0;
-    public PackageSender(Plugin plugin, Manager manager){
+    public PackageSender(Plugin plugin, ClientManager manager){
         this.plugin = plugin;
         this.manager = manager;
         try {
@@ -58,9 +58,9 @@ public class PackageSender {
     }
 
     public void sendEnable(Player player){
-        ClientData m = manager.get(player);
+        ClientStatus m = manager.get(player);
         if (checkValid(player) && !m.isBlocked()){
-            if (m.getStatus() != ClientStatus.Enabled) {
+            if (m.getStatus() != EnumStatus.Enabled) {
                 ByteBuilder builder = new BukkitByteBuilder(Constants.ENABLE);
                 builder.writeInt(SkillAPI.getPlayerAccountData(player).getActiveId());
                 builder.writeInt(SkillAPI.getPlayerData(player).getSkills().size());
@@ -158,7 +158,7 @@ public class PackageSender {
     public void sendCoolDown(Player player){
         if (checkValid(player) && !manager.get(player).isBlocked()) {
             PlayerData data = SkillAPI.getPlayerData(player);
-            PlayerBar bar = manager.get(player).getBar();
+            ClientBar bar = manager.get(player).getBar();
             if (bar.size() == 0) return;
             ByteBuilder builder = new BukkitByteBuilder(Constants.COOLDOWN);
             ArrayList<String> list = new ArrayList<>(9);
@@ -198,7 +198,7 @@ public class PackageSender {
     public void sendListBar(Player player){
         if (checkValid(player) && !manager.get(player).isBlocked()) {
             ByteBuilder builder = new BukkitByteBuilder(Constants.LIST_BAR);
-            PlayerBar bar = manager.get(player).getBar();
+            ClientBar bar = manager.get(player).getBar();
             PlayerData data = SkillAPI.getPlayerData(player);
             boolean exist = !bar.isEmpty() && data != null;
             builder.writeBoolean(exist);
@@ -257,8 +257,8 @@ public class PackageSender {
         return checkClient(manager.get(player));
     }
 
-    private boolean checkClient(ClientData manager){
-        return manager != null && manager.getStatus() == ClientStatus.Enabled;
+    private boolean checkClient(ClientStatus manager){
+        return manager != null && manager.getStatus() == EnumStatus.Enabled;
     }
 
     private void listSkill(ByteBuilder builder, Player player){

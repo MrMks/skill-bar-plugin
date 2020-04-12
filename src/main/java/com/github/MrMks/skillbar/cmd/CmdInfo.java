@@ -1,8 +1,8 @@
 package com.github.MrMks.skillbar.cmd;
 
-import com.github.MrMks.skillbar.data.ClientData;
 import com.github.MrMks.skillbar.data.ClientStatus;
-import com.github.MrMks.skillbar.data.Manager;
+import com.github.MrMks.skillbar.data.EnumStatus;
+import com.github.MrMks.skillbar.data.ClientManager;
 import com.rit.sucy.commands.ConfigurableCommand;
 import com.rit.sucy.commands.IFunction;
 import com.sucy.skill.SkillAPI;
@@ -13,8 +13,8 @@ import org.bukkit.plugin.Plugin;
 
 public class CmdInfo implements IFunction {
 
-    private Manager manager;
-    public CmdInfo(Manager manager){
+    private ClientManager manager;
+    public CmdInfo(ClientManager manager){
         this.manager = manager;
     }
 
@@ -23,14 +23,14 @@ public class CmdInfo implements IFunction {
         if (commandSender instanceof Player) {
             if (SkillAPI.isLoaded()){
                 Player player = (Player) commandSender;
-                ClientData data = manager.get(player);
+                ClientStatus data = manager.get(player);
                 boolean hasPlayer = SkillAPI.hasPlayerData(player);
                 PlayerData pData = SkillAPI.getPlayerData(player);
                 boolean passCheck = hasPlayer && pData.getClasses().size() > 0 && pData.getSkills().size() > 0;
                 boolean world = SkillAPI.getSettings().isWorldEnabled(player.getWorld());
                 boolean block = data.isBlocked();
                 boolean discovered = data.isDiscovered();
-                boolean enable = data.getStatus() == ClientStatus.Enabled;
+                boolean enable = data.getStatus() == EnumStatus.Enabled;
 
                 String builder = "§2Skill Bar info:\n" +
                         "§6=====\n§r" +

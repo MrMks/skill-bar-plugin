@@ -1,13 +1,12 @@
-package com.github.MrMks.skillbar.data;
+package com.github.MrMks.skillbar.pkg;
 
 import com.github.MrMks.skillbar.common.ByteBuilder;
 import com.github.MrMks.skillbar.common.Constants;
 import com.github.MrMks.skillbar.common.SkillInfo;
 import com.github.MrMks.skillbar.common.handler.IServerHandler;
 import com.github.MrMks.skillbar.common.pkg.SPackage;
-import com.github.MrMks.skillbar.pkg.BukkitByteAllocator;
-import com.github.MrMks.skillbar.pkg.BukkitSkillInfo;
-import com.github.MrMks.skillbar.pkg.PluginSender;
+import com.github.MrMks.skillbar.data.ClientBar;
+import com.github.MrMks.skillbar.data.ClientStatus;
 import com.sucy.skill.SkillAPI;
 import com.sucy.skill.api.player.PlayerAccounts;
 import com.sucy.skill.api.player.PlayerData;
@@ -23,7 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
-public class PlayerHandler implements IServerHandler {
+public class PackageHandler implements IServerHandler {
     private static int itemMethodFlag = 0;
     private static ItemStack getItemStack(PlayerSkill skill){
         if (itemMethodFlag == 0) {
@@ -60,13 +59,13 @@ public class PlayerHandler implements IServerHandler {
         return stack;
     }
 
-    private ClientData data;
-    private PlayerBar bar;
+    private ClientStatus data;
+    private ClientBar bar;
     private PluginSender sender;
-    public PlayerHandler(UUID uuid){
-        this.data = new ClientData(uuid);
-        this.bar = new PlayerBar(uuid);
-        this.sender = new PluginSender(uuid);
+    public PackageHandler(ClientStatus status, ClientBar bar, PluginSender sender){
+        this.data = status;
+        this.bar = bar;
+        this.sender = sender;
     }
 
     private void receive(){
@@ -131,7 +130,7 @@ public class PlayerHandler implements IServerHandler {
     public void onListBar() {
         receive();
         if (checkValid()){
-            PlayerBar bar = data.getBar();
+            ClientBar bar = data.getBar();
             Player player = Bukkit.getPlayer(data.getUid());
             PlayerData playerData = SkillAPI.getPlayerData(player);
             Map<Integer, String> map = new HashMap<>();
@@ -147,7 +146,7 @@ public class PlayerHandler implements IServerHandler {
     public void onSaveBar(Map<Integer, CharSequence> map) {
         receive();
         if (checkValid()){
-            PlayerBar bar = data.getBar();
+            ClientBar bar = data.getBar();
             Player player = Bukkit.getPlayer(data.getUid());
             PlayerData playerData = SkillAPI.getPlayerData(player);
             PlayerAccounts accounts = SkillAPI.getPlayerAccountData(player);
@@ -190,7 +189,7 @@ public class PlayerHandler implements IServerHandler {
         }
     }
 
-    public ClientData getData() {
+    public ClientStatus getData() {
         return data;
     }
 }

@@ -1,7 +1,7 @@
 package com.github.MrMks.skillbar;
 
 import com.github.MrMks.skillbar.cmd.*;
-import com.github.MrMks.skillbar.data.Manager;
+import com.github.MrMks.skillbar.data.ClientManager;
 import com.github.MrMks.skillbar.pkg.PackageSender;
 import com.rit.sucy.commands.CommandManager;
 import com.rit.sucy.commands.ConfigurableCommand;
@@ -10,7 +10,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class CmdManager {
-    public static void init(JavaPlugin plugin, Manager manager, PackageSender sender){
+    public static void init(JavaPlugin plugin, ClientManager manager, PackageSender sender){
         ConfigurableCommand root = new ConfigurableCommand(plugin, "bar", SenderType.ANYONE);
         ConfigurableCommand ban = new ConfigurableCommand(plugin, "ban", SenderType.ANYONE,new CmdBan(manager, sender),"ban a player from Skill Bar", "<player>", "skillbar.ban");
         ConfigurableCommand un_ban = new ConfigurableCommand(plugin, "unban", SenderType.ANYONE,new CmdUnban(manager, sender),"unban a player from Skill Bar", "<player>", "skillbar.ban");

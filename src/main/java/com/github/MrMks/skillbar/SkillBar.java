@@ -1,15 +1,14 @@
 package com.github.MrMks.skillbar;
 
 import com.github.MrMks.skillbar.common.Constants;
-import com.github.MrMks.skillbar.data.Manager;
-import com.github.MrMks.skillbar.data.PlayerBar;
+import com.github.MrMks.skillbar.data.ClientManager;
+import com.github.MrMks.skillbar.data.ClientBar;
 import com.github.MrMks.skillbar.pkg.PackageListener;
 import com.github.MrMks.skillbar.pkg.PackageSender;
 import com.github.MrMks.skillbar.task.AutoSaveTask;
 import com.github.MrMks.skillbar.task.ClientDiscoverTask;
 import com.github.MrMks.skillbar.task.CoolDownTask;
 import com.github.MrMks.skillbar.task.LoopThread;
-import com.rit.sucy.commands.CommandManager;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -22,7 +21,7 @@ import java.io.File;
 public class SkillBar extends JavaPlugin implements Listener {
     private LoopThread task;
     private PackageSender sender;
-    private Manager manager;
+    private ClientManager manager;
 
     @Override
     public void onLoad() {
@@ -30,7 +29,7 @@ public class SkillBar extends JavaPlugin implements Listener {
         if (!getDataFolder().exists()) getDataFolder().mkdir();
         File file = new File(getDataFolder(), "player");
         if (!file.exists()) file.mkdir();
-        PlayerBar.setPath(getDataFolder());
+        ClientBar.setPath(getDataFolder());
         if (!new File(getDataFolder(), "config.yml").exists()) this.saveDefaultConfig();
     }
 
@@ -40,7 +39,7 @@ public class SkillBar extends JavaPlugin implements Listener {
         Setting.getInstance().readConfig(getConfig());
         BlackList.init(getDataFolder());
 
-        manager = new Manager();
+        manager = new ClientManager();
         sender = new PackageSender(this, manager);
         task = new LoopThread();
         if (!sender.isLoad()) {

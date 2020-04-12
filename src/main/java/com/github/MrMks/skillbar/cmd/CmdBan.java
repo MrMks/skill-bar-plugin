@@ -1,7 +1,7 @@
 package com.github.MrMks.skillbar.cmd;
 
-import com.github.MrMks.skillbar.data.ClientData;
-import com.github.MrMks.skillbar.data.Manager;
+import com.github.MrMks.skillbar.data.ClientStatus;
+import com.github.MrMks.skillbar.data.ClientManager;
 import com.github.MrMks.skillbar.pkg.PackageSender;
 import com.rit.sucy.commands.ConfigurableCommand;
 import com.rit.sucy.commands.IFunction;
@@ -12,9 +12,9 @@ import org.bukkit.plugin.Plugin;
 
 public class CmdBan implements IFunction {
 
-    private Manager manager;
+    private ClientManager manager;
     private PackageSender sender;
-    public CmdBan(Manager manager, PackageSender sender){
+    public CmdBan(ClientManager manager, PackageSender sender){
         this.manager = manager;
         this.sender = sender;
     }
@@ -29,7 +29,7 @@ public class CmdBan implements IFunction {
                 commandSender.sendMessage("player doesn't exist");
             } else {
                 //plugin.getLogger().info(player.getUniqueId().toString());
-                ClientData data = manager.get(player);
+                ClientStatus data = manager.get(player);
                 if (data == null) {
                     commandSender.sendMessage("player data doesn't exist");
                 } else {

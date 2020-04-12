@@ -12,7 +12,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
-public class PlayerBar {
+public class ClientBar {
     private static File f;
     public static void setPath(File folder){
         f = folder;
@@ -25,7 +25,7 @@ public class PlayerBar {
     private int maxLine;
     // setting related to activeAcc
     private int nowLine = 0;
-    PlayerBar(UUID uid){
+    public ClientBar(UUID uid){
         uuid = uid;
         file = new File(f,"player/" + uuid.toString() + ".json");
         maxLine = Setting.getInstance().getBarMaxLine();
