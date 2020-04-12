@@ -1,5 +1,6 @@
 package com.github.MrMks.skillbar.pkg;
 
+import com.github.MrMks.skillbar.Setting;
 import com.github.MrMks.skillbar.common.ByteBuilder;
 import com.github.MrMks.skillbar.common.Constants;
 import com.github.MrMks.skillbar.common.SkillInfo;
@@ -11,69 +12,26 @@ import com.sucy.skill.SkillAPI;
 import com.sucy.skill.api.player.PlayerAccounts;
 import com.sucy.skill.api.player.PlayerData;
 import com.sucy.skill.api.player.PlayerSkill;
-import com.sucy.skill.api.skills.Skill;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 
 public class PackageHandler implements IServerHandler {
-    private static int itemMethodFlag = 0;
-    private static ItemStack getItemStack(PlayerSkill skill){
-        if (itemMethodFlag == 0) {
-            try {
-                Skill.class.getMethod("getIndicator", PlayerSkill.class, boolean.class);
-                itemMethodFlag += 1;
-            }catch (NoSuchMethodException ignored){}
-            try {
-                //noinspection JavaReflectionMemberAccess
-                Skill.class.getMethod("getIndicator", PlayerSkill.class);
-                itemMethodFlag += 2;
-            }catch (NoSuchMethodException ignored){}
-        }
-        ItemStack stack = null;
-        switch (itemMethodFlag){
-            case 1:
-                try {
-                    Method method = Skill.class.getMethod("getIndicator", PlayerSkill.class, boolean.class);
-                    stack = (ItemStack) method.invoke(skill.getData(),skill, true);
-                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
-                break;
-            case 2:
-                try {
-                    // method used in non-premium skillapi
-                    @SuppressWarnings("JavaReflectionMemberAccess")
-                    Method method = Skill.class.getMethod("getIndicator", PlayerSkill.class);
-                    stack = (ItemStack) method.invoke(skill.getData(), skill);
-                } catch (Exception ignored){}
-                break;
-            default:
-                stack = new ItemStack(Material.AIR);
-                break;
-        }
-        return stack;
-    }
-
-    private ClientStatus data;
+    private UUID uuid;
+    private ClientStatus status;
     private ClientBar bar;
     private PluginSender sender;
-    public PackageHandler(ClientStatus status, ClientBar bar, PluginSender sender){
-        this.data = status;
+    public PackageHandler(UUID uuid,  ClientStatus status, ClientBar bar, PluginSender sender){
+        this.uuid = uuid;
+        this.status = status;
         this.bar = bar;
         this.sender = sender;
     }
 
-    private void receive(){
-        data.onReceive();
-    }
-
     private boolean checkValid(){
-        OfflinePlayer player = Bukkit.getOfflinePlayer(data.getUid());
+        OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
         PlayerData playerData = SkillAPI.getPlayerData(player);
         return player != null
                 && SkillAPI.isLoaded()
@@ -86,23 +44,29 @@ public class PackageHandler implements IServerHandler {
 
     @Override
     public void onDiscover() {
-        receive();
-        if (!data.isDiscovered() && !data.isBlocked()) data.discover();
+        if (!status.isDiscovered() && !status.isBlocked()) {
+            status.discover();
+            sender.send(SPackage.BUILDER.buildSetting(BukkitByteAllocator.DEFAULT, Setting.getInstance().getBarMaxLine()));
+            if (checkValid()) {
+                PlayerAccounts accounts = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid));
+                status.enable();
+                sender.send(SPackage.BUILDER.buildEnable(BukkitByteAllocator.DEFAULT, accounts.getActiveId(), accounts.getActiveData().getSkills().size()));
+            }
+        }
     }
 
     @Override
     public void onListSkill(List<CharSequence> keys) {
-        receive();
         if (checkValid()){
             ArrayList<String> reList = new ArrayList<>();
-            PlayerData data = SkillAPI.getPlayerData(Bukkit.getOfflinePlayer(this.data.getUid()));
+            PlayerData data = SkillAPI.getPlayerData(Bukkit.getOfflinePlayer(uuid));
             for (CharSequence key : keys){
                 if (!data.hasSkill(key.toString())) reList.add(key.toString());
             }
             ArrayList<SkillInfo> aList = new ArrayList<>();
             for (PlayerSkill skill : data.getSkills()){
                 if (!keys.contains(skill.getData().getKey())) {
-                    aList.add(new BukkitSkillInfo(skill.getData().getKey(), skill.isUnlocked(), skill.getData().canCast(),getItemStack(skill)));
+                    aList.add(new BukkitSkillInfo(skill));
                 }
             }
             ByteBuilder builder = SPackage.BUILDER.buildListSkill(BukkitByteAllocator.DEFAULT,aList,reList);
@@ -112,13 +76,12 @@ public class PackageHandler implements IServerHandler {
 
     @Override
     public void onUpdateSkill(CharSequence key) {
-        receive();
         if (checkValid()){
-            PlayerData data = SkillAPI.getPlayerData(Bukkit.getPlayer(this.data.getUid()));
+            PlayerData data = SkillAPI.getPlayerData(Bukkit.getPlayer(uuid));
             SkillInfo info;
             if (data.hasSkill(key.toString())) {
                 PlayerSkill skill = data.getSkill(key.toString());
-                info = new BukkitSkillInfo(skill.getData().getKey(),skill.isUnlocked(),skill.getData().canCast(),getItemStack(skill));
+                info = new BukkitSkillInfo(skill);
             } else {
                 info = new SkillInfo("",false,false,0,(short) 0,"",new ArrayList<>());
             }
@@ -128,10 +91,9 @@ public class PackageHandler implements IServerHandler {
 
     @Override
     public void onListBar() {
-        receive();
         if (checkValid()){
-            ClientBar bar = data.getBar();
-            Player player = Bukkit.getPlayer(data.getUid());
+            ClientBar bar = status.getBar();
+            Player player = Bukkit.getPlayer(uuid);
             PlayerData playerData = SkillAPI.getPlayerData(player);
             Map<Integer, String> map = new HashMap<>();
             for (int index : bar.keys()) {
@@ -144,10 +106,9 @@ public class PackageHandler implements IServerHandler {
 
     @Override
     public void onSaveBar(Map<Integer, CharSequence> map) {
-        receive();
         if (checkValid()){
-            ClientBar bar = data.getBar();
-            Player player = Bukkit.getPlayer(data.getUid());
+            ClientBar bar = status.getBar();
+            Player player = Bukkit.getPlayer(uuid);
             PlayerData playerData = SkillAPI.getPlayerData(player);
             PlayerAccounts accounts = SkillAPI.getPlayerAccountData(player);
             Map<Integer, String> nMap = new HashMap<>();
@@ -165,9 +126,8 @@ public class PackageHandler implements IServerHandler {
 
     @Override
     public void onCast(CharSequence key) {
-        receive();
         if (checkValid()){
-            Player player = Bukkit.getPlayer(data.getUid());
+            Player player = Bukkit.getPlayer(uuid);
             PlayerData playerData = SkillAPI.getPlayerData(player);
             boolean exist, suc;
             byte code;
@@ -187,9 +147,5 @@ public class PackageHandler implements IServerHandler {
             }
             sender.send(SPackage.BUILDER.buildCast(BukkitByteAllocator.DEFAULT, key.toString(), exist, suc, code));
         }
-    }
-
-    public ClientStatus getData() {
-        return data;
     }
 }

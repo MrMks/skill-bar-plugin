@@ -1,8 +1,10 @@
 package com.github.MrMks.skillbar.common;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SkillInfo {
+    public static SkillInfo Empty = new SkillInfo("",false,false,0,(short)0,"",new ArrayList<>());
     String key;
     boolean isUnlock;
     boolean canCast;

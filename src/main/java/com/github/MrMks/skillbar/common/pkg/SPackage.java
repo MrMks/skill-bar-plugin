@@ -46,12 +46,12 @@ public class SPackage {
 
         @Override
         public ByteBuilder buildListSkill(ByteAllocator allocator, List<SkillInfo> aList, List<String> reList) {
-            return allocator.build(LIST_SKILL).writeInt(aList.size()).writeSkillInfoList(aList).writeCharSequenceList(reList);
+            return allocator.build(LIST_SKILL).writeSkillInfoList(aList).writeCharSequenceList(reList);
         }
 
         @Override
-        public ByteBuilder buildEnforceListSkill(ByteAllocator allocator, List<SkillInfo> list) {
-            return allocator.build(ENFORCE_LIST_SKILL).writeInt(list.size()).writeSkillInfoList(list);
+        public ByteBuilder buildEnforceListSkill(ByteAllocator allocator, int active, List<SkillInfo> list) {
+            return allocator.build(ENFORCE_LIST_SKILL).writeInt(active).writeSkillInfoList(list);
         }
 
         @Override
@@ -60,8 +60,8 @@ public class SPackage {
         }
 
         @Override
-        public ByteBuilder buildEnforceUpdateSkill(ByteAllocator allocator, SkillInfo info) {
-            return allocator.build(ENFORCE_UPDATE_SKILL).writeSkillInfo(info);
+        public ByteBuilder buildEnforceUpdateSkill(ByteAllocator allocator, int active, SkillInfo info) {
+            return allocator.build(ENFORCE_UPDATE_SKILL).writeInt(active).writeSkillInfo(info);
         }
 
         @Override

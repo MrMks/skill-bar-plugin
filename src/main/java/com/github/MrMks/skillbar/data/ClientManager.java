@@ -1,6 +1,5 @@
 package com.github.MrMks.skillbar.data;
 
-import com.github.MrMks.skillbar.pkg.PackageHandler;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;

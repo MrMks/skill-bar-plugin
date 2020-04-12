@@ -16,9 +16,9 @@ public interface IBuilderSP {
     ByteBuilder buildDisable(ByteAllocator allocator);
 
     ByteBuilder buildListSkill(ByteAllocator allocator, List<SkillInfo> aList, List<String> reList);
-    ByteBuilder buildEnforceListSkill(ByteAllocator allocator, List<SkillInfo> list);
+    ByteBuilder buildEnforceListSkill(ByteAllocator allocator, int active, List<SkillInfo> list);
     ByteBuilder buildUpdateSkill(ByteAllocator allocator, SkillInfo info);
-    ByteBuilder buildEnforceUpdateSkill(ByteAllocator allocator, SkillInfo info);
+    ByteBuilder buildEnforceUpdateSkill(ByteAllocator allocator, int active, SkillInfo info);
     ByteBuilder buildAddSkill(ByteAllocator allocator, int active, int size);
     ByteBuilder buildListBar(ByteAllocator allocator, Map<Integer, String> map);
 
