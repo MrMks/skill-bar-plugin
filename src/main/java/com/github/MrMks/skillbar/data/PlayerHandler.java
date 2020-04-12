@@ -44,12 +44,12 @@ public class PlayerHandler implements IServerHandler {
     }
 
     @Override
-    public void onListSkill(List<String> keys) {
+    public void onListSkill(List<CharSequence> keys) {
 
     }
 
     @Override
-    public void onUpdateSkill(String key) {
+    public void onUpdateSkill(CharSequence key) {
 
     }
 
@@ -59,12 +59,12 @@ public class PlayerHandler implements IServerHandler {
     }
 
     @Override
-    public void onSaveBar(Map<Integer, String> map) {
+    public void onSaveBar(Map<Integer, CharSequence> map) {
 
     }
 
     @Override
-    public void onCast(String key) {
+    public void onCast(CharSequence key) {
 
     }
 

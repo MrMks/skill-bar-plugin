@@ -12,13 +12,13 @@ public class SkillInfo {
     String display;
     List<CharSequence> lore;
 
-    public SkillInfo(String key, boolean isUnlock, boolean canCast, int itemId, short damage, String display, List<CharSequence> lore){
-        this.key = key;
+    public SkillInfo(CharSequence key, boolean isUnlock, boolean canCast, int itemId, short damage, CharSequence display, List<CharSequence> lore){
+        this.key = (key == null ? "" : key.toString());
         this.isUnlock = isUnlock;
         this.canCast = canCast;
         this.itemId = itemId;
         this.damage = damage;
-        this.display = display;
+        this.display = (display == null ? "" : display.toString());
         this.lore = lore;
     }
 

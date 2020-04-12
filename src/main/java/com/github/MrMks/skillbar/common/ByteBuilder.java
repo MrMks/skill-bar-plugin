@@ -14,13 +14,6 @@ public abstract class ByteBuilder {
         buf.writeByte(header);
     }
 
-    public ByteBuilder(){}
-
-    public ByteBuilder header(byte header){
-        buf.writeByte(header);
-        return this;
-    }
-
     public ByteBuilder write(byte v){
         buf.writeByte(v);
         return this;

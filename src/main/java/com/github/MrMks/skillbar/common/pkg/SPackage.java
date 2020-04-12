@@ -12,80 +12,81 @@ import static com.github.MrMks.skillbar.common.Constants.*;
 public class SPackage {
     public static class Builder implements IBuilderSP {
         @Override
-        public void buildDiscover(ByteBuilder builder, int version) {
-            builder.header(DISCOVER).writeInt(version);
+        public ByteBuilder buildDiscover(ByteAllocator allocator, int version) {
+            return allocator.build(DISCOVER).writeInt(version);
         }
 
         @Override
-        public void buildSetting(ByteBuilder builder, int maxBarSize) {
-            builder.header(SETTING).writeInt(maxBarSize);
+        public ByteBuilder buildSetting(ByteAllocator allocator, int maxBarSize) {
+            return allocator.build(SETTING).writeInt(maxBarSize);
         }
 
         @Override
-        public void buildEnable(ByteBuilder builder, int active, int size) {
-            builder.header(ENABLE).writeInt(active).writeInt(size);
+        public ByteBuilder buildEnable(ByteAllocator allocator, int active, int size) {
+            return allocator.build(ENABLE).writeInt(active).writeInt(size);
         }
 
         @Override
-        public void buildAccount(ByteBuilder builder, int active, int size) {
-            builder.header(ACCOUNT).writeInt(active).writeInt(size);
+        public ByteBuilder buildAccount(ByteAllocator allocator, int active, int size) {
+            return allocator.build(ACCOUNT).writeInt(active).writeInt(size);
         }
 
         @Override
-        public void buildCleanUp(ByteBuilder builder, int active) {
-            builder.header(CLEAN).writeInt(active);
+        public ByteBuilder buildCleanUp(ByteAllocator allocator, int active) {
+            return allocator.build(CLEAN).writeInt(active);
         }
 
         @Override
-        public void buildDisable(ByteBuilder builder) {
-            builder.header(DISABLE);
+        public ByteBuilder buildDisable(ByteAllocator allocator) {
+            return allocator.build(DISABLE);
         }
 
         @Override
-        public void buildListSkill(ByteBuilder builder, List<SkillInfo> aList, List<String> reList) {
-            builder.header(LIST_SKILL).writeInt(aList.size()).writeSkillInfoList(aList).writeCharSequenceList(reList);
+        public ByteBuilder buildListSkill(ByteAllocator allocator, List<SkillInfo> aList, List<String> reList) {
+            return allocator.build(LIST_SKILL).writeInt(aList.size()).writeSkillInfoList(aList).writeCharSequenceList(reList);
         }
 
         @Override
-        public void buildEnforceListSkill(ByteBuilder builder, List<SkillInfo> list) {
-            builder.header(ENFORCE_LIST_SKILL).writeInt(list.size()).writeSkillInfoList(list);
+        public ByteBuilder buildEnforceListSkill(ByteAllocator allocator, List<SkillInfo> list) {
+            return allocator.build(ENFORCE_LIST_SKILL).writeInt(list.size()).writeSkillInfoList(list);
         }
 
         @Override
-        public void buildUpdateSkill(ByteBuilder builder, SkillInfo info) {
-            builder.header(UPDATE_SKILL).writeSkillInfo(info);
-
+        public ByteBuilder buildUpdateSkill(ByteAllocator allocator, SkillInfo info) {
+            return allocator.build(UPDATE_SKILL).writeSkillInfo(info);
         }
 
         @Override
-        public void buildEnforceUpdateSkill(ByteBuilder builder, SkillInfo info) {
-            builder.header(ENFORCE_UPDATE_SKILL).writeSkillInfo(info);
+        public ByteBuilder buildEnforceUpdateSkill(ByteAllocator allocator, SkillInfo info) {
+            return allocator.build(ENFORCE_UPDATE_SKILL).writeSkillInfo(info);
         }
 
         @Override
-        public void buildAddSkill(ByteBuilder builder, int active, int size) {
-            builder.header(ADD_SKILL).writeInt(active).writeInt(size);
+        public ByteBuilder buildAddSkill(ByteAllocator allocator, int active, int size) {
+            return allocator.build(ADD_SKILL).writeInt(active).writeInt(size);
         }
 
         @Override
-        public void buildListBar(ByteBuilder builder, Map<Integer, String> map) {
-            builder.header(LIST_BAR).writeInt(map.size());
+        public ByteBuilder buildListBar(ByteAllocator allocator, Map<Integer, String> map) {
+            ByteBuilder builder = allocator.build(LIST_BAR).writeInt(map.size());
             for (Map.Entry<Integer,String> entry : map.entrySet()) {
                 builder.writeInt(entry.getKey()).writeCharSequence(entry.getValue());
             }
+            return builder;
         }
 
         @Override
-        public void buildCast(ByteBuilder builder, String key, boolean exist, boolean suc, byte code) {
-            builder.header(CAST).writeCharSequence(key).writeBoolean(exist).writeBoolean(suc).write(code);
+        public ByteBuilder buildCast(ByteAllocator allocator, String key, boolean exist, boolean suc, byte code) {
+            return allocator.build(CAST).writeCharSequence(key).writeBoolean(exist).writeBoolean(suc).write(code);
         }
 
         @Override
-        public void buildCoolDown(ByteBuilder builder, Map<String, Integer> map) {
-            builder.write(COOLDOWN).writeInt(map.size());
+        public ByteBuilder buildCoolDown(ByteAllocator allocator, Map<String, Integer> map) {
+            ByteBuilder builder = allocator.build(COOLDOWN).writeInt(map.size());
             for (Map.Entry<String,Integer> entry : map.entrySet()){
                 builder.writeCharSequence(entry.getKey()).writeInt(entry.getValue());
             }
+            return builder;
         }
     }
     public static class Decoder implements IDecoderSP {
