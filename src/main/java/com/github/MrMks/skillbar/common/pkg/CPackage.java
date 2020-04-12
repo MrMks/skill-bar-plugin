@@ -10,7 +10,10 @@ import java.util.List;
 import java.util.Map;
 
 public class CPackage {
+    public static Builder BUILDER = new Builder();
+    public static Decoder DECODER = new Decoder();
     public static class Builder implements IBuilderCP {
+        private Builder(){}
         @Override
         public ByteBuilder buildDiscover(ByteAllocator allocator) {
             return allocator.build(DISCOVER);
@@ -46,6 +49,7 @@ public class CPackage {
         }
     }
     public static class Decoder implements IDecoderCP {
+        private Decoder(){}
         @Override
         public void decodeDiscover(IServerHandler handler, ByteDecoder decoder) {
             handler.onDiscover();
