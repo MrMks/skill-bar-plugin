@@ -32,4 +32,10 @@ public class Manager {
         }
         map.clear();
     }
+
+    private Map<UUID, PlayerHandler> handlerMap = new HashMap<>();
+    public PlayerHandler getHandler(UUID uuid){
+        if (!handlerMap.containsKey(uuid)) handlerMap.put(uuid, new PlayerHandler(uuid));
+        return handlerMap.get(uuid);
+    }
 }

@@ -10,7 +10,10 @@ import java.util.Map;
 import static com.github.MrMks.skillbar.common.Constants.*;
 
 public class SPackage {
+    public static Builder BUILDER = new Builder();
+    public static Decoder DECODER = new Decoder();
     public static class Builder implements IBuilderSP {
+        private Builder(){};
         @Override
         public ByteBuilder buildDiscover(ByteAllocator allocator, int version) {
             return allocator.build(DISCOVER).writeInt(version);
@@ -90,6 +93,7 @@ public class SPackage {
         }
     }
     public static class Decoder implements IDecoderSP {
+        private Decoder(){};
         @Override
         public void decodeDiscover(IClientHandler handler, ByteDecoder decoder) {
             int version = decoder.readInt();

@@ -10,9 +10,9 @@ public class SkillInfo {
     int itemId;
     short damage;
     String display;
-    List<CharSequence> lore;
+    List<? extends CharSequence> lore;
 
-    public SkillInfo(CharSequence key, boolean isUnlock, boolean canCast, int itemId, short damage, CharSequence display, List<CharSequence> lore){
+    public SkillInfo(CharSequence key, boolean isUnlock, boolean canCast, int itemId, short damage, CharSequence display, List<? extends CharSequence> lore){
         this.key = (key == null ? "" : key.toString());
         this.isUnlock = isUnlock;
         this.canCast = canCast;
@@ -46,7 +46,7 @@ public class SkillInfo {
         return display;
     }
 
-    public List<CharSequence> getLore() {
+    public List<? extends CharSequence> getLore() {
         return lore;
     }
 }
