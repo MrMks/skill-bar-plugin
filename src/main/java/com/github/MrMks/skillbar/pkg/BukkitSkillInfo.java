@@ -11,16 +11,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 public class BukkitSkillInfo extends SkillInfo {
-    public BukkitSkillInfo(String key, boolean isUnlock, boolean canCast, ItemStack stack) {
-        super(key, isUnlock, canCast, stack.getTypeId(),
-                stack.getDurability(),
-                stack.hasItemMeta() ? stack.getItemMeta().getDisplayName() : "",
-                stack.hasItemMeta() ? stack.getItemMeta().getLore() : new ArrayList<>(0));
-    }
-    public BukkitSkillInfo(PlayerSkill skill){
-        this(skill.getData().getKey(), skill.isUnlocked(), skill.getData().canCast(), getItemStack(skill));
-    }
-
     private static int itemMethodFlag = 0;
     private static ItemStack getItemStack(PlayerSkill skill){
         if (itemMethodFlag == 0) {
@@ -57,4 +47,13 @@ public class BukkitSkillInfo extends SkillInfo {
         return stack;
     }
 
+    public BukkitSkillInfo(String key, boolean isUnlock, boolean canCast, ItemStack stack) {
+        super(key, isUnlock, canCast, stack.getTypeId(),
+                stack.getDurability(),
+                stack.hasItemMeta() ? stack.getItemMeta().getDisplayName() : "",
+                stack.hasItemMeta() ? stack.getItemMeta().getLore() : new ArrayList<>(0));
+    }
+    public BukkitSkillInfo(PlayerSkill skill){
+        this(skill.getData().getKey(), skill.isUnlocked(), skill.getData().canCast(), getItemStack(skill));
+    }
 }
