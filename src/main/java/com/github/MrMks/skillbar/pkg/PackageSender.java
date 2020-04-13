@@ -21,6 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
+@Deprecated
 public class PackageSender {
 
     private Plugin plugin;
@@ -40,6 +41,7 @@ public class PackageSender {
         }catch (NoSuchMethodException ignored){}
     }
 
+    /*
     public boolean isLoad(){
         return !(itemMethodFlag == 0);
     }
@@ -322,4 +324,5 @@ public class PackageSender {
 
         }
     }
+     */
 }

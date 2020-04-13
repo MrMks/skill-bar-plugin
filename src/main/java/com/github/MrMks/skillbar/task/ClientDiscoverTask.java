@@ -1,43 +1,37 @@
 package com.github.MrMks.skillbar.task;
 
-import com.github.MrMks.skillbar.data.ClientStatus;
-import com.github.MrMks.skillbar.pkg.PackageSender;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
+import com.github.MrMks.skillbar.data.ClientData;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ClientDiscoverTask extends RepeatTask {
-    private final HashMap<ClientStatus, Integer> list = new HashMap<>();
-    private final PackageSender ps;
-    public ClientDiscoverTask(PackageSender sender){
+    private final HashMap<ClientData, Integer> list = new HashMap<>();
+    public ClientDiscoverTask(){
         super(5 * 1000,5 * 1000);
-        this.ps = sender;
     }
 
     @Override
     protected void runTask() {
         synchronized (list){
             if (list.isEmpty()) return;
-            ArrayList<ClientStatus> re = new ArrayList<>();
-            for (ClientStatus m : list.keySet()){
-                if (!m.isDiscovered()) {
-                    int times = list.get(m);
+            ArrayList<ClientData> re = new ArrayList<>();
+            for (ClientData data : list.keySet()){
+                if (!data.getStatus().isDiscovered()) {
+                    int times = list.get(data);
                     if (times > 5) {
-                        re.add(m);
+                        re.add(data);
                         continue;
                     }
-                    Player player = Bukkit.getPlayer(m.getUid());
-                    ps.sendDiscover(player);
-                    list.put(m, times + 1);
+                    data.getEventHandler().onJoin();
+                    list.put(data, times + 1);
                 } else {
-                    re.add(m);
+                    re.add(data);
                 }
             }
-            for (ClientStatus m : re) {
-                list.remove(m);
-                if (!m.isDiscovered()) m.disable();
+            for (ClientData data : re) {
+                list.remove(data);
+                if (!data.getStatus().isDiscovered()) data.getStatus().disable();
             }
         }
     }
@@ -47,15 +41,15 @@ public class ClientDiscoverTask extends RepeatTask {
         return false;
     }
 
-    public void addName(ClientStatus m){
+    public void addName(ClientData data){
         synchronized (list) {
-            if (!list.containsKey(m)) list.put(m,0);
+            if (!list.containsKey(data)) list.put(data,0);
         }
     }
 
-    public void removeName(ClientStatus m){
+    public void removeName(ClientData data){
         synchronized (list) {
-            list.remove(m);
+            list.remove(data);
         }
     }
 }

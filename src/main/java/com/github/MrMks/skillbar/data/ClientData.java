@@ -8,17 +8,23 @@ import com.github.MrMks.skillbar.pkg.PluginSender;
 import java.util.UUID;
 
 public class ClientData {
+    private UUID uuid;
     private ClientStatus status;
     private ClientBar bar;
     private PluginSender sender;
     private IServerHandler handler;
     private EventHandler eventHandler;
     public ClientData(UUID uuid){
+        this.uuid = uuid;
         status = new ClientStatus(uuid);
         bar = new ClientBar(uuid);
         sender = new PluginSender(uuid);
         handler = new PackageHandler(uuid, status, bar, sender);
         eventHandler = new EventHandler(uuid, status, bar, sender);
+    }
+
+    public UUID getUid(){
+        return uuid;
     }
 
     public ClientStatus getStatus() {
@@ -32,4 +38,7 @@ public class ClientData {
     public EventHandler getEventHandler(){
         return eventHandler;
     }
+
+    public void save(){}
+    public void clean(){}
 }

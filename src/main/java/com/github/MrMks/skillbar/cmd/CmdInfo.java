@@ -1,5 +1,6 @@
 package com.github.MrMks.skillbar.cmd;
 
+import com.github.MrMks.skillbar.data.ClientData;
 import com.github.MrMks.skillbar.data.ClientStatus;
 import com.github.MrMks.skillbar.data.EnumStatus;
 import com.github.MrMks.skillbar.data.ClientManager;
@@ -23,14 +24,15 @@ public class CmdInfo implements IFunction {
         if (commandSender instanceof Player) {
             if (SkillAPI.isLoaded()){
                 Player player = (Player) commandSender;
-                ClientStatus data = manager.get(player);
+                ClientData data = manager.get(player);
+                ClientStatus status = data.getStatus();
                 boolean hasPlayer = SkillAPI.hasPlayerData(player);
                 PlayerData pData = SkillAPI.getPlayerData(player);
                 boolean passCheck = hasPlayer && pData.getClasses().size() > 0 && pData.getSkills().size() > 0;
                 boolean world = SkillAPI.getSettings().isWorldEnabled(player.getWorld());
-                boolean block = data.isBlocked();
-                boolean discovered = data.isDiscovered();
-                boolean enable = data.getStatus() == EnumStatus.Enabled;
+                boolean block = status.isBlocked();
+                boolean discovered = status.isDiscovered();
+                boolean enable = status.isEnable();
 
                 String builder = "§2Skill Bar info:\n" +
                         "§6=====\n§r" +

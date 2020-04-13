@@ -44,20 +44,22 @@ public class PackageHandler implements IServerHandler {
 
     @Override
     public void onDiscover() {
-        if (!status.isDiscovered() && !status.isBlocked()) {
+        if (!status.isDiscovered()) {
             status.discover();
-            sender.send(SPackage.BUILDER.buildSetting(BukkitByteAllocator.DEFAULT, Setting.getInstance().getBarMaxLine()));
-            if (checkValid()) {
-                PlayerAccounts accounts = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid));
-                status.enable();
-                sender.send(SPackage.BUILDER.buildEnable(BukkitByteAllocator.DEFAULT, accounts.getActiveId(), accounts.getActiveData().getSkills().size()));
+            if (!status.isBlocked()) {
+                sender.send(SPackage.BUILDER.buildSetting(BukkitByteAllocator.DEFAULT, Setting.getInstance().getBarMaxLine()));
+                if (checkValid()) {
+                    PlayerAccounts accounts = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid));
+                    status.enable();
+                    sender.send(SPackage.BUILDER.buildEnable(BukkitByteAllocator.DEFAULT, accounts.getActiveId(), accounts.getActiveData().getSkills().size()));
+                }
             }
         }
     }
 
     @Override
     public void onListSkill(List<CharSequence> keys) {
-        if (checkValid()){
+        if (status.isEnable() && checkValid()){
             ArrayList<String> reList = new ArrayList<>();
             PlayerData data = SkillAPI.getPlayerData(Bukkit.getOfflinePlayer(uuid));
             for (CharSequence key : keys){

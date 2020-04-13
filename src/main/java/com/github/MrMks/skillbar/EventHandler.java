@@ -14,15 +14,16 @@ import com.sucy.skill.api.player.PlayerAccounts;
 import com.sucy.skill.api.player.PlayerData;
 import org.bukkit.Bukkit;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 public class EventHandler {
-    private UUID uuid;
-    private ClientStatus status;
-    private ClientBar bar;
-    private PluginSender sender;
+    private final UUID uuid;
+    private final ClientStatus status;
+    private final ClientBar bar;
+    private final PluginSender sender;
     public EventHandler(UUID uuid, ClientStatus status, ClientBar bar, PluginSender sender){
         this.uuid = uuid;
         this.status = status;
@@ -31,7 +32,7 @@ public class EventHandler {
     }
 
     public void onJoin(){
-        if (!status.isDiscovered() && !status.isBlocked()) {
+        if (!status.isDiscovered()) {
             sender.send(SPackage.BUILDER.buildDiscover(BukkitByteAllocator.DEFAULT, Constants.VERSION));
         }
     }
@@ -42,6 +43,7 @@ public class EventHandler {
             sender.send(SPackage.BUILDER.buildCleanUp(BukkitByteAllocator.DEFAULT, active));
             status.disable();
             sender.send(SPackage.BUILDER.buildDisable(BukkitByteAllocator.DEFAULT));
+            bar.setBar(active, Collections.emptyMap());
         }
     }
 
@@ -100,7 +102,7 @@ public class EventHandler {
         sender.send(SPackage.BUILDER.buildCoolDown(BukkitByteAllocator.DEFAULT, map));
     }
 
-    private void enable(){
+    public void enable(){
         if (status.isDiscovered() && status.getStatus() != EnumStatus.Enabled) {
             int active = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid)).getActiveId();
             int size = SkillAPI.getPlayerData(Bukkit.getOfflinePlayer(uuid)).getSkills().size();
@@ -108,7 +110,7 @@ public class EventHandler {
             sender.send(SPackage.BUILDER.buildEnable(BukkitByteAllocator.DEFAULT, active, size));
         }
     }
-    private void disable(){
+    public void disable(){
         if (status.isDiscovered() && status.getStatus() == EnumStatus.Enabled) {
             status.disable();
             sender.send(SPackage.BUILDER.buildDisable(BukkitByteAllocator.DEFAULT));

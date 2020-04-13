@@ -1,7 +1,6 @@
 package com.github.MrMks.skillbar;
 
 import com.github.MrMks.skillbar.data.*;
-import com.github.MrMks.skillbar.pkg.PackageSender;
 import com.github.MrMks.skillbar.task.ClientDiscoverTask;
 import com.github.MrMks.skillbar.task.ReloadCheckTask;
 import com.sucy.skill.SkillAPI;
@@ -18,35 +17,34 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.plugin.Plugin;
 
-import java.util.Collections;
-
 @SuppressWarnings("unused")
 public class MainListener implements Listener {
 
     private Plugin plugin;
-    private PackageSender sender;
     private ClientManager manager;
     private ClientDiscoverTask task;
-    public MainListener(Plugin plugin, PackageSender sender, ClientManager manager, ClientDiscoverTask cdt){
+    public MainListener(Plugin plugin, ClientManager manager, ClientDiscoverTask cdt){
         this.plugin = plugin;
-        this.sender = sender;
         this.manager = manager;
         this.task = cdt;
     }
 
+    public void scheduler(Runnable runnable, long tick) {
+        Bukkit.getScheduler().runTaskLater(plugin, runnable, tick);
+    }
+
     /**
-     * player join server, try to enable skillBar if the world is allowed to use skill;
-     * whether or not allowed to enable will be checked in SkillBarSender
-     * this send is early than player join server
+     * player join server, try to discover the client mod in the next short time;
      */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent e){
         Player p = e.getPlayer();
-        ClientStatus m = manager.get(p);
-        if (m != null && !m.isDiscovered()) {
-            Bukkit.getScheduler().runTaskLater(plugin, ()->{
-                sender.sendDiscover(p);
-                task.addName(m);
+        manager.prepare(p);
+        ClientData data = manager.get(p);
+        if (data != null && data.getStatus().isDiscovered()) {
+            scheduler(()->{
+                data.getEventHandler().onJoin();
+                task.addName(data);
             }, 20);
         }
     }
@@ -59,9 +57,9 @@ public class MainListener implements Listener {
     public void onPlayerExit(PlayerQuitEvent e){
         //Player exit server, clear instances;
         Player p = e.getPlayer();
-        ClientStatus m = manager.get(p);
+        ClientData data = manager.get(p);
         manager.unload(p.getUniqueId());
-        if (m != null) task.removeName(m);
+        if (data != null) task.removeName(data);
     }
 
     /**
@@ -74,16 +72,19 @@ public class MainListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerChangeClass(PlayerClassChangeEvent e){
         Player p = e.getPlayerData().getPlayer();
+        ClientData data = manager.get(p);
         boolean c = checkClient(p);
         boolean v = checkValid(p);
         if (c && v) {
-            sender.sendAddSkill(p);
+            //sender.sendAddSkill(p);
+            data.getEventHandler().onChangeProfess();
         } else if (v) {
-            sender.sendEnable(p);
+            //sender.sendEnable(p);
+            data.getEventHandler().onStartProfess();
         } else if (c) {
-            sender.sendClearClientList(p);
-            sender.sendDisable(p);
-            manager.get(p).getBar().setBar(SkillAPI.getPlayerAccountData(p).getActiveId(), Collections.emptyMap());
+            data.getEventHandler().onResetProfess();
+            //sender.sendClearClientList(p);
+            //sender.sendDisable(p);
         }
     }
 
@@ -96,15 +97,15 @@ public class MainListener implements Listener {
     public void onPlayerChangeAccount(PlayerAccountChangeEvent e){
         if (e.isCancelled()) return;
         Player player = e.getAccountData().getPlayer();
-        ClientStatus cData = manager.get(player);
-        if (cData == null || !cData.isDiscovered()) return;
+        ClientData cData = manager.get(player);
+        if (cData == null || !cData.getStatus().isDiscovered()) return;
         boolean p = !(e.getPreviousAccount() == null || e.getPreviousAccount().getClasses().isEmpty() || e.getPreviousAccount().getSkills().isEmpty());
         boolean n = !(e.getNewAccount() == null || e.getNewAccount().getClasses().isEmpty() || e.getNewAccount().getSkills().isEmpty());
         if (n) {
-            if (p) Bukkit.getScheduler().runTaskLater(plugin, ()->sender.sendAccount(player),2);
-            else Bukkit.getScheduler().runTaskLater(plugin, ()->sender.sendEnable(player),2);
+            if (p) Bukkit.getScheduler().runTaskLater(plugin, ()->cData.getEventHandler().onAccountSwitch(),2);
+            else Bukkit.getScheduler().runTaskLater(plugin, ()->cData.getEventHandler().onAccToEnable(),2);
         } else {
-            if (p) Bukkit.getScheduler().runTaskLater(plugin, ()->sender.sendDisable(player),2);
+            if (p) Bukkit.getScheduler().runTaskLater(plugin, ()->cData.getEventHandler().onAccToDisable(),2);
         }
     }
 
@@ -112,13 +113,13 @@ public class MainListener implements Listener {
     public void onPlayerChangeWorld(PlayerChangedWorldEvent e){
         //Player changed the world, the new world may now allowed to use Skill
         Player player = e.getPlayer();
-        ClientStatus m = manager.get(player);
-        if (m != null && m.isDiscovered()) {
+        ClientData data = manager.get(player);
+        if (data != null && data.getStatus().isDiscovered()) {
             boolean f = SkillAPI.getSettings().isWorldEnabled(player.getWorld());
             if (f){
-                if (!checkClient(m) && checkValid(player)) sender.sendEnable(e.getPlayer());
+                if (!checkClient(data.getStatus()) && checkValid(player)) data.getEventHandler().onWorldToEnable();
             } else {
-                if (checkClient(m)) sender.sendDisable(e.getPlayer());
+                if (checkClient(data.getStatus())) data.getEventHandler().onWorldToDisable();
             }
         }
     }
@@ -126,27 +127,27 @@ public class MainListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerSkillDowngrade(PlayerSkillDowngradeEvent e){
         if (e.isCancelled()) return;
-        ClientStatus clientData = manager.get(e.getPlayerData().getPlayer());
-        if (!checkClient(clientData)) return;
-        Bukkit.getScheduler().runTaskLater(plugin, ()-> sender.sendEnforceUpdateSkill(e.getPlayerData().getPlayer(), e.getDowngradedSkill().getData().getKey()),2);
+        ClientData clientData = manager.get(e.getPlayerData().getPlayer());
+        if (!checkClient(clientData.getStatus())) return;
+        Bukkit.getScheduler().runTaskLater(plugin, ()-> clientData.getEventHandler().onUpdateSkillInfo(e.getDowngradedSkill().getData().getKey()),2);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerSkillUpgrade(PlayerSkillUpgradeEvent e){
         if (e.isCancelled()) return;
-        ClientStatus clientData = manager.get(e.getPlayerData().getPlayer());
-        if (!checkClient(clientData)) return;
+        ClientData clientData = manager.get(e.getPlayerData().getPlayer());
+        if (!checkClient(clientData.getStatus())) return;
         Bukkit.getScheduler().runTaskLater(plugin,
-                ()-> sender.sendEnforceUpdateSkill(e.getPlayerData().getPlayer(), e.getUpgradedSkill().getData().getKey()),
+                ()-> clientData.getEventHandler().onUpdateSkillInfo(e.getUpgradedSkill().getData().getKey()),
                 2);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerSkillUnlock(PlayerSkillUnlockEvent e){
-        ClientStatus clientData = manager.get(e.getPlayerData().getPlayer());
-        if (!checkClient(clientData)) return;
+        ClientData clientData = manager.get(e.getPlayerData().getPlayer());
+        if (!checkClient(clientData.getStatus())) return;
         Bukkit.getScheduler().runTaskLater(plugin,
-                ()-> sender.sendEnforceUpdateSkill(e.getPlayerData().getPlayer(), e.getUnlockedSkill().getData().getKey()),
+                ()-> clientData.getEventHandler().onUpdateSkillInfo(e.getUnlockedSkill().getData().getKey()),
                 2);
     }
 
@@ -190,7 +191,7 @@ public class MainListener implements Listener {
      * @return true if player status is Enabled
      */
     private boolean checkClient(Player player){
-        return checkClient(manager.get(player));
+        return checkClient(manager.get(player).getStatus());
     }
 
     private boolean checkClient(ClientStatus m){

@@ -15,10 +15,6 @@ public class ClientStatus {
         this.uid = uuid;
     }
 
-    public UUID getUid(){
-        return uid;
-    }
-
     public void startDiscover(){
         discovered = false;
         status = EnumStatus.Discovering;
@@ -75,10 +71,16 @@ public class ClientStatus {
         return status;
     }
 
-    private byte index = 0;
-    public byte getPackageIndex(){
-        if (index == Byte.MAX_VALUE) index = 0;
-        return index++;
+    public boolean isEnable(){
+        return status == EnumStatus.Enabled;
+    }
+
+    public boolean isDisable(){
+        return status == EnumStatus.Disabled;
+    }
+
+    public boolean isDiscovering(){
+        return status == EnumStatus.Discovering;
     }
 
     public ClientBar getBar(){

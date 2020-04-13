@@ -2,7 +2,6 @@ package com.github.MrMks.skillbar;
 
 import com.github.MrMks.skillbar.cmd.*;
 import com.github.MrMks.skillbar.data.ClientManager;
-import com.github.MrMks.skillbar.pkg.PackageSender;
 import com.rit.sucy.commands.CommandManager;
 import com.rit.sucy.commands.ConfigurableCommand;
 import com.rit.sucy.commands.SenderType;
@@ -10,10 +9,10 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class CmdManager {
-    public static void init(JavaPlugin plugin, ClientManager manager, PackageSender sender){
+    public static void init(JavaPlugin plugin, ClientManager manager){
         ConfigurableCommand root = new ConfigurableCommand(plugin, "bar", SenderType.ANYONE);
-        ConfigurableCommand ban = new ConfigurableCommand(plugin, "ban", SenderType.ANYONE,new CmdBan(manager, sender),"ban a player from Skill Bar", "<player>", "skillbar.ban");
-        ConfigurableCommand un_ban = new ConfigurableCommand(plugin, "unban", SenderType.ANYONE,new CmdUnban(manager, sender),"unban a player from Skill Bar", "<player>", "skillbar.ban");
+        ConfigurableCommand ban = new ConfigurableCommand(plugin, "ban", SenderType.ANYONE,new CmdBan(manager),"ban a player from Skill Bar", "<player>", "skillbar.ban");
+        ConfigurableCommand un_ban = new ConfigurableCommand(plugin, "unban", SenderType.ANYONE,new CmdUnban(manager),"unban a player from Skill Bar", "<player>", "skillbar.ban");
         ConfigurableCommand reload = new ConfigurableCommand(plugin, "reload", SenderType.ANYONE,new CmdReload(), "reload the skillbar plugin", "","skillbar.reload");
         ConfigurableCommand info = new ConfigurableCommand(plugin,"info", SenderType.PLAYER_ONLY, new CmdInfo(manager), "show skill bar info for user", "", "skillbar.info");
         ConfigurableCommand fBan = new ConfigurableCommand(plugin, "forceban", SenderType.ANYONE, new CmdForceBan(), "add a player name to black list without any check", "<player>","skillbar.forceban");
