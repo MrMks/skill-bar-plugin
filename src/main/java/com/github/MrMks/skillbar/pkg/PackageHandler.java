@@ -146,6 +146,11 @@ public class PackageHandler implements IServerHandler {
                 code = Constants.CAST_FAILED_NO_SKILL;
             }
             sender.send(SPackage.BUILDER.buildCast(BukkitByteBuilder::new, key.toString(), exist, suc, code));
+            if (exist && suc) {
+                Map<String, Integer> map = new HashMap<>(1);
+                map.put(key.toString(), playerData.getSkill(key.toString()).getCooldown());
+                sender.send(SPackage.BUILDER.buildCoolDown(BukkitByteBuilder::new, map));
+            }
         }
     }
 }
