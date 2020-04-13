@@ -38,7 +38,7 @@ public class EventHandler {
     }
 
     public void onResetProfess(){
-        if (status.isDiscovered() && status.getStatus() == EnumStatus.Enabled) {
+        if (status.isDiscovered() && status.isEnable()) {
             int active = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid)).getActiveId();
             sender.send(SPackage.BUILDER.buildCleanUp(BukkitByteBuilder::new, active));
             status.disable();
@@ -48,7 +48,7 @@ public class EventHandler {
     }
 
     public void onStartProfess(){
-        if (status.isDiscovered() && status.getStatus() != EnumStatus.Enabled) {
+        if (status.isDiscovered() && !status.isEnable()) {
             int active = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid)).getActiveId();
             int size = SkillAPI.getPlayerData(Bukkit.getOfflinePlayer(uuid)).getSkills().size();
             status.enable();
@@ -56,7 +56,7 @@ public class EventHandler {
         }
     }
     public void onChangeProfess(){
-        if (status.isDiscovered() && status.getStatus() == EnumStatus.Enabled) {
+        if (status.isDiscovered() && status.isEnable()) {
             int active = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid)).getActiveId();
             int size = SkillAPI.getPlayerData(Bukkit.getOfflinePlayer(uuid)).getSkills().size();
             sender.send(SPackage.BUILDER.buildAddSkill(BukkitByteBuilder::new, active, size));
@@ -64,7 +64,7 @@ public class EventHandler {
     }
 
     public void onAccountSwitch(){
-        if (status.isDiscovered() && status.getStatus() == EnumStatus.Enabled) {
+        if (status.isDiscovered() && status.isEnable()) {
             int active = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid)).getActiveId();
             int size = SkillAPI.getPlayerData(Bukkit.getOfflinePlayer(uuid)).getSkills().size();
             sender.send(SPackage.BUILDER.buildAccount(BukkitByteBuilder::new,active,size));
@@ -103,7 +103,7 @@ public class EventHandler {
     }
 
     public void enable(){
-        if (status.isDiscovered() && status.getStatus() != EnumStatus.Enabled) {
+        if (status.isDiscovered() && !status.isEnable()) {
             int active = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid)).getActiveId();
             int size = SkillAPI.getPlayerData(Bukkit.getOfflinePlayer(uuid)).getSkills().size();
             status.enable();
@@ -111,7 +111,7 @@ public class EventHandler {
         }
     }
     public void disable(){
-        if (status.isDiscovered() && status.getStatus() == EnumStatus.Enabled) {
+        if (status.isDiscovered() && status.isEnable()) {
             status.disable();
             sender.send(SPackage.BUILDER.buildDisable(BukkitByteBuilder::new));
         }

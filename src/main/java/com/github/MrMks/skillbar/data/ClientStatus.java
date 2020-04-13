@@ -57,14 +57,6 @@ public class ClientStatus {
         status = EnumStatus.Disabled;
     }
 
-    /**
-     * client status
-     * @return <code>ClientStatus.Enabled</code> if enable was invoked, <code>ClientStatus.Disabled</code> otherwise;
-     */
-    public EnumStatus getStatus() {
-        return status;
-    }
-
     public boolean isEnable(){
         return status == EnumStatus.Enabled;
     }

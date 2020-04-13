@@ -76,15 +76,11 @@ public class MainListener implements Listener {
         boolean c = checkClient(p);
         boolean v = checkValid(p);
         if (c && v) {
-            //sender.sendAddSkill(p);
             data.getEventHandler().onChangeProfess();
         } else if (v) {
-            //sender.sendEnable(p);
             data.getEventHandler().onStartProfess();
         } else if (c) {
             data.getEventHandler().onResetProfess();
-            //sender.sendClearClientList(p);
-            //sender.sendDisable(p);
         }
     }
 
@@ -117,9 +113,9 @@ public class MainListener implements Listener {
         if (data != null && data.getStatus().isDiscovered()) {
             boolean f = SkillAPI.getSettings().isWorldEnabled(player.getWorld());
             if (f){
-                if (!checkClient(data.getStatus()) && checkValid(player)) data.getEventHandler().onWorldToEnable();
+                if (!checkClient(data) && checkValid(player)) data.getEventHandler().onWorldToEnable();
             } else {
-                if (checkClient(data.getStatus())) data.getEventHandler().onWorldToDisable();
+                if (checkClient(data)) data.getEventHandler().onWorldToDisable();
             }
         }
     }
@@ -129,7 +125,7 @@ public class MainListener implements Listener {
         if (e.isCancelled()) return;
         if (manager.has(e.getPlayerData().getUUID())) {
             ClientData clientData = manager.get(e.getPlayerData().getPlayer());
-            if (!checkClient(clientData.getStatus())) return;
+            if (!checkClient(clientData)) return;
             Bukkit.getScheduler().runTaskLater(plugin, () -> clientData.getEventHandler().onUpdateSkillInfo(e.getDowngradedSkill().getData().getKey()), 2);
         }
     }
@@ -139,7 +135,7 @@ public class MainListener implements Listener {
         if (e.isCancelled()) return;
         if (manager.has(e.getPlayerData().getPlayer())) {
             ClientData clientData = manager.get(e.getPlayerData().getPlayer());
-            if (!checkClient(clientData.getStatus())) return;
+            if (!checkClient(clientData)) return;
             Bukkit.getScheduler().runTaskLater(plugin,
                     ()-> clientData.getEventHandler().onUpdateSkillInfo(e.getUpgradedSkill().getData().getKey()),
                     2);
@@ -150,7 +146,7 @@ public class MainListener implements Listener {
     public void onPlayerSkillUnlock(PlayerSkillUnlockEvent e){
         if (manager.has(e.getPlayerData().getUUID())) {
             ClientData clientData = manager.get(e.getPlayerData().getPlayer());
-            if (!checkClient(clientData.getStatus())) return;
+            if (!checkClient(clientData)) return;
             Bukkit.getScheduler().runTaskLater(plugin,
                     () -> clientData.getEventHandler().onUpdateSkillInfo(e.getUnlockedSkill().getData().getKey()),
                     2);
@@ -197,10 +193,10 @@ public class MainListener implements Listener {
      * @return true if player status is Enabled
      */
     private boolean checkClient(Player player){
-        return checkClient(manager.get(player).getStatus());
+        return manager.has(player) && checkClient(manager.get(player));
     }
 
-    private boolean checkClient(ClientStatus m){
-        return m != null && m.getStatus() == EnumStatus.Enabled;
+    private boolean checkClient(ClientData m){
+        return m != null && m.getStatus().isEnable();
     }
 }

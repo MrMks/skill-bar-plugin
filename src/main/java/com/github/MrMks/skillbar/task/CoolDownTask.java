@@ -18,7 +18,7 @@ public class CoolDownTask extends RepeatTask {
         Player[] players = VersionManager.getOnlinePlayers();
         for (Player player : players){
             ClientData data = m.get(player);
-            if (data != null && data.getStatus().getStatus() == EnumStatus.Enabled){
+            if (data != null && data.getStatus().isEnable()){
                 data.getEventHandler().onUpdateCoolDownInfo();
             }
         }
