@@ -14,9 +14,9 @@ public interface IClientHandler {
     void onDisable();
 
     void onListSkill(List<SkillInfo> aList, List<CharSequence> reList);
-    void onEnforceListSkill(List<SkillInfo> list);
+    void onEnforceListSkill(int id, List<SkillInfo> list);
     void onUpdateSkill(SkillInfo info);
-    void onEnforceUpdateSKill(SkillInfo info);
+    void onEnforceUpdateSKill(int id, SkillInfo info);
     void onAddSkill(int activeId, int skillSize);
     void onListBar(Map<Integer, CharSequence> map);
 

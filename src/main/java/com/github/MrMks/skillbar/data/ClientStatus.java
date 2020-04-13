@@ -10,19 +10,13 @@ public class ClientStatus {
     private boolean discovered = false;
     private boolean justBlock = false;
     private EnumStatus status = EnumStatus.Discovering;
-    private ClientBar bar;
+    //private ClientBar bar;
     public ClientStatus(UUID uuid){
         this.uid = uuid;
     }
 
-    public void startDiscover(){
-        discovered = false;
-        status = EnumStatus.Discovering;
-    }
-
     public void discover(){
         discovered = true;
-        bar = new ClientBar(uid);
     }
 
     public boolean isDiscovered() {
@@ -77,22 +71,6 @@ public class ClientStatus {
 
     public boolean isDisable(){
         return status == EnumStatus.Disabled;
-    }
-
-    public boolean isDiscovering(){
-        return status == EnumStatus.Discovering;
-    }
-
-    public ClientBar getBar(){
-        return bar;
-    }
-
-    public void save(){
-        if (bar != null) bar.saveToFile();
-    }
-
-    public void clean(){
-        bar = null;
     }
 
     private int timesInSeconds = 0;

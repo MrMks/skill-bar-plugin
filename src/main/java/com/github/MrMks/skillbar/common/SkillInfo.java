@@ -4,8 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SkillInfo {
-    public static SkillInfo Empty = new SkillInfo("",false,false,0,(short)0,"",new ArrayList<>());
+    public static SkillInfo Empty = new SkillInfo("",false,false,false,0,(short)0,"",new ArrayList<>());
     String key;
+    boolean exist;
     boolean isUnlock;
     boolean canCast;
 
@@ -14,8 +15,9 @@ public class SkillInfo {
     String display;
     List<? extends CharSequence> lore;
 
-    public SkillInfo(CharSequence key, boolean isUnlock, boolean canCast, int itemId, short damage, CharSequence display, List<? extends CharSequence> lore){
+    public SkillInfo(CharSequence key, boolean exist, boolean isUnlock, boolean canCast, int itemId, short damage, CharSequence display, List<? extends CharSequence> lore){
         this.key = (key == null ? "" : key.toString());
+        this.exist = exist;
         this.isUnlock = isUnlock;
         this.canCast = canCast;
         this.itemId = itemId;
@@ -26,6 +28,10 @@ public class SkillInfo {
 
     public String getKey() {
         return key;
+    }
+
+    public boolean isExist() {
+        return exist;
     }
 
     public boolean isUnlock() {

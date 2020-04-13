@@ -39,6 +39,15 @@ public class ClientData {
         return eventHandler;
     }
 
-    public void save(){}
-    public void clean(){}
+    public void save(){
+        bar.saveToFile();
+    }
+    public void clean(){
+        uuid = null;
+        status = null;
+        bar = null;
+        sender = null;
+        handler = null;
+        eventHandler = null;
+    }
 }

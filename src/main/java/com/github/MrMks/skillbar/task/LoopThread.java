@@ -9,9 +9,6 @@ public class LoopThread extends Thread {
     private long time = System.currentTimeMillis();
 
     private List<Task> tasks = new LinkedList<>();
-    public LoopThread(){
-        this.start();
-    }
 
     @Override
     public void run() {
@@ -33,6 +30,11 @@ public class LoopThread extends Thread {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void enable(){
+        this.enable = true;
+        this.start();
     }
 
     public void disable(){

@@ -63,6 +63,7 @@ public abstract class ByteBuilder {
 
     public ByteBuilder writeSkillInfo(SkillInfo info){
         writeCharSequence(info.getKey());
+        writeBoolean(info.isExist());
         writeBoolean(info.isUnlock());
         writeBoolean(info.canCast());
         writeInt(info.getItemId());

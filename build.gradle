@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'com.github.MrMks'
-version '1.2.3-3-a2'
+version '1.2.4-4-SNAPSHOT'
 
 sourceCompatibility = 1.8
 

@@ -139,8 +139,9 @@ public class SPackage {
 
         @Override
         public void decodeEnforceListSkill(IClientHandler handler, ByteDecoder decoder) {
+            int active = decoder.readInt();
             List<SkillInfo> list = decoder.readSkillInfoList();
-            handler.onEnforceListSkill(list);
+            handler.onEnforceListSkill(active, list);
         }
 
         @Override
@@ -151,8 +152,9 @@ public class SPackage {
 
         @Override
         public void decodeEnforceUpdateSkill(IClientHandler handler, ByteDecoder decoder) {
+            int active = decoder.readInt();
             SkillInfo info = decoder.readSkillInfo();
-            handler.onEnforceUpdateSKill(info);
+            handler.onEnforceUpdateSKill(active, info);
         }
 
         @Override

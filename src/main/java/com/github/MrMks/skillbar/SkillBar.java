@@ -10,7 +10,9 @@ import com.github.MrMks.skillbar.task.AutoSaveTask;
 import com.github.MrMks.skillbar.task.ClientDiscoverTask;
 import com.github.MrMks.skillbar.task.CoolDownTask;
 import com.github.MrMks.skillbar.task.LoopThread;
+import com.rit.sucy.version.VersionManager;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
@@ -35,45 +37,65 @@ public class SkillBar extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
-        super.onEnable();
+        // create manager && loopTask
+        manager = new ClientManager();
+        task = new LoopThread();
+        ClientDiscoverTask cdt = new ClientDiscoverTask();
+
+        // static class init
         Setting.getInstance().readConfig(getConfig());
         BlackList.init(getDataFolder());
         PluginSender.init(this);
 
-        manager = new ClientManager();
-        task = new LoopThread();
-
-        Bukkit.getMessenger().registerOutgoingPluginChannel(this, Constants.CHANNEL_NAME);
-        Bukkit.getMessenger().registerIncomingPluginChannel(this,Constants.CHANNEL_NAME,new PackageListener(manager));
-
-        ClientDiscoverTask cdt = new ClientDiscoverTask();
-
+        // register events
         HandlerList.unregisterAll((Plugin) this);
         Bukkit.getPluginManager().registerEvents(new MainListener(this, manager, cdt), this);
 
-        CmdManager.init(this, manager);
+        // register channels
+        Bukkit.getMessenger().registerOutgoingPluginChannel(this, Constants.CHANNEL_NAME);
+        Bukkit.getMessenger().registerIncomingPluginChannel(this,Constants.CHANNEL_NAME,new PackageListener(manager));
 
+        // task adds
         task.addTask(new CoolDownTask(manager));
         task.addTask(cdt);
         task.addTask(new AutoSaveTask());
-        for (ClientData data : manager.getAll()) data.getEventHandler().enable();
+        task.enable();
+
+        // discover all players
+        for (Player player : VersionManager.getOnlinePlayers()){
+            manager.prepare(player);
+            manager.get(player).getEventHandler().onJoin();
+        }
+
+        // register cmd
+        CmdManager.init(this, manager);
     }
 
     @Override
     public void onDisable() {
-        super.onDisable();
+        // unregister cmd
         CmdManager.unload(this);
+
+        // stop task loop
         if (task != null) task.disable();
         task = null;
-        if (isEnabled()) {
-            for (ClientData data : manager.getAll()) data.getEventHandler().disable();
+
+        // disable all clients && clean client data
+        if (manager != null) {
+            if (isEnabled()) {
+                for (ClientData data : manager.getAll()) data.getEventHandler().disable();
+            }
+            manager.clearSaveAll();
+            manager = null;
         }
+
+        // unregister channels
         Bukkit.getMessenger().unregisterIncomingPluginChannel(this);
         Bukkit.getMessenger().unregisterOutgoingPluginChannel(this);
+
+        // clean static classes
         PluginSender.clean();
-        if (manager != null) manager.clearSaveAll();
         BlackList.saveUnload();
-        manager = null;
         reloadConfig();
     }
 }

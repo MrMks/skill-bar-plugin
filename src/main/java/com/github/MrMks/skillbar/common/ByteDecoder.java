@@ -63,13 +63,14 @@ public class ByteDecoder {
 
     public SkillInfo readSkillInfo() throws IndexOutOfBoundsException{
         String key = readCharSequence().toString();
+        boolean exist = readBoolean();
         boolean isUnlock = readBoolean();
         boolean canCast = readBoolean();
         int itemId = readInt();
         short damage = readShort();
         String display = readCharSequence().toString();
         List<CharSequence> lore = readCharSequenceList();
-        return new SkillInfo(key,isUnlock,canCast,itemId,damage,display,lore);
+        return new SkillInfo(key,exist,isUnlock,canCast,itemId,damage,display,lore);
     }
 
     public List<SkillInfo> readSkillInfoList() throws IndexOutOfBoundsException{

@@ -47,11 +47,11 @@ public class PackageHandler implements IServerHandler {
         if (!status.isDiscovered()) {
             status.discover();
             if (!status.isBlocked()) {
-                sender.send(SPackage.BUILDER.buildSetting(BukkitByteAllocator.DEFAULT, Setting.getInstance().getBarMaxLine()));
+                sender.send(SPackage.BUILDER.buildSetting(BukkitByteBuilder::new, Setting.getInstance().getBarMaxLine()));
                 if (checkValid()) {
                     PlayerAccounts accounts = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid));
                     status.enable();
-                    sender.send(SPackage.BUILDER.buildEnable(BukkitByteAllocator.DEFAULT, accounts.getActiveId(), accounts.getActiveData().getSkills().size()));
+                    sender.send(SPackage.BUILDER.buildEnable(BukkitByteBuilder::new, accounts.getActiveId(), accounts.getActiveData().getSkills().size()));
                 }
             }
         }
@@ -71,7 +71,7 @@ public class PackageHandler implements IServerHandler {
                     aList.add(new BukkitSkillInfo(skill));
                 }
             }
-            ByteBuilder builder = SPackage.BUILDER.buildListSkill(BukkitByteAllocator.DEFAULT,aList,reList);
+            ByteBuilder builder = SPackage.BUILDER.buildListSkill(BukkitByteBuilder::new,aList,reList);
             sender.send(builder);
         }
     }
@@ -85,16 +85,15 @@ public class PackageHandler implements IServerHandler {
                 PlayerSkill skill = data.getSkill(key.toString());
                 info = new BukkitSkillInfo(skill);
             } else {
-                info = new SkillInfo("",false,false,0,(short) 0,"",new ArrayList<>());
+                info = new BukkitSkillInfo(key.toString());
             }
-            sender.send(SPackage.BUILDER.buildUpdateSkill(BukkitByteAllocator.DEFAULT,info));
+            sender.send(SPackage.BUILDER.buildUpdateSkill(BukkitByteBuilder::new,info));
         }
     }
 
     @Override
     public void onListBar() {
         if (checkValid()){
-            ClientBar bar = status.getBar();
             Player player = Bukkit.getPlayer(uuid);
             PlayerData playerData = SkillAPI.getPlayerData(player);
             Map<Integer, String> map = new HashMap<>();
@@ -102,14 +101,13 @@ public class PackageHandler implements IServerHandler {
                 if (playerData.hasSkill(bar.getSkill(index))) map.put(index,bar.getSkill(index));
             }
             bar.setBar(SkillAPI.getPlayerAccountData(player).getActiveId(),map);
-            sender.send(SPackage.BUILDER.buildListBar(BukkitByteAllocator.DEFAULT,map));
+            sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new,map));
         }
     }
 
     @Override
     public void onSaveBar(Map<Integer, CharSequence> map) {
         if (checkValid()){
-            ClientBar bar = status.getBar();
             Player player = Bukkit.getPlayer(uuid);
             PlayerData playerData = SkillAPI.getPlayerData(player);
             PlayerAccounts accounts = SkillAPI.getPlayerAccountData(player);
@@ -121,7 +119,7 @@ public class PackageHandler implements IServerHandler {
             }
             bar.setBar(accounts.getActiveId(), nMap);
             if (map.size() != nMap.size()) {
-                sender.send(SPackage.BUILDER.buildListBar(BukkitByteAllocator.DEFAULT, nMap));
+                sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, nMap));
             }
         }
     }
@@ -135,7 +133,7 @@ public class PackageHandler implements IServerHandler {
             byte code;
             if (playerData.hasSkill(key.toString())) {
                 exist = true;
-                if (playerData.getSkill(key.toString()).isUnlocked()) {
+                if (!playerData.getSkill(key.toString()).isUnlocked()) {
                     suc = false;
                     code = Constants.CAST_FAILED_UNLOCK;
                 } else {
@@ -147,7 +145,7 @@ public class PackageHandler implements IServerHandler {
                 suc = false;
                 code = Constants.CAST_FAILED_NO_SKILL;
             }
-            sender.send(SPackage.BUILDER.buildCast(BukkitByteAllocator.DEFAULT, key.toString(), exist, suc, code));
+            sender.send(SPackage.BUILDER.buildCast(BukkitByteBuilder::new, key.toString(), exist, suc, code));
         }
     }
 }

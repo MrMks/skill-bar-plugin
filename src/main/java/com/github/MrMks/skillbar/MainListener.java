@@ -20,9 +20,9 @@ import org.bukkit.plugin.Plugin;
 @SuppressWarnings("unused")
 public class MainListener implements Listener {
 
-    private Plugin plugin;
-    private ClientManager manager;
-    private ClientDiscoverTask task;
+    private final Plugin plugin;
+    private final ClientManager manager;
+    private final ClientDiscoverTask task;
     public MainListener(Plugin plugin, ClientManager manager, ClientDiscoverTask cdt){
         this.plugin = plugin;
         this.manager = manager;
@@ -41,7 +41,7 @@ public class MainListener implements Listener {
         Player p = e.getPlayer();
         manager.prepare(p);
         ClientData data = manager.get(p);
-        if (data != null && data.getStatus().isDiscovered()) {
+        if (data != null && !data.getStatus().isDiscovered()) {
             scheduler(()->{
                 data.getEventHandler().onJoin();
                 task.addName(data);
@@ -127,28 +127,34 @@ public class MainListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerSkillDowngrade(PlayerSkillDowngradeEvent e){
         if (e.isCancelled()) return;
-        ClientData clientData = manager.get(e.getPlayerData().getPlayer());
-        if (!checkClient(clientData.getStatus())) return;
-        Bukkit.getScheduler().runTaskLater(plugin, ()-> clientData.getEventHandler().onUpdateSkillInfo(e.getDowngradedSkill().getData().getKey()),2);
+        if (manager.has(e.getPlayerData().getUUID())) {
+            ClientData clientData = manager.get(e.getPlayerData().getPlayer());
+            if (!checkClient(clientData.getStatus())) return;
+            Bukkit.getScheduler().runTaskLater(plugin, () -> clientData.getEventHandler().onUpdateSkillInfo(e.getDowngradedSkill().getData().getKey()), 2);
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerSkillUpgrade(PlayerSkillUpgradeEvent e){
         if (e.isCancelled()) return;
-        ClientData clientData = manager.get(e.getPlayerData().getPlayer());
-        if (!checkClient(clientData.getStatus())) return;
-        Bukkit.getScheduler().runTaskLater(plugin,
-                ()-> clientData.getEventHandler().onUpdateSkillInfo(e.getUpgradedSkill().getData().getKey()),
-                2);
+        if (manager.has(e.getPlayerData().getPlayer())) {
+            ClientData clientData = manager.get(e.getPlayerData().getPlayer());
+            if (!checkClient(clientData.getStatus())) return;
+            Bukkit.getScheduler().runTaskLater(plugin,
+                    ()-> clientData.getEventHandler().onUpdateSkillInfo(e.getUpgradedSkill().getData().getKey()),
+                    2);
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerSkillUnlock(PlayerSkillUnlockEvent e){
-        ClientData clientData = manager.get(e.getPlayerData().getPlayer());
-        if (!checkClient(clientData.getStatus())) return;
-        Bukkit.getScheduler().runTaskLater(plugin,
-                ()-> clientData.getEventHandler().onUpdateSkillInfo(e.getUnlockedSkill().getData().getKey()),
-                2);
+        if (manager.has(e.getPlayerData().getUUID())) {
+            ClientData clientData = manager.get(e.getPlayerData().getPlayer());
+            if (!checkClient(clientData.getStatus())) return;
+            Bukkit.getScheduler().runTaskLater(plugin,
+                    () -> clientData.getEventHandler().onUpdateSkillInfo(e.getUnlockedSkill().getData().getKey()),
+                    2);
+        }
     }
 
     /**
