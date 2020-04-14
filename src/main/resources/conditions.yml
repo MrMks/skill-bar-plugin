@@ -1,4 +1,5 @@
 conditionName1: #conditionName可以随便写，只要不重复
+  enable: false
   weight: 0 #数越高权重越大，多个条件都被匹配时，权重最大的将被应用
   conditions: #当world和profession都匹配成功时则认为这个配置匹配成功
     world: [] #限定worldName，多个世界名被列出时则匹配任意一个
