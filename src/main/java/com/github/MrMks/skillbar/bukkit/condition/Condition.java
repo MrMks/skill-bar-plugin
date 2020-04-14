@@ -11,9 +11,9 @@ public class Condition {
     private List<String> professionKeys;
     private int barSize;
     private boolean enableFix;
-    private Map<String, Integer> list;
+    private Map<Integer,String> list;
 
-    public Condition(String key, boolean enable, int weight, List<String> worlds, List<String> professionKeys, int barSize, boolean enableFix, Map<String, Integer> list){
+    public Condition(String key, boolean enable, int weight, List<String> worlds, List<String> professionKeys, int barSize, boolean enableFix, Map<Integer, String> list){
         this.conditionKey = key;
         this.enable = enable;
         this.weight = weight;
@@ -28,7 +28,23 @@ public class Condition {
         return worlds.contains(world) && professions.removeAll(professionKeys);
     }
 
+    public String getKey(){
+        return conditionKey;
+    }
+
     public int getWeight(){
         return weight;
+    }
+
+    public int getBarSize() {
+        return barSize;
+    }
+
+    public boolean isEnableFix() {
+        return enableFix;
+    }
+
+    public Map<Integer, String> getBarList() {
+        return list;
     }
 }

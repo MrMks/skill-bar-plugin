@@ -49,7 +49,9 @@ public class SkillBar extends JavaPlugin implements Listener {
         Setting.getInstance().readConfig(getConfig());
         BlackList.init(getDataFolder());
         PluginSender.init(this);
-        ConditionManager.init(new FileConfigStore(this, "conditions.yml"));
+        try {ConditionManager.init(new FileConfigStore(this, "conditions.yml"));} catch (Throwable tr) {
+            getLogger().severe("can't parse conditions.yml, conditions will be ignore");
+        }
 
         // register events
         HandlerList.unregisterAll((Plugin) this);

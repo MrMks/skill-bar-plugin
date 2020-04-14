@@ -94,32 +94,36 @@ public class PackageHandler implements IServerHandler {
     @Override
     public void onListBar() {
         if (checkValid()){
-            Player player = Bukkit.getPlayer(uuid);
-            PlayerData playerData = SkillAPI.getPlayerData(player);
-            Map<Integer, String> map = new HashMap<>();
-            for (int index : bar.keys()) {
-                if (playerData.hasSkill(bar.getSkill(index))) map.put(index,bar.getSkill(index));
+            if (!status.isInCondition()) {
+                Player player = Bukkit.getPlayer(uuid);
+                PlayerData playerData = SkillAPI.getPlayerData(player);
+                Map<Integer, String> map = new HashMap<>();
+                for (int index : bar.keys()) {
+                    if (playerData.hasSkill(bar.getSkill(index))) map.put(index,bar.getSkill(index));
+                }
+                bar.setBar(SkillAPI.getPlayerAccountData(player).getActiveId(),map);
+                sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new,map));
             }
-            bar.setBar(SkillAPI.getPlayerAccountData(player).getActiveId(),map);
-            sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new,map));
         }
     }
 
     @Override
     public void onSaveBar(Map<Integer, CharSequence> map) {
         if (checkValid()){
-            Player player = Bukkit.getPlayer(uuid);
-            PlayerData playerData = SkillAPI.getPlayerData(player);
-            PlayerAccounts accounts = SkillAPI.getPlayerAccountData(player);
-            Map<Integer, String> nMap = new HashMap<>();
-            for (Map.Entry<Integer, CharSequence> entry : map.entrySet()) {
-                if (playerData.hasSkill(entry.getValue().toString())) {
-                    nMap.put(entry.getKey(), entry.getValue().toString());
+            if (!status.isInCondition()) {
+                Player player = Bukkit.getPlayer(uuid);
+                PlayerData playerData = SkillAPI.getPlayerData(player);
+                PlayerAccounts accounts = SkillAPI.getPlayerAccountData(player);
+                Map<Integer, String> nMap = new HashMap<>();
+                for (Map.Entry<Integer, CharSequence> entry : map.entrySet()) {
+                    if (playerData.hasSkill(entry.getValue().toString())) {
+                        nMap.put(entry.getKey(), entry.getValue().toString());
+                    }
                 }
-            }
-            bar.setBar(accounts.getActiveId(), nMap);
-            if (map.size() != nMap.size()) {
-                sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, nMap));
+                bar.setBar(accounts.getActiveId(), nMap);
+                if (map.size() != nMap.size()) {
+                    sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, nMap));
+                }
             }
         }
     }

@@ -1,10 +1,14 @@
 package com.github.MrMks.skillbar.bukkit;
 
+import com.github.MrMks.skillbar.bukkit.condition.Condition;
 import com.github.MrMks.skillbar.bukkit.data.*;
+import com.github.MrMks.skillbar.bukkit.manager.ConditionManager;
 import com.github.MrMks.skillbar.bukkit.task.ClientDiscoverTask;
 import com.github.MrMks.skillbar.bukkit.task.ReloadCheckTask;
 import com.sucy.skill.SkillAPI;
 import com.sucy.skill.api.event.*;
+import com.sucy.skill.api.player.PlayerClass;
+import com.sucy.skill.api.player.PlayerData;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -16,6 +20,9 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.plugin.Plugin;
+
+import java.util.ArrayList;
+import java.util.Optional;
 
 @SuppressWarnings("unused")
 public class MainListener implements Listener {
@@ -75,11 +82,19 @@ public class MainListener implements Listener {
         ClientData data = manager.get(p);
         boolean c = checkClient(p);
         boolean v = checkValid(p);
+        ArrayList<String> list = new ArrayList<>();
+        for (PlayerClass playerClass : e.getPlayerData().getClasses()) list.add(playerClass.getData().getName());
+        Optional<Condition> optional = ConditionManager.match(p.getWorld().getName(),list);
         if (c && v) {
+            optional.ifPresent(condition -> data.getStatus().setCondition(condition.getKey()));
             data.getEventHandler().onChangeProfess();
+            optional.ifPresent(condition -> data.getEventHandler().onMatchCondition(condition));
         } else if (v) {
+            optional.ifPresent(condition -> data.getStatus().setCondition(condition.getKey()));
             data.getEventHandler().onStartProfess();
+            optional.ifPresent(condition -> data.getEventHandler().onMatchCondition(condition));
         } else if (c) {
+            data.getEventHandler().onUnMatchCondition();
             data.getEventHandler().onResetProfess();
         }
     }
@@ -97,12 +112,28 @@ public class MainListener implements Listener {
         if (cData == null || !cData.getStatus().isDiscovered()) return;
         boolean p = !(e.getPreviousAccount() == null || e.getPreviousAccount().getClasses().isEmpty() || e.getPreviousAccount().getSkills().isEmpty());
         boolean n = !(e.getNewAccount() == null || e.getNewAccount().getClasses().isEmpty() || e.getNewAccount().getSkills().isEmpty());
-        if (n) {
-            if (p) Bukkit.getScheduler().runTaskLater(plugin, ()->cData.getEventHandler().onAccountSwitch(),2);
-            else Bukkit.getScheduler().runTaskLater(plugin, ()->cData.getEventHandler().onAccToEnable(),2);
-        } else {
-            if (p) Bukkit.getScheduler().runTaskLater(plugin, ()->cData.getEventHandler().onAccToDisable(),2);
-        }
+        ArrayList<String> list = new ArrayList<>();
+        if (n) e.getNewAccount().getClasses().forEach(v -> list.add(v.getData().getName()));
+        Optional<Condition> optional = ConditionManager.match(player.getWorld().getName(), list);
+        scheduler(()->{
+            if (n) {
+                if (p) {
+                    optional.ifPresent(condition -> cData.getStatus().setCondition(condition.getKey()));
+                    cData.getEventHandler().onAccountSwitch();
+                    optional.ifPresent(condition -> cData.getEventHandler().onMatchCondition(condition));
+                }
+                else {
+                    optional.ifPresent(condition -> cData.getStatus().setCondition(condition.getKey()));
+                    cData.getEventHandler().onAccToEnable();
+                    optional.ifPresent(condition -> cData.getEventHandler().onMatchCondition(condition));
+                }
+            } else {
+                if (p) {
+                    cData.getEventHandler().onUnMatchCondition();
+                    cData.getEventHandler().onAccToDisable();
+                }
+            }
+        },2);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -110,12 +141,25 @@ public class MainListener implements Listener {
         //Player changed the world, the new world may now allowed to use Skill
         Player player = e.getPlayer();
         ClientData data = manager.get(player);
+        ArrayList<String> list = new ArrayList<>();
+        if (SkillAPI.hasPlayerData(player)){
+            PlayerData playerData = SkillAPI.getPlayerData(player);
+            playerData.getClasses().forEach(playerClass -> list.add(playerClass.getData().getName()));
+        }
+        Optional<Condition> optional = ConditionManager.match(player.getWorld().getName(),list);
         if (data != null && data.getStatus().isDiscovered()) {
             boolean f = SkillAPI.getSettings().isWorldEnabled(player.getWorld());
             if (f){
-                if (!checkClient(data) && checkValid(player)) data.getEventHandler().onWorldToEnable();
+                if (!checkClient(data) && checkValid(player)) {
+                    optional.ifPresent(condition -> data.getStatus().setCondition(condition.getKey()));
+                    data.getEventHandler().onWorldToEnable();
+                    optional.ifPresent(condition -> data.getEventHandler().onMatchCondition(condition));
+                }
             } else {
-                if (checkClient(data)) data.getEventHandler().onWorldToDisable();
+                if (checkClient(data)) {
+                    data.getEventHandler().onUnMatchCondition();
+                    data.getEventHandler().onWorldToDisable();
+                }
             }
         }
     }

@@ -69,6 +69,9 @@ public class ClientBar {
         return (map == null || map.get(id) == null) ? "" : map.get(id).get(order);
     }
 
+    public void setBar(Map<Integer, String> map){
+        setBar(getActiveId(), map);
+    }
 
     public void setBar(int activeId, Map<Integer, String> map) {
         if (this.map == null) this.map = new HashMap<>();

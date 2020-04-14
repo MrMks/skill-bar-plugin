@@ -19,7 +19,7 @@ dependencies {
     compileOnly 'io.netty:netty-all:4.1.9.Final'
     compileOnly files('../Libraries/SkillAPI v1.9.jar')
     compileOnly files('../Libraries/MCCore.jar')
-    compile 'com.github.mrmks:skillbar-common:4'
+    compile 'com.github.mrmks:skillbar-common:5'
 }
 
 jar {

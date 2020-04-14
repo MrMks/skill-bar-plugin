@@ -1,5 +1,6 @@
 package com.github.MrMks.skillbar.bukkit;
 
+import com.github.MrMks.skillbar.bukkit.condition.Condition;
 import com.github.MrMks.skillbar.common.Constants;
 import com.github.MrMks.skillbar.common.SkillInfo;
 import com.github.MrMks.skillbar.common.pkg.SPackage;
@@ -99,6 +100,25 @@ public class EventHandler {
             if (data.hasSkill(bar.getSkill(index))) map.put(bar.getSkill(index), data.getSkill(bar.getSkill(index)).getCooldown());
         }
         sender.send(SPackage.BUILDER.buildCoolDown(BukkitByteBuilder::new, map));
+    }
+
+    public void onUnMatchCondition(){
+        if (status.isInCondition()) {
+            status.levelCondition();
+            sender.send(SPackage.BUILDER.buildFixBar(BukkitByteBuilder::new, false));
+            sender.send(SPackage.BUILDER.buildSetting(BukkitByteBuilder::new, Setting.getInstance().getBarMaxLine()));
+        }
+    }
+
+    public void onMatchCondition(Condition condition){
+        if (!status.isInCondition() || !status.getConditionKey().equals(condition.getKey())) {
+            sender.send(SPackage.BUILDER.buildSetting(BukkitByteBuilder::new, condition.getBarSize() > 0 ? condition.getBarSize() : Setting.getInstance().getBarMaxLine()));
+            if (condition.isEnableFix()) {
+                bar.setBar(condition.getBarList());
+                sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, condition.getBarList()));
+                sender.send(SPackage.BUILDER.buildFixBar(BukkitByteBuilder::new, true));
+            }
+        }
     }
 
     public void enable(){

@@ -10,6 +10,8 @@ public class ClientStatus {
     private boolean discovered = false;
     private boolean justBlock = false;
     private EnumStatus status = EnumStatus.Discovering;
+    private String conditionKey = "";
+    private boolean inCondition = false;
     //private ClientBar bar;
     public ClientStatus(UUID uuid){
         this.uid = uuid;
@@ -63,6 +65,24 @@ public class ClientStatus {
 
     public boolean isDisable(){
         return status == EnumStatus.Disabled;
+    }
+
+    public String getConditionKey(){
+        return conditionKey;
+    }
+
+    public boolean isInCondition() {
+        return inCondition;
+    }
+
+    public void setCondition(String key){
+        conditionKey = key;
+        inCondition = true;
+    }
+
+    public void levelCondition(){
+        conditionKey = "";
+        inCondition = false;
     }
 
     private int timesInSeconds = 0;

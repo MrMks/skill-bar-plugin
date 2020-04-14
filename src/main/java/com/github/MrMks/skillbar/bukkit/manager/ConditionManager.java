@@ -15,8 +15,16 @@ public class ConditionManager {
             store.saveDefaultConfig();
             store.reloadConfig();
         }
-        config = store.getConfig();
         conditions.clear();
+        try {
+            init(store.getConfig());
+        } catch (Throwable tr) {
+            conditions.clear();
+            throw tr;
+        }
+    }
+
+    private static void init(FileConfiguration config){
         Set<String> keys = config.getKeys(false);
         for (String key : keys) {
             ConfigurationSection section = config.getConfigurationSection(key);
@@ -26,13 +34,13 @@ public class ConditionManager {
             List<String> profession = section.getStringList("conditions.profession");
             int barSize = section.getInt("barSize");
             boolean fixBar = section.getBoolean("enableBarList");
-            Map<String, Integer> barList = new HashMap<>();
+            Map<Integer, String> barList = new HashMap<>();
             ConfigurationSection barSection = section.getConfigurationSection("barList");
             Set<String> barKeys = barSection.getKeys(false);
             for (String skillKey : barKeys) {
                 int index = barSection.getInt(skillKey);
                 if (index >= 0 && index < barSize * 9){
-                    barList.put(skillKey, index);
+                    barList.put(index,skillKey);
                 }
             }
             conditions.add(new Condition(key,enable,wright,world,profession,barSize,fixBar,barList));
