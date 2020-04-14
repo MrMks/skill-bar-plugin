@@ -7,6 +7,14 @@ conditionName1: #conditionName可以随便写，只要不重复
   barSize: 1 #在这个情况下玩家的技能栏行数
   enableBarList: true #是否要固定barList，false时下面的barList中的配置将被忽略
   barList:
-    'skillKey1': index1 # key为SkillKey的技能的栏位是 index1，在index超出barSize和0的范围时，这个配置将被忽略，key所代表的技能不存在时，这个配置将被忽略
-    'skillKey2': index2
-conditionName2:
+    'skillKey1': 2 # key为SkillKey的技能的栏位是 index1，在index超出barSize和0的范围时，这个配置将被忽略，key所代表的技能不存在时，这个配置将被忽略
+    'skillKey2': 6
+name2:
+  enable: false
+  weight: 0
+  conditions:
+    world: []
+    profession: []
+  barSize: 1
+  enableBarList: false
+  barList: {}

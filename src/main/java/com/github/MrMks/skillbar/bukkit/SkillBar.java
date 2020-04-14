@@ -1,5 +1,6 @@
 package com.github.MrMks.skillbar.bukkit;
 
+import com.github.MrMks.skillbar.bukkit.manager.ConditionManager;
 import com.github.MrMks.skillbar.common.Constants;
 import com.github.MrMks.skillbar.bukkit.data.ClientBar;
 import com.github.MrMks.skillbar.bukkit.data.ClientData;
@@ -34,6 +35,7 @@ public class SkillBar extends JavaPlugin implements Listener {
         if (!file.exists()) file.mkdir();
         ClientBar.setPath(getDataFolder());
         if (!new File(getDataFolder(), "config.yml").exists()) this.saveDefaultConfig();
+        if (!new File(getDataFolder(), "conditions.yml").exists()) this.saveDefaultConfig();
     }
 
     @Override
@@ -47,6 +49,7 @@ public class SkillBar extends JavaPlugin implements Listener {
         Setting.getInstance().readConfig(getConfig());
         BlackList.init(getDataFolder());
         PluginSender.init(this);
+        ConditionManager.init(new FileConfigStore(this, "conditions.yml"));
 
         // register events
         HandlerList.unregisterAll((Plugin) this);
@@ -97,6 +100,7 @@ public class SkillBar extends JavaPlugin implements Listener {
         // clean static classes
         PluginSender.clean();
         BlackList.saveUnload();
+        ConditionManager.clean();
         reloadConfig();
     }
 }
