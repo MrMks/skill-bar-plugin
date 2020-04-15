@@ -32,7 +32,7 @@ public class CmdBan implements IFunction {
                     commandSender.sendMessage("player data doesn't exist");
                 } else {
                     if (!data.getStatus().isBlocked()) {
-                        if (data.getStatus().isDiscovered()) data.getEventHandler().disable();
+                        if (data.getStatus().isDiscovered()) data.getEventHandler().sendDisable();
                         data.getStatus().block();
                     }
                     commandSender.sendMessage("player " + strings[0] + " has been banned to use skill bar");

@@ -2,6 +2,7 @@ package com.github.MrMks.skillbar.bukkit.manager;
 
 import com.github.MrMks.skillbar.bukkit.FileConfigStore;
 import com.github.MrMks.skillbar.bukkit.condition.Condition;
+import com.sucy.skill.SkillAPI;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -32,6 +33,11 @@ public class ConditionManager {
             int wright = section.getInt("enable");
             List<String> world = section.getStringList("conditions.world");
             List<String> profession = section.getStringList("conditions.profession");
+            boolean flag = profession.isEmpty();
+            for (String profess : profession) {
+                if (!SkillAPI.isClassRegistered(profess)) flag = true;
+            }
+            if (flag) continue;
             int barSize = section.getInt("barSize");
             boolean fixBar = section.getBoolean("enableBarList");
             Map<Integer, String> barList = new HashMap<>();

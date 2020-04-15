@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'com.github.MrMks'
-version '1.2.4-4-SNAPSHOT'
+version '1.2.5-6-SNAPSHOT'
 
 sourceCompatibility = 1.8
 
@@ -19,7 +19,8 @@ dependencies {
     compileOnly 'io.netty:netty-all:4.1.9.Final'
     compileOnly files('../Libraries/SkillAPI v1.9.jar')
     compileOnly files('../Libraries/MCCore.jar')
-    compile 'com.github.mrmks:skillbar-common:5'
+
+    compile 'com.github.mrmks:skillbar-common:6'
 }
 
 jar {

@@ -22,7 +22,7 @@ public class PackageListener implements PluginMessageListener {
         if (manager.has(player)) {
             ClientData data = manager.get(player);
             if ((data.getStatus().isBlocked() && data.getStatus().isSendDisable()) || data.getStatus().isDisable()) {
-                data.getEventHandler().disable();
+                data.getEventHandler().sendDisable();
                 return;
             }
             try {

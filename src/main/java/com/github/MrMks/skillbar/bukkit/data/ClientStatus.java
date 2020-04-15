@@ -1,8 +1,10 @@
 package com.github.MrMks.skillbar.bukkit.data;
 
 import com.github.MrMks.skillbar.bukkit.BlackList;
+import com.github.MrMks.skillbar.bukkit.condition.Condition;
 import org.bukkit.Bukkit;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public class ClientStatus {
@@ -10,8 +12,7 @@ public class ClientStatus {
     private boolean discovered = false;
     private boolean justBlock = false;
     private EnumStatus status = EnumStatus.Discovering;
-    private String conditionKey = "";
-    private boolean inCondition = false;
+    private Condition condition = null;
     //private ClientBar bar;
     public ClientStatus(UUID uuid){
         this.uid = uuid;
@@ -67,22 +68,16 @@ public class ClientStatus {
         return status == EnumStatus.Disabled;
     }
 
-    public String getConditionKey(){
-        return conditionKey;
+    public Optional<Condition> getCondition(){
+        return Optional.ofNullable(condition);
     }
 
-    public boolean isInCondition() {
-        return inCondition;
-    }
-
-    public void setCondition(String key){
-        conditionKey = key;
-        inCondition = true;
+    public void setCondition(Condition condition){
+        this.condition = condition;
     }
 
     public void levelCondition(){
-        conditionKey = "";
-        inCondition = false;
+        condition = null;
     }
 
     private int timesInSeconds = 0;

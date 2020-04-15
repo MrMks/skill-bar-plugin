@@ -86,15 +86,19 @@ public class MainListener implements Listener {
         for (PlayerClass playerClass : e.getPlayerData().getClasses()) list.add(playerClass.getData().getName());
         Optional<Condition> optional = ConditionManager.match(p.getWorld().getName(),list);
         if (c && v) {
-            optional.ifPresent(condition -> data.getStatus().setCondition(condition.getKey()));
-            data.getEventHandler().onChangeProfess();
-            optional.ifPresent(condition -> data.getEventHandler().onMatchCondition(condition));
+            // player change class,send AddSkill and Condition
+            data.getEventHandler().onChangeProfess(e.getPlayerClass());
+            if (optional.isPresent()) {
+                data.getEventHandler().onMatchCondition(optional.get());
+                data.getPackageHandler().onListBar();
+            }
         } else if (v) {
-            optional.ifPresent(condition -> data.getStatus().setCondition(condition.getKey()));
-            data.getEventHandler().onStartProfess();
+            // player start profess a class, send account, enable and condition
             optional.ifPresent(condition -> data.getEventHandler().onMatchCondition(condition));
+            data.getEventHandler().onStartProfess();
         } else if (c) {
-            data.getEventHandler().onUnMatchCondition();
+            // player profession reset, send NoCondition and disable
+            data.getEventHandler().onLevelCondition();
             data.getEventHandler().onResetProfess();
         }
     }
@@ -118,18 +122,17 @@ public class MainListener implements Listener {
         scheduler(()->{
             if (n) {
                 if (p) {
-                    optional.ifPresent(condition -> cData.getStatus().setCondition(condition.getKey()));
-                    cData.getEventHandler().onAccountSwitch();
+                    // player change account, send account
                     optional.ifPresent(condition -> cData.getEventHandler().onMatchCondition(condition));
+                    cData.getEventHandler().onAccountSwitch();
                 }
                 else {
-                    optional.ifPresent(condition -> cData.getStatus().setCondition(condition.getKey()));
-                    cData.getEventHandler().onAccToEnable();
                     optional.ifPresent(condition -> cData.getEventHandler().onMatchCondition(condition));
+                    cData.getEventHandler().onAccToEnable();
                 }
             } else {
                 if (p) {
-                    cData.getEventHandler().onUnMatchCondition();
+                    cData.getEventHandler().onLevelCondition();
                     cData.getEventHandler().onAccToDisable();
                 }
             }
@@ -150,14 +153,22 @@ public class MainListener implements Listener {
         if (data != null && data.getStatus().isDiscovered()) {
             boolean f = SkillAPI.getSettings().isWorldEnabled(player.getWorld());
             if (f){
-                if (!checkClient(data) && checkValid(player)) {
-                    optional.ifPresent(condition -> data.getStatus().setCondition(condition.getKey()));
-                    data.getEventHandler().onWorldToEnable();
-                    optional.ifPresent(condition -> data.getEventHandler().onMatchCondition(condition));
+                if (checkValid(player)) {
+                    if (!checkClient(data)) {
+                        optional.ifPresent(condition -> data.getEventHandler().onMatchCondition(condition));
+                        data.getEventHandler().onWorldToEnable();
+                    } else {
+                        if (optional.isPresent()) {
+                            data.getEventHandler().onMatchCondition(optional.get());
+                        } else {
+                            data.getEventHandler().onLevelCondition();
+                        }
+                        data.getPackageHandler().onListBar();
+                    }
                 }
             } else {
                 if (checkClient(data)) {
-                    data.getEventHandler().onUnMatchCondition();
+                    data.getEventHandler().onLevelCondition();
                     data.getEventHandler().onWorldToDisable();
                 }
             }

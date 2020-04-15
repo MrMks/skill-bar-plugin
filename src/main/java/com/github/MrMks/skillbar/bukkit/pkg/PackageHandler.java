@@ -50,8 +50,9 @@ public class PackageHandler implements IServerHandler {
                 sender.send(SPackage.BUILDER.buildSetting(BukkitByteBuilder::new, Setting.getInstance().getBarMaxLine()));
                 if (checkValid()) {
                     PlayerAccounts accounts = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid));
+                    sender.send(SPackage.BUILDER.buildAccount(BukkitByteBuilder::new, accounts.getActiveId(), accounts.getActiveData().getSkills().size()));
                     status.enable();
-                    sender.send(SPackage.BUILDER.buildEnable(BukkitByteBuilder::new, accounts.getActiveId(), accounts.getActiveData().getSkills().size()));
+                    sender.send(SPackage.BUILDER.buildEnable(BukkitByteBuilder::new));
                 }
             }
         }
@@ -94,23 +95,26 @@ public class PackageHandler implements IServerHandler {
     @Override
     public void onListBar() {
         if (checkValid()){
-            if (!status.isInCondition()) {
+            Map<Integer, String> map;
+            if (!status.getCondition().isPresent()) {
                 Player player = Bukkit.getPlayer(uuid);
                 PlayerData playerData = SkillAPI.getPlayerData(player);
-                Map<Integer, String> map = new HashMap<>();
+                map = new HashMap<>();
                 for (int index : bar.keys()) {
                     if (playerData.hasSkill(bar.getSkill(index))) map.put(index,bar.getSkill(index));
                 }
                 bar.setBar(SkillAPI.getPlayerAccountData(player).getActiveId(),map);
-                sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new,map));
+            } else {
+                map = status.getCondition().get().getBarList();
             }
+            sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new,map));
         }
     }
 
     @Override
     public void onSaveBar(Map<Integer, CharSequence> map) {
         if (checkValid()){
-            if (!status.isInCondition()) {
+            if (!status.getCondition().isPresent()) {
                 Player player = Bukkit.getPlayer(uuid);
                 PlayerData playerData = SkillAPI.getPlayerData(player);
                 PlayerAccounts accounts = SkillAPI.getPlayerAccountData(player);

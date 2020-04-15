@@ -1,23 +1,22 @@
 package com.github.MrMks.skillbar.bukkit;
 
 import com.github.MrMks.skillbar.bukkit.condition.Condition;
-import com.github.MrMks.skillbar.common.Constants;
-import com.github.MrMks.skillbar.common.SkillInfo;
-import com.github.MrMks.skillbar.common.pkg.SPackage;
 import com.github.MrMks.skillbar.bukkit.data.ClientBar;
 import com.github.MrMks.skillbar.bukkit.data.ClientStatus;
 import com.github.MrMks.skillbar.bukkit.pkg.BukkitByteBuilder;
 import com.github.MrMks.skillbar.bukkit.pkg.BukkitSkillInfo;
 import com.github.MrMks.skillbar.bukkit.pkg.PluginSender;
+import com.github.MrMks.skillbar.common.Constants;
+import com.github.MrMks.skillbar.common.SkillInfo;
+import com.github.MrMks.skillbar.common.pkg.SPackage;
 import com.sucy.skill.SkillAPI;
 import com.sucy.skill.api.player.PlayerAccounts;
+import com.sucy.skill.api.player.PlayerClass;
 import com.sucy.skill.api.player.PlayerData;
+import com.sucy.skill.api.skills.Skill;
 import org.bukkit.Bukkit;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class EventHandler {
     private final UUID uuid;
@@ -31,57 +30,75 @@ public class EventHandler {
         this.sender = sender;
     }
 
+    /**
+     * player join, start discover
+     * send if not discovered
+     */
     public void onJoin(){
         if (!status.isDiscovered()) {
             sender.send(SPackage.BUILDER.buildDiscover(BukkitByteBuilder::new, Constants.VERSION));
         }
     }
 
+    /**
+     * player reset profess
+     * send if discovered, not blocked, and enabled
+     * will set status to disabled
+     */
     public void onResetProfess(){
         if (status.isDiscovered() && status.isEnable()) {
             int active = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid)).getActiveId();
             sender.send(SPackage.BUILDER.buildCleanUp(BukkitByteBuilder::new, active));
-            status.disable();
-            sender.send(SPackage.BUILDER.buildDisable(BukkitByteBuilder::new));
+            sendDisable();
             bar.setBar(active, Collections.emptyMap());
         }
     }
 
+    /**
+     * player profess a class from null
+     * send if discovered, not blocked and not enabled 
+     */
     public void onStartProfess(){
-        if (status.isDiscovered() && !status.isEnable()) {
-            int active = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid)).getActiveId();
-            int size = SkillAPI.getPlayerData(Bukkit.getOfflinePlayer(uuid)).getSkills().size();
-            status.enable();
-            sender.send(SPackage.BUILDER.buildEnable(BukkitByteBuilder::new, active, size));
+        if (status.isDiscovered() && !status.isBlocked() && !status.isEnable()) {
+            sendAccount();
+            sendEnable();
         }
     }
-    public void onChangeProfess(){
+
+    public void onChangeProfess(PlayerClass playerClass){
         if (status.isDiscovered() && status.isEnable()) {
-            int active = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid)).getActiveId();
-            int size = SkillAPI.getPlayerData(Bukkit.getOfflinePlayer(uuid)).getSkills().size();
-            sender.send(SPackage.BUILDER.buildAddSkill(BukkitByteBuilder::new, active, size));
+            List<Skill> skills = playerClass.getData().getSkills();
+            List<SkillInfo> infoList = new ArrayList<>();
+            PlayerData data = playerClass.getPlayerData();
+            for (Skill skill : skills) {
+                String skillKey = skill.getKey();
+                if (data.hasSkill(skillKey)) infoList.add(new BukkitSkillInfo(data.getSkill(skillKey)));
+            }
+            sender.send(SPackage.BUILDER.buildAddSkill(BukkitByteBuilder::new, infoList));
         }
     }
 
     public void onAccountSwitch(){
         if (status.isDiscovered() && status.isEnable()) {
-            int active = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid)).getActiveId();
-            int size = SkillAPI.getPlayerData(Bukkit.getOfflinePlayer(uuid)).getSkills().size();
-            sender.send(SPackage.BUILDER.buildAccount(BukkitByteBuilder::new,active,size));
+            sendAccount();
         }
     }
+
     public void onAccToEnable(){
-        enable();
+        sendAccount();
+        sendEnable();
     }
+
     public void onAccToDisable(){
-        disable();
+        sendDisable();
+        sendAccount();
     }
 
     public void onWorldToEnable(){
-        enable();
+        sendEnable();
     }
     public void onWorldToDisable(){
-        disable();
+        sendDisable();
     }
 
     public void onUpdateSkillInfo(String key){
@@ -92,6 +109,7 @@ public class EventHandler {
         } else info = SkillInfo.Empty;
         sender.send(SPackage.BUILDER.buildUpdateSkill(BukkitByteBuilder::new,info));
     }
+
     public void onUpdateCoolDownInfo(){
         PlayerAccounts accounts = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid));
         PlayerData data = accounts.getActiveData();
@@ -102,8 +120,8 @@ public class EventHandler {
         sender.send(SPackage.BUILDER.buildCoolDown(BukkitByteBuilder::new, map));
     }
 
-    public void onUnMatchCondition(){
-        if (status.isInCondition()) {
+    public void onLevelCondition(){
+        if (status.getCondition().isPresent()) {
             status.levelCondition();
             sender.send(SPackage.BUILDER.buildFixBar(BukkitByteBuilder::new, false));
             sender.send(SPackage.BUILDER.buildSetting(BukkitByteBuilder::new, Setting.getInstance().getBarMaxLine()));
@@ -111,25 +129,31 @@ public class EventHandler {
     }
 
     public void onMatchCondition(Condition condition){
-        if (!status.isInCondition() || !status.getConditionKey().equals(condition.getKey())) {
+        Optional<Condition> optional = status.getCondition();
+        if (!optional.isPresent() || !optional.get().getKey().equals(condition.getKey())) {
+            status.setCondition(condition);
             sender.send(SPackage.BUILDER.buildSetting(BukkitByteBuilder::new, condition.getBarSize() > 0 ? condition.getBarSize() : Setting.getInstance().getBarMaxLine()));
             if (condition.isEnableFix()) {
-                bar.setBar(condition.getBarList());
-                sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, condition.getBarList()));
                 sender.send(SPackage.BUILDER.buildFixBar(BukkitByteBuilder::new, true));
             }
         }
     }
 
-    public void enable(){
-        if (status.isDiscovered() && !status.isEnable()) {
+    public void sendAccount() {
+        if (status.isDiscovered() && !status.isBlocked()) {
             int active = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid)).getActiveId();
             int size = SkillAPI.getPlayerData(Bukkit.getOfflinePlayer(uuid)).getSkills().size();
-            status.enable();
-            sender.send(SPackage.BUILDER.buildEnable(BukkitByteBuilder::new, active, size));
+            sender.send(SPackage.BUILDER.buildAccount(BukkitByteBuilder::new, active, size));
         }
     }
-    public void disable(){
+
+    public void sendEnable(){
+        if (status.isDiscovered() && !status.isEnable()) {
+            status.enable();
+            sender.send(SPackage.BUILDER.buildEnable(BukkitByteBuilder::new));
+        }
+    }
+    public void sendDisable(){
         if (status.isDiscovered() && status.isEnable()) {
             status.disable();
             sender.send(SPackage.BUILDER.buildDisable(BukkitByteBuilder::new));
