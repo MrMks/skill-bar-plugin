@@ -102,7 +102,8 @@ public class ClientData {
             timeLastUpdate = now;
         }
         timesInSeconds += 1;
-        if (timesInSeconds > 20) block();
+        // 暂时禁用频率检查
+        // if (timesInSeconds > 20) block();
     }
 
     public void onReceiveBad(){
@@ -112,6 +113,7 @@ public class ClientData {
             timeLastUpdate = now;
         }
         timesInSeconds += 3;
-        if (timesInSeconds > 20) block();
+        // 暂时禁用频率检查
+        // if (timesInSeconds > 20) block();
     }
 }
