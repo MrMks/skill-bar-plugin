@@ -49,7 +49,7 @@ public class ConditionManager {
                     barList.put(index,skillKey);
                 }
             }
-            conditions.add(new Condition(key,enable,wright,world,profession,barSize,fixBar,barList));
+            conditions.add(new Condition(key,enable,wright,world,profession,barSize - 1,fixBar,barList));
         }
     }
 

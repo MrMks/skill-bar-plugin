@@ -89,7 +89,10 @@ public class SkillBar extends JavaPlugin implements Listener {
         // disable all clients && clean client data
         if (manager != null) {
             if (isEnabled()) {
-                for (ClientData data : manager.getAll()) data.getEventHandler().sendDisable();
+                for (ClientData data : manager.getAll()) {
+                    data.getEventHandler().onLevelCondition();
+                    data.getEventHandler().sendDisable();
+                }
             }
             manager.clearSaveAll();
             manager = null;

@@ -19,7 +19,7 @@ public class Condition {
         this.weight = weight;
         this.worlds = worlds;
         this.professionKeys = professionKeys;
-        this.barSize = barSize;
+        this.barSize = Math.max(barSize,0);
         this.enableFix = enableFix;
         this.list = list;
     }

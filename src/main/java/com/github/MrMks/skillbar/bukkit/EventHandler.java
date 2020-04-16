@@ -132,10 +132,8 @@ public class EventHandler {
         Optional<Condition> optional = status.getCondition();
         if (!optional.isPresent() || !optional.get().getKey().equals(condition.getKey())) {
             status.setCondition(condition);
-            sender.send(SPackage.BUILDER.buildSetting(BukkitByteBuilder::new, condition.getBarSize() > 0 ? condition.getBarSize() : Setting.getInstance().getBarMaxLine()));
-            if (condition.isEnableFix()) {
-                sender.send(SPackage.BUILDER.buildFixBar(BukkitByteBuilder::new, true));
-            }
+            sender.send(SPackage.BUILDER.buildSetting(BukkitByteBuilder::new, condition.getBarSize() >= 0 ? condition.getBarSize() : Setting.getInstance().getBarMaxLine()));
+            sender.send(SPackage.BUILDER.buildFixBar(BukkitByteBuilder::new, condition.isEnableFix()));
         }
     }
 

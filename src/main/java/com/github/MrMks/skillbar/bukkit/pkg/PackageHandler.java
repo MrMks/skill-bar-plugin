@@ -1,6 +1,8 @@
 package com.github.MrMks.skillbar.bukkit.pkg;
 
 import com.github.MrMks.skillbar.bukkit.Setting;
+import com.github.MrMks.skillbar.bukkit.condition.Condition;
+import com.github.MrMks.skillbar.bukkit.manager.ConditionManager;
 import com.github.MrMks.skillbar.common.ByteBuilder;
 import com.github.MrMks.skillbar.common.Constants;
 import com.github.MrMks.skillbar.common.SkillInfo;
@@ -10,6 +12,7 @@ import com.github.MrMks.skillbar.bukkit.data.ClientBar;
 import com.github.MrMks.skillbar.bukkit.data.ClientStatus;
 import com.sucy.skill.SkillAPI;
 import com.sucy.skill.api.player.PlayerAccounts;
+import com.sucy.skill.api.player.PlayerClass;
 import com.sucy.skill.api.player.PlayerData;
 import com.sucy.skill.api.player.PlayerSkill;
 import org.bukkit.Bukkit;
@@ -49,7 +52,16 @@ public class PackageHandler implements IServerHandler {
             if (!status.isBlocked()) {
                 sender.send(SPackage.BUILDER.buildSetting(BukkitByteBuilder::new, Setting.getInstance().getBarMaxLine()));
                 if (checkValid()) {
-                    PlayerAccounts accounts = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid));
+                    Player player = Bukkit.getPlayer(uuid);
+                    PlayerAccounts accounts = SkillAPI.getPlayerAccountData(player);
+                    List<String> list = new ArrayList<>();
+                    accounts.getActiveData().getClasses().forEach(v->list.add(v.getData().getName()));
+                    Optional<Condition> optional = ConditionManager.match(player.getWorld().getName(), list);
+                    if (optional.isPresent()){
+                        sender.send(SPackage.BUILDER.buildSetting(BukkitByteBuilder::new, optional.get().getBarSize()));
+                        sender.send(SPackage.BUILDER.buildFixBar(BukkitByteBuilder::new, optional.get().isEnableFix()));
+                        status.setCondition(optional.get());
+                    }
                     sender.send(SPackage.BUILDER.buildAccount(BukkitByteBuilder::new, accounts.getActiveId(), accounts.getActiveData().getSkills().size()));
                     status.enable();
                     sender.send(SPackage.BUILDER.buildEnable(BukkitByteBuilder::new));
@@ -96,7 +108,8 @@ public class PackageHandler implements IServerHandler {
     public void onListBar() {
         if (checkValid()){
             Map<Integer, String> map;
-            if (!status.getCondition().isPresent()) {
+            Optional<Condition> optional = status.getCondition();
+            if (!optional.isPresent() || !optional.get().isEnableFix()) {
                 Player player = Bukkit.getPlayer(uuid);
                 PlayerData playerData = SkillAPI.getPlayerData(player);
                 map = new HashMap<>();
@@ -105,6 +118,7 @@ public class PackageHandler implements IServerHandler {
                 }
                 bar.setBar(SkillAPI.getPlayerAccountData(player).getActiveId(),map);
             } else {
+                //noinspection OptionalGetWithoutIsPresent
                 map = status.getCondition().get().getBarList();
             }
             sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new,map));
@@ -114,7 +128,8 @@ public class PackageHandler implements IServerHandler {
     @Override
     public void onSaveBar(Map<Integer, CharSequence> map) {
         if (checkValid()){
-            if (!status.getCondition().isPresent()) {
+            Optional<Condition> optional = status.getCondition();
+            if (!optional.isPresent() || !optional.get().isEnableFix()) {
                 Player player = Bukkit.getPlayer(uuid);
                 PlayerData playerData = SkillAPI.getPlayerData(player);
                 PlayerAccounts accounts = SkillAPI.getPlayerAccountData(player);
