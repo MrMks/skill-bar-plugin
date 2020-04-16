@@ -1,6 +1,6 @@
 name: SecondSkillBar
 main: com.github.MrMks.skillbar.SkillBar
-version: 1.2.3-3-SNAPSHOT
+version: 1.2.3-3-a2
 depend:
   - SkillAPI
 permissions:
