@@ -1,13 +1,13 @@
 package com.github.MrMks.skillbar.bukkit;
 
 import com.github.MrMks.skillbar.bukkit.condition.Condition;
-import com.github.MrMks.skillbar.bukkit.data.*;
+import com.github.MrMks.skillbar.bukkit.data.ClientData;
+import com.github.MrMks.skillbar.bukkit.data.ClientManager;
 import com.github.MrMks.skillbar.bukkit.manager.ConditionManager;
 import com.github.MrMks.skillbar.bukkit.task.ClientDiscoverTask;
 import com.github.MrMks.skillbar.bukkit.task.ReloadCheckTask;
 import com.sucy.skill.SkillAPI;
 import com.sucy.skill.api.event.*;
-import com.sucy.skill.api.player.PlayerClass;
 import com.sucy.skill.api.player.PlayerData;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -24,6 +24,10 @@ import org.bukkit.plugin.Plugin;
 import java.util.ArrayList;
 import java.util.Optional;
 
+/**
+ * this class should listen all related Event, do all valid checks and do all param checks
+ * and this class should only access eventHandler to send all packages;
+ */
 @SuppressWarnings("unused")
 public class MainListener implements Listener {
 
@@ -48,6 +52,7 @@ public class MainListener implements Listener {
         Player p = e.getPlayer();
         manager.prepare(p);
         ClientData data = manager.get(p);
+        // data should never be null as manager#prepare(Player) just generate a ClientData with key p.getUniqueId()
         if (data != null && !data.getStatus().isDiscovered()) {
             scheduler(()->{
                 data.getEventHandler().onJoin();
@@ -78,28 +83,23 @@ public class MainListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerChangeClass(PlayerClassChangeEvent e){
-        Player p = e.getPlayerData().getPlayer();
-        ClientData data = manager.get(p);
-        boolean c = checkClient(p);
-        boolean v = checkValid(p);
-        ArrayList<String> list = new ArrayList<>();
-        for (PlayerClass playerClass : e.getPlayerData().getClasses()) list.add(playerClass.getData().getName());
-        Optional<Condition> optional = ConditionManager.match(p.getWorld().getName(),list);
-        if (c && v) {
+        Player player = e.getPlayerData().getPlayer();
+        ClientData data = manager.get(player);
+        boolean pre = checkClient(data);
+        boolean post = checkValid(player);
+        Optional<Condition> optional = ConditionManager.match(player.getWorld().getName(),getProfessionKeyList(e.getPlayerData()));
+        if (pre && post) {
             // player change class,send AddSkill and Condition
             data.getEventHandler().onChangeProfess(e.getPlayerClass());
-            if (optional.isPresent()) {
-                data.getEventHandler().onMatchCondition(optional.get());
-                data.getPackageHandler().onListBar();
-            }
-        } else if (v) {
+            optional.ifPresent(condition -> data.getEventHandler().onMatchCondition(condition, true));
+        } else if (pre) {
+            // player profession reset, levelCondition and send disable
+            data.getEventHandler().onLeaveCondition();
+            data.getEventHandler().onResetProfess();
+        } else if (post) {
             // player start profess a class, send account, enable and condition
             optional.ifPresent(condition -> data.getEventHandler().onMatchCondition(condition));
             data.getEventHandler().onStartProfess();
-        } else if (c) {
-            // player profession reset, send NoCondition and disable
-            data.getEventHandler().onLevelCondition();
-            data.getEventHandler().onResetProfess();
         }
     }
 
@@ -111,30 +111,25 @@ public class MainListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerChangeAccount(PlayerAccountChangeEvent e){
         if (e.isCancelled()) return;
+
         Player player = e.getAccountData().getPlayer();
         ClientData cData = manager.get(player);
-        if (cData == null || !cData.getStatus().isDiscovered()) return;
-        boolean p = !(e.getPreviousAccount() == null || e.getPreviousAccount().getClasses().isEmpty() || e.getPreviousAccount().getSkills().isEmpty());
-        boolean n = !(e.getNewAccount() == null || e.getNewAccount().getClasses().isEmpty() || e.getNewAccount().getSkills().isEmpty());
-        ArrayList<String> list = new ArrayList<>();
-        if (n) e.getNewAccount().getClasses().forEach(v -> list.add(v.getData().getName()));
-        Optional<Condition> optional = ConditionManager.match(player.getWorld().getName(), list);
+        if (cData == null || !cData.getStatus().isDiscovered() || cData.getStatus().isBlocked()) return;
+
+        boolean pre = !(e.getPreviousAccount() == null || e.getPreviousAccount().getClasses().isEmpty() || e.getPreviousAccount().getSkills().isEmpty());
+        boolean post = !(e.getNewAccount() == null || e.getNewAccount().getClasses().isEmpty() || e.getNewAccount().getSkills().isEmpty());
+        Optional<Condition> optional = ConditionManager.match(player.getWorld().getName(), getProfessionKeyList(e.getNewAccount()));
+
         scheduler(()->{
-            if (n) {
-                if (p) {
-                    // player change account, send account
-                    optional.ifPresent(condition -> cData.getEventHandler().onMatchCondition(condition));
-                    cData.getEventHandler().onAccountSwitch();
-                }
-                else {
-                    optional.ifPresent(condition -> cData.getEventHandler().onMatchCondition(condition));
-                    cData.getEventHandler().onAccToEnable();
-                }
-            } else {
-                if (p) {
-                    cData.getEventHandler().onLevelCondition();
-                    cData.getEventHandler().onAccToDisable();
-                }
+            if (post && pre) {
+                optional.ifPresent(condition -> cData.getEventHandler().onMatchCondition(condition));
+                cData.getEventHandler().onAccountSwitch();
+            } else if (post) {
+                optional.ifPresent(condition -> cData.getEventHandler().onMatchCondition(condition));
+                cData.getEventHandler().onAccToEnable();
+            } else if (pre) {
+                cData.getEventHandler().onLeaveCondition();
+                cData.getEventHandler().onAccToDisable();
             }
         },2);
     }
@@ -144,34 +139,22 @@ public class MainListener implements Listener {
         //Player changed the world, the new world may now allowed to use Skill
         Player player = e.getPlayer();
         ClientData data = manager.get(player);
-        ArrayList<String> list = new ArrayList<>();
-        if (SkillAPI.hasPlayerData(player)){
-            PlayerData playerData = SkillAPI.getPlayerData(player);
-            playerData.getClasses().forEach(playerClass -> list.add(playerClass.getData().getName()));
-        }
-        Optional<Condition> optional = ConditionManager.match(player.getWorld().getName(),list);
-        if (data != null && data.getStatus().isDiscovered()) {
-            boolean f = SkillAPI.getSettings().isWorldEnabled(player.getWorld());
-            if (f){
-                if (checkValid(player)) {
-                    if (!checkClient(data)) {
-                        optional.ifPresent(condition -> data.getEventHandler().onMatchCondition(condition));
-                        data.getEventHandler().onWorldToEnable();
-                    } else {
-                        if (optional.isPresent()) {
-                            data.getEventHandler().onMatchCondition(optional.get());
-                        } else {
-                            data.getEventHandler().onLevelCondition();
-                        }
-                        data.getPackageHandler().onListBar();
-                    }
-                }
-            } else {
-                if (checkClient(data)) {
-                    data.getEventHandler().onLevelCondition();
-                    data.getEventHandler().onWorldToDisable();
-                }
-            }
+        if (data == null || !data.getStatus().isDiscovered() || data.getStatus().isBlocked()) return;
+        if (!SkillAPI.hasPlayerData(player)) data.getEventHandler().onWorldToDisable();
+
+        Optional<Condition> optional = ConditionManager.match(player.getWorld().getName(), getProfessionKeyList(SkillAPI.getPlayerData(player)));
+        boolean pre = checkClient(data);
+        boolean post = checkValid(player) && SkillAPI.getSettings().isWorldEnabled(player.getWorld());
+
+        if (pre && post) {
+            if (optional.isPresent()) data.getEventHandler().onMatchCondition(optional.get(), true);
+            else data.getEventHandler().onLeaveCondition();
+        } else if (post) {
+            optional.ifPresent(condition -> data.getEventHandler().onMatchCondition(condition));
+            data.getEventHandler().onWorldToEnable();
+        } else if (pre) {
+            data.getEventHandler().onLeaveCondition();
+            data.getEventHandler().onWorldToDisable();
         }
     }
 
@@ -253,5 +236,11 @@ public class MainListener implements Listener {
 
     private boolean checkClient(ClientData m){
         return m != null && m.getStatus().isEnable();
+    }
+
+    private ArrayList<String> getProfessionKeyList(PlayerData data){
+        ArrayList<String> list = new ArrayList<>();
+        data.getClasses().forEach(pro -> list.add(pro.getData().getName()));
+        return list;
     }
 }

@@ -120,20 +120,26 @@ public class EventHandler {
         sender.send(SPackage.BUILDER.buildCoolDown(BukkitByteBuilder::new, map));
     }
 
-    public void onLevelCondition(){
+    public void onLeaveCondition(){
         if (status.getCondition().isPresent()) {
-            status.levelCondition();
+            status.leaveCondition();
             sender.send(SPackage.BUILDER.buildFixBar(BukkitByteBuilder::new, false));
             sender.send(SPackage.BUILDER.buildSetting(BukkitByteBuilder::new, Setting.getInstance().getBarMaxLine()));
         }
     }
 
     public void onMatchCondition(Condition condition){
+        onMatchCondition(condition, false);
+    }
+
+    public void onMatchCondition(Condition condition, boolean listBar){
         Optional<Condition> optional = status.getCondition();
         if (!optional.isPresent() || !optional.get().getKey().equals(condition.getKey())) {
             status.setCondition(condition);
             sender.send(SPackage.BUILDER.buildSetting(BukkitByteBuilder::new, condition.getBarSize() >= 0 ? condition.getBarSize() : Setting.getInstance().getBarMaxLine()));
             sender.send(SPackage.BUILDER.buildFixBar(BukkitByteBuilder::new, condition.isEnableFix()));
+            if (condition.isEnableFix() && condition.isAllowFreeSlots()) sender.send(SPackage.BUILDER.buildFreeSlots(BukkitByteBuilder::new, condition.getFreeList()));
+            if (listBar) sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, condition.getBarList()));
         }
     }
 

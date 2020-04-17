@@ -21,6 +21,7 @@ public class ClientBar {
     private UUID uuid;
     private File file;
     private Map<Integer, Map<Integer, String>> map;
+    private Map<Integer, String> conditionMap = new HashMap<>();
     // global setting
     private int maxLine;
     // setting related to activeAcc
@@ -82,6 +83,18 @@ public class ClientBar {
         }
         for (Integer key : list) map.remove(key);
         this.map.put(activeId, map);
+    }
+
+    public void setConditionMap(Map<Integer, String> tempMap){
+        conditionMap.putAll(tempMap);
+    }
+
+    public Map<Integer, String> getConditionMap(){
+        return new HashMap<>(conditionMap);
+    }
+
+    public void clearConditionMap(){
+        conditionMap.clear();
     }
 
     public void readFromFile(){

@@ -1,20 +1,13 @@
 conditionName1: #conditionName可以随便写，只要不重复
-  enable: false
-  weight: 0 #数越高权重越大，多个条件都被匹配时，权重最大的将被应用
-  conditions: #当world和profession都匹配成功时则认为这个配置匹配成功
+  enable: false # false 时这条规则将被忽略
+  weight: 0 #数越高权重越大，多个规则都匹配时，权重最大的将被应用
+  conditions: #当world和profession都匹配成功时则认为这个配置匹配成功，如world和profession都为空时，这条规则将被忽略
     world: [] #限定worldName，多个世界名被列出时则匹配任意一个
     profession: [] #限定职业的Key，多个key被列出时则匹配任意一个
   barSize: 1 #在这个情况下玩家的技能栏行数
-  enableBarList: true #是否要固定barList，false时下面的barList中的配置将被忽略
+  enableFixBar: true #是否要固定barList，false时下面的barList中的配置将被忽略
   barList:
     'skillKey1': 2 # key为SkillKey的技能的栏位是 index1，在index超出barSize和0的范围时，这个配置将被忽略，key所代表的技能不存在时，这个配置将被忽略
     'skillKey2': 6
-name2:
-  enable: false
-  weight: 0
-  conditions:
-    world: []
-    profession: []
-  barSize: 1
-  enableBarList: false
-  barList: {}
+  enableFreeSlot: false #是否允许玩家拥有部分栏位可自由放置技能
+  freeSlots: []

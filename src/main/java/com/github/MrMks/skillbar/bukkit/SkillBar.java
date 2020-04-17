@@ -49,9 +49,7 @@ public class SkillBar extends JavaPlugin implements Listener {
         Setting.getInstance().readConfig(getConfig());
         BlackList.init(getDataFolder());
         PluginSender.init(this);
-        try {ConditionManager.init(new FileConfigStore(this, "conditions.yml"));} catch (Throwable tr) {
-            getLogger().severe("can't parse conditions.yml, conditions will be ignore");
-        }
+        ConditionManager.init(new FileConfigStore(this, "conditions.yml"), getLogger());
 
         // register events
         HandlerList.unregisterAll((Plugin) this);
@@ -90,7 +88,7 @@ public class SkillBar extends JavaPlugin implements Listener {
         if (manager != null) {
             if (isEnabled()) {
                 for (ClientData data : manager.getAll()) {
-                    data.getEventHandler().onLevelCondition();
+                    data.getEventHandler().onLeaveCondition();
                     data.getEventHandler().sendDisable();
                 }
             }

@@ -12,8 +12,10 @@ public class Condition {
     private int barSize;
     private boolean enableFix;
     private Map<Integer,String> list;
+    private boolean enableFree;
+    private List<Integer> freeList;
 
-    public Condition(String key, boolean enable, int weight, List<String> worlds, List<String> professionKeys, int barSize, boolean enableFix, Map<Integer, String> list){
+    public Condition(String key, boolean enable, int weight, List<String> worlds, List<String> professionKeys, int barSize, boolean enableFix, Map<Integer, String> list, boolean enableFree, List<Integer> freeList){
         this.conditionKey = key;
         this.enable = enable;
         this.weight = weight;
@@ -22,6 +24,8 @@ public class Condition {
         this.barSize = Math.max(barSize,0);
         this.enableFix = enableFix;
         this.list = list;
+        this.enableFree = enableFree;
+        this.freeList = freeList;
     }
 
     public boolean match(String world, List<String> professions){
@@ -46,5 +50,13 @@ public class Condition {
 
     public Map<Integer, String> getBarList() {
         return list;
+    }
+
+    public boolean isAllowFreeSlots(){
+        return enableFree;
+    }
+
+    public List<Integer> getFreeList(){
+        return freeList;
     }
 }

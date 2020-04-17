@@ -2,17 +2,16 @@ package com.github.MrMks.skillbar.bukkit.pkg;
 
 import com.github.MrMks.skillbar.bukkit.Setting;
 import com.github.MrMks.skillbar.bukkit.condition.Condition;
+import com.github.MrMks.skillbar.bukkit.data.ClientBar;
+import com.github.MrMks.skillbar.bukkit.data.ClientStatus;
 import com.github.MrMks.skillbar.bukkit.manager.ConditionManager;
 import com.github.MrMks.skillbar.common.ByteBuilder;
 import com.github.MrMks.skillbar.common.Constants;
 import com.github.MrMks.skillbar.common.SkillInfo;
 import com.github.MrMks.skillbar.common.handler.IServerHandler;
 import com.github.MrMks.skillbar.common.pkg.SPackage;
-import com.github.MrMks.skillbar.bukkit.data.ClientBar;
-import com.github.MrMks.skillbar.bukkit.data.ClientStatus;
 import com.sucy.skill.SkillAPI;
 import com.sucy.skill.api.player.PlayerAccounts;
-import com.sucy.skill.api.player.PlayerClass;
 import com.sucy.skill.api.player.PlayerData;
 import com.sucy.skill.api.player.PlayerSkill;
 import org.bukkit.Bukkit;
@@ -22,10 +21,10 @@ import org.bukkit.entity.Player;
 import java.util.*;
 
 public class PackageHandler implements IServerHandler {
-    private UUID uuid;
-    private ClientStatus status;
-    private ClientBar bar;
-    private PluginSender sender;
+    private final UUID uuid;
+    private final ClientStatus status;
+    private final ClientBar bar;
+    private final PluginSender sender;
     public PackageHandler(UUID uuid,  ClientStatus status, ClientBar bar, PluginSender sender){
         this.uuid = uuid;
         this.status = status;
@@ -45,22 +44,28 @@ public class PackageHandler implements IServerHandler {
                 && playerData.getSkills().size() > 0;
     }
 
+    private List<String> getProfessionKeys(PlayerData data) {
+        List<String> list = new ArrayList<>();
+        data.getClasses().forEach(pro->list.add(pro.getData().getName()));
+        return list;
+    }
+
     @Override
     public void onDiscover() {
         if (!status.isDiscovered()) {
             status.discover();
+            sender.send(SPackage.BUILDER.buildSetting(BukkitByteBuilder::new, Setting.getInstance().getBarMaxLine()));
             if (!status.isBlocked()) {
-                sender.send(SPackage.BUILDER.buildSetting(BukkitByteBuilder::new, Setting.getInstance().getBarMaxLine()));
                 if (checkValid()) {
                     Player player = Bukkit.getPlayer(uuid);
                     PlayerAccounts accounts = SkillAPI.getPlayerAccountData(player);
-                    List<String> list = new ArrayList<>();
-                    accounts.getActiveData().getClasses().forEach(v->list.add(v.getData().getName()));
-                    Optional<Condition> optional = ConditionManager.match(player.getWorld().getName(), list);
+                    Optional<Condition> optional = ConditionManager.match(player.getWorld().getName(), getProfessionKeys(accounts.getActiveData()));
                     if (optional.isPresent()){
-                        sender.send(SPackage.BUILDER.buildSetting(BukkitByteBuilder::new, optional.get().getBarSize()));
-                        sender.send(SPackage.BUILDER.buildFixBar(BukkitByteBuilder::new, optional.get().isEnableFix()));
-                        status.setCondition(optional.get());
+                        Condition condition = optional.get();
+                        sender.send(SPackage.BUILDER.buildSetting(BukkitByteBuilder::new, condition.getBarSize()));
+                        sender.send(SPackage.BUILDER.buildFixBar(BukkitByteBuilder::new, condition.isEnableFix()));
+                        if (condition.isEnableFix() && condition.isAllowFreeSlots()) sender.send(SPackage.BUILDER.buildFreeSlots(BukkitByteBuilder::new, condition.getFreeList()));
+                        status.setCondition(condition);
                     }
                     sender.send(SPackage.BUILDER.buildAccount(BukkitByteBuilder::new, accounts.getActiveId(), accounts.getActiveData().getSkills().size()));
                     status.enable();

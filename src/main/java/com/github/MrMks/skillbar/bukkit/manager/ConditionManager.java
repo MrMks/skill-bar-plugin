@@ -7,60 +7,72 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 public class ConditionManager {
-    private static LinkedList<Condition> conditions = new LinkedList<>();
-    public static void init(FileConfigStore store){
+    private static Map<String, List<Condition>> map = new HashMap<>();
+
+    public static void init(FileConfigStore store, Logger logger){
         FileConfiguration config = store.getConfig();
         if (config == null) {
             store.saveDefaultConfig();
             store.reloadConfig();
         }
-        conditions.clear();
+        config = store.getConfig();
+        if (config == null) {
+            logger.warning("Can't load Condition.yml");
+        }
         try {
             init(store.getConfig());
         } catch (Throwable tr) {
-            conditions.clear();
-            throw tr;
+            map.clear();
+            logger.warning("Can't parse Condition.yml");
         }
     }
 
     private static void init(FileConfiguration config){
+        if (config == null) throw new NullPointerException();
         Set<String> keys = config.getKeys(false);
         for (String key : keys) {
             ConfigurationSection section = config.getConfigurationSection(key);
+            if (section == null) continue;
             boolean enable = section.getBoolean("enable");
-            int wright = section.getInt("enable");
+            if (!enable) continue;
+            int wright = section.getInt("weight");
             List<String> world = section.getStringList("conditions.world");
+            world.removeIf(v->!SkillAPI.getSettings().isWorldEnabled(v));
             List<String> profession = section.getStringList("conditions.profession");
-            boolean flag = profession.isEmpty();
-            for (String profess : profession) {
-                if (!SkillAPI.isClassRegistered(profess)) flag = true;
-            }
-            if (flag) continue;
+            profession.removeIf(v->!SkillAPI.isClassRegistered(v));
+            if (world.isEmpty() && profession.isEmpty()) continue;
             int barSize = section.getInt("barSize");
-            boolean fixBar = section.getBoolean("enableBarList");
+            boolean fixBar = section.getBoolean("enableFixBar");
             Map<Integer, String> barList = new HashMap<>();
             ConfigurationSection barSection = section.getConfigurationSection("barList");
-            Set<String> barKeys = barSection.getKeys(false);
-            for (String skillKey : barKeys) {
-                int index = barSection.getInt(skillKey);
-                if (index >= 0 && index < barSize * 9){
-                    barList.put(index,skillKey);
+            if (barSection != null){
+                Set<String> barKeys = barSection.getKeys(false);
+                for (String skillKey : barKeys) {
+                    int index = barSection.getInt(skillKey);
+                    if (index >= 0 && index < barSize * 9){
+                        barList.put(index,skillKey);
+                    }
                 }
             }
-            conditions.add(new Condition(key,enable,wright,world,profession,barSize - 1,fixBar,barList));
+            boolean freeSlot = section.getBoolean("enableFreeSlot");
+            List<Integer> freeSlots = section.getIntegerList("freeSlots");
+            Condition condition = new Condition(key, true,wright,world,profession,barSize,fixBar,barList,freeSlot,freeSlots);
+            world.forEach(w-> map.computeIfAbsent(w, k->new ArrayList<>()).add(condition));
         }
     }
 
     public static void clean(){
-        conditions.clear();
+        map.clear();
     }
 
     public static Optional<Condition> match(String world, List<String> professions){
         Condition c = null;
-        for (Condition condition : conditions){
-            if (condition.match(world, professions)) {
+        List<Condition> list = map.getOrDefault(world, Collections.emptyList());
+        for (Condition condition : list) {
+            if (condition.match(world, professions)){
                 if (c == null) c = condition;
                 else c = c.getWeight() < condition.getWeight() ? condition : c;
             }

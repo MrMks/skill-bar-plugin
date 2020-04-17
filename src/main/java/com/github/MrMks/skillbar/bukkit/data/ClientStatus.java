@@ -76,7 +76,7 @@ public class ClientStatus {
         this.condition = condition;
     }
 
-    public void levelCondition(){
+    public void leaveCondition(){
         condition = null;
     }
 
