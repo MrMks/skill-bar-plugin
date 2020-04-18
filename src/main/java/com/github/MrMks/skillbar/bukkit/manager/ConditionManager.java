@@ -60,6 +60,7 @@ public class ConditionManager {
             boolean freeSlot = section.getBoolean("enableFreeSlot");
             List<Integer> freeSlots = section.getIntegerList("freeSlots");
             Condition condition = new Condition(key, true,wright,world,profession,barSize,fixBar,barList,freeSlot,freeSlots);
+            if (world.isEmpty()) map.computeIfAbsent("",k->new ArrayList<>()).add(condition);
             world.forEach(w-> map.computeIfAbsent(w, k->new ArrayList<>()).add(condition));
         }
     }
@@ -70,7 +71,8 @@ public class ConditionManager {
 
     public static Optional<Condition> match(String world, List<String> professions){
         Condition c = null;
-        List<Condition> list = map.getOrDefault(world, Collections.emptyList());
+        List<Condition> list = new ArrayList<>(map.getOrDefault(world, Collections.emptyList()));
+        list.addAll(map.getOrDefault("",Collections.emptyList()));
         for (Condition condition : list) {
             if (condition.match(world, professions)){
                 if (c == null) c = condition;

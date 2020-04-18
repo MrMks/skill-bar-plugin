@@ -91,7 +91,8 @@ public class MainListener implements Listener {
         if (pre && post) {
             // player change class,send AddSkill and Condition
             data.getEventHandler().onChangeProfess(e.getPlayerClass());
-            optional.ifPresent(condition -> data.getEventHandler().onMatchCondition(condition, true));
+            if (optional.isPresent()) data.getEventHandler().onMatchCondition(optional.get(), true);
+            else data.getEventHandler().onLeaveCondition();
         } else if (pre) {
             // player profession reset, levelCondition and send disable
             data.getEventHandler().onLeaveCondition();
@@ -122,7 +123,8 @@ public class MainListener implements Listener {
 
         scheduler(()->{
             if (post && pre) {
-                optional.ifPresent(condition -> cData.getEventHandler().onMatchCondition(condition));
+                if (optional.isPresent()) cData.getEventHandler().onMatchCondition(optional.get());
+                else cData.getEventHandler().onLeaveCondition();
                 cData.getEventHandler().onAccountSwitch();
             } else if (post) {
                 optional.ifPresent(condition -> cData.getEventHandler().onMatchCondition(condition));
@@ -148,7 +150,7 @@ public class MainListener implements Listener {
 
         if (pre && post) {
             if (optional.isPresent()) data.getEventHandler().onMatchCondition(optional.get(), true);
-            else data.getEventHandler().onLeaveCondition();
+            else data.getEventHandler().onLeaveCondition(true);
         } else if (post) {
             optional.ifPresent(condition -> data.getEventHandler().onMatchCondition(condition));
             data.getEventHandler().onWorldToEnable();

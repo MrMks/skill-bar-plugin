@@ -132,10 +132,17 @@ public class EventHandler {
     }
 
     public void onLeaveCondition(){
+        onLeaveCondition(false);
+    }
+
+    public void onLeaveCondition(boolean isListBar){
         if (status.getCondition().isPresent()) {
             status.leaveCondition();
             sender.send(SPackage.BUILDER.buildFixBar(BukkitByteBuilder::new, false));
             sender.send(SPackage.BUILDER.buildSetting(BukkitByteBuilder::new, Setting.getInstance().getBarMaxLine()));
+            Map<Integer, String> map = new HashMap<>();
+            if (isListBar) bar.keys().forEach(index->map.put(index,bar.getSkill(index)));
+            sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new,map));
         }
     }
 
@@ -152,6 +159,13 @@ public class EventHandler {
             if (condition.isEnableFix() && condition.isAllowFreeSlots()) sender.send(SPackage.BUILDER.buildFreeSlots(BukkitByteBuilder::new, condition.getFreeList()));
             if (listBar) sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, condition.getBarList()));
         }
+    }
+
+    public void onPluginDisable(){
+        sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, Collections.emptyMap()));
+        sender.send(SPackage.BUILDER.buildFixBar(BukkitByteBuilder::new,false));
+        sender.send(SPackage.BUILDER.buildSetting(BukkitByteBuilder::new,Setting.getInstance().getBarMaxLine()));
+        sender.send(SPackage.BUILDER.buildDisable(BukkitByteBuilder::new));
     }
 
     public void sendAccount() {

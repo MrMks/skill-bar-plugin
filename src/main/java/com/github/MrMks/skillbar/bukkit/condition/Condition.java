@@ -21,7 +21,7 @@ public class Condition {
         this.weight = weight;
         this.worlds = worlds;
         this.professionKeys = professionKeys;
-        this.barSize = Math.max(barSize,0);
+        this.barSize = Math.max(barSize - 1,0);
         this.enableFix = enableFix;
         this.list = list;
         this.enableFree = enableFree;
@@ -29,7 +29,7 @@ public class Condition {
     }
 
     public boolean match(String world, List<String> professions){
-        return worlds.contains(world) && professions.removeAll(professionKeys);
+        return (worlds.isEmpty() || worlds.contains(world)) && (professions.isEmpty() || professions.removeAll(professionKeys));
     }
 
     public String getKey(){
