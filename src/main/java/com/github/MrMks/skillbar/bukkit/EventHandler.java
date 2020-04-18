@@ -111,12 +111,23 @@ public class EventHandler {
     }
 
     public void onUpdateCoolDownInfo(){
+        Optional<Condition> optional = status.getCondition();
+        boolean flag = optional.isPresent() && optional.get().isEnableFix() && optional.get().isAllowFreeSlots();
         PlayerAccounts accounts = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid));
         PlayerData data = accounts.getActiveData();
         Map<String, Integer> map = new HashMap<>();
-        for (int index : bar.keys()) {
-            if (data.hasSkill(bar.getSkill(index))) map.put(bar.getSkill(index), data.getSkill(bar.getSkill(index)).getCooldown());
+        if (flag) {
+            optional.get().getBarList().values().forEach(key->{
+                if (data.hasSkill(key)) map.put(key, data.getSkill(key).getCooldown());
+            });
+            bar.getConditionMap().values().forEach(key->{
+                if (data.hasSkill(key)) map.put(key, data.getSkill(key).getCooldown());
+            });
         }
+        else bar.keys().forEach(index->{
+            String key = bar.getSkill(index);
+            if (data.hasSkill(key)) map.put(key, data.getSkill(key).getCooldown());
+        });
         sender.send(SPackage.BUILDER.buildCoolDown(BukkitByteBuilder::new, map));
     }
 
