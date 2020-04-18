@@ -1,6 +1,7 @@
 package com.github.MrMks.skillbar.bukkit.manager;
 
 import com.github.MrMks.skillbar.bukkit.FileConfigStore;
+import com.github.MrMks.skillbar.bukkit.Setting;
 import com.github.MrMks.skillbar.bukkit.condition.Condition;
 import com.sucy.skill.SkillAPI;
 import org.bukkit.configuration.ConfigurationSection;
@@ -71,12 +72,14 @@ public class ConditionManager {
 
     public static Optional<Condition> match(String world, List<String> professions){
         Condition c = null;
-        List<Condition> list = new ArrayList<>(map.getOrDefault(world, Collections.emptyList()));
-        list.addAll(map.getOrDefault("",Collections.emptyList()));
-        for (Condition condition : list) {
-            if (condition.match(world, professions)){
-                if (c == null) c = condition;
-                else c = c.getWeight() < condition.getWeight() ? condition : c;
+        if (Setting.getInstance().isEnableCondition()) {
+            List<Condition> list = new ArrayList<>(map.getOrDefault(world, Collections.emptyList()));
+            list.addAll(map.getOrDefault("", Collections.emptyList()));
+            for (Condition condition : list) {
+                if (condition.match(world, professions)) {
+                    if (c == null) c = condition;
+                    else c = c.getWeight() < condition.getWeight() ? condition : c;
+                }
             }
         }
         return Optional.ofNullable(c);

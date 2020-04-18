@@ -1,4 +1,4 @@
-#how many lines can a player have, this value will be ignore if conditions matches(but this function still in construct)
+#how many lines can a player have,
 maxBarSize: 3
 
 #enable condition matches or not
