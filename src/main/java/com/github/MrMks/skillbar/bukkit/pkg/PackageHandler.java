@@ -62,10 +62,10 @@ public class PackageHandler implements IServerHandler {
                     Optional<Condition> optional = ConditionManager.match(player.getWorld().getName(), getProfessionKeys(accounts.getActiveData()));
                     if (optional.isPresent()){
                         Condition condition = optional.get();
+                        status.setCondition(condition);
                         sender.send(SPackage.BUILDER.buildSetting(BukkitByteBuilder::new, condition.getBarSize()));
                         sender.send(SPackage.BUILDER.buildFixBar(BukkitByteBuilder::new, condition.isEnableFix()));
                         if (condition.isEnableFix() && condition.isAllowFreeSlots()) sender.send(SPackage.BUILDER.buildFreeSlots(BukkitByteBuilder::new, condition.getFreeList()));
-                        status.setCondition(condition);
                     }
                     sender.send(SPackage.BUILDER.buildAccount(BukkitByteBuilder::new, accounts.getActiveId(), accounts.getActiveData().getSkills().size()));
                     status.enable();
@@ -125,6 +125,7 @@ public class PackageHandler implements IServerHandler {
             } else {
                 //noinspection OptionalGetWithoutIsPresent
                 map = status.getCondition().get().getBarList();
+                map.putAll(bar.getConditionMap());
             }
             sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new,map));
         }
@@ -134,17 +135,17 @@ public class PackageHandler implements IServerHandler {
     public void onSaveBar(Map<Integer, CharSequence> map) {
         if (checkValid()){
             Optional<Condition> optional = status.getCondition();
-            if (!optional.isPresent() || !optional.get().isEnableFix()) {
+            if (!optional.isPresent() || !optional.get().isEnableFix() || optional.get().isAllowFreeSlots()) {
+                boolean flag = optional.isPresent() && optional.get().isEnableFix() && optional.get().isAllowFreeSlots();
                 Player player = Bukkit.getPlayer(uuid);
                 PlayerData playerData = SkillAPI.getPlayerData(player);
-                PlayerAccounts accounts = SkillAPI.getPlayerAccountData(player);
-                Map<Integer, String> nMap = new HashMap<>();
+                Map<Integer, String> nMap = flag ? new HashMap<>(optional.get().getBarList()) : new HashMap<>();
                 for (Map.Entry<Integer, CharSequence> entry : map.entrySet()) {
-                    if (playerData.hasSkill(entry.getValue().toString())) {
+                    if (playerData.hasSkill(entry.getValue().toString()) && (!flag || optional.get().getFreeList().contains(entry.getKey()))) {
                         nMap.put(entry.getKey(), entry.getValue().toString());
                     }
                 }
-                bar.setBar(accounts.getActiveId(), nMap);
+                if (flag) bar.setConditionMap(nMap); else bar.setBar(nMap);
                 if (map.size() != nMap.size()) {
                     sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, nMap));
                 }
