@@ -63,9 +63,7 @@ public class PackageHandler implements IServerHandler {
                     if (optional.isPresent()){
                         Condition condition = optional.get();
                         status.setCondition(condition);
-                        sender.send(SPackage.BUILDER.buildSetting(BukkitByteBuilder::new, condition.getBarSize()));
-                        sender.send(SPackage.BUILDER.buildFixBar(BukkitByteBuilder::new, condition.isEnableFix()));
-                        if (condition.isEnableFix() && condition.isAllowFreeSlots()) sender.send(SPackage.BUILDER.buildFreeSlots(BukkitByteBuilder::new, condition.getFreeList()));
+                        sender.send(SPackage.BUILDER.buildEnterCondition(BukkitByteBuilder::new, condition.getKey(), condition.getBarSize(), condition.isEnableFix(), condition.isAllowFreeSlots(), condition.getFreeList()));
                     }
                     sender.send(SPackage.BUILDER.buildAccount(BukkitByteBuilder::new, accounts.getActiveId(), accounts.getActiveData().getSkills().size()));
                     status.enable();

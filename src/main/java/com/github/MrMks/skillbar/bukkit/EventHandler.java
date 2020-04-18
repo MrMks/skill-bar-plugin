@@ -132,17 +132,9 @@ public class EventHandler {
     }
 
     public void onLeaveCondition(){
-        onLeaveCondition(false);
-    }
-
-    public void onLeaveCondition(boolean isListBar){
         if (status.getCondition().isPresent()) {
+            sender.send(SPackage.BUILDER.buildLeaveCondition(BukkitByteBuilder::new, status.getCondition().get().getKey()));
             status.leaveCondition();
-            sender.send(SPackage.BUILDER.buildFixBar(BukkitByteBuilder::new, false));
-            sender.send(SPackage.BUILDER.buildSetting(BukkitByteBuilder::new, Setting.getInstance().getBarMaxLine()));
-            Map<Integer, String> map = new HashMap<>();
-            if (isListBar) bar.keys().forEach(index->map.put(index,bar.getSkill(index)));
-            sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new,map));
         }
     }
 
@@ -154,17 +146,12 @@ public class EventHandler {
         Optional<Condition> optional = status.getCondition();
         if (!optional.isPresent() || !optional.get().getKey().equals(condition.getKey())) {
             status.setCondition(condition);
-            sender.send(SPackage.BUILDER.buildSetting(BukkitByteBuilder::new, condition.getBarSize() >= 0 ? condition.getBarSize() : Setting.getInstance().getBarMaxLine()));
-            sender.send(SPackage.BUILDER.buildFixBar(BukkitByteBuilder::new, condition.isEnableFix()));
-            if (condition.isEnableFix() && condition.isAllowFreeSlots()) sender.send(SPackage.BUILDER.buildFreeSlots(BukkitByteBuilder::new, condition.getFreeList()));
+            sender.send(SPackage.BUILDER.buildEnterCondition(BukkitByteBuilder::new, condition.getKey(),condition.getBarSize(),condition.isEnableFix(),condition.isAllowFreeSlots(),condition.getFreeList()));
             if (listBar) sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, condition.getBarList()));
         }
     }
 
     public void onPluginDisable(){
-        sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, Collections.emptyMap()));
-        sender.send(SPackage.BUILDER.buildFixBar(BukkitByteBuilder::new,false));
-        sender.send(SPackage.BUILDER.buildSetting(BukkitByteBuilder::new,Setting.getInstance().getBarMaxLine()));
         sender.send(SPackage.BUILDER.buildDisable(BukkitByteBuilder::new));
     }
 

@@ -150,7 +150,7 @@ public class MainListener implements Listener {
 
         if (pre && post) {
             if (optional.isPresent()) data.getEventHandler().onMatchCondition(optional.get(), true);
-            else data.getEventHandler().onLeaveCondition(true);
+            else data.getEventHandler().onLeaveCondition();
         } else if (post) {
             optional.ifPresent(condition -> data.getEventHandler().onMatchCondition(condition));
             data.getEventHandler().onWorldToEnable();

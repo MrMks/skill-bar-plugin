@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'com.github.MrMks'
-version '1.2.5-7-a1'
+version '1.2.5-8-a1'
 
 sourceCompatibility = 1.8
 
@@ -20,7 +20,7 @@ dependencies {
     compileOnly files('../Libraries/SkillAPI v1.9.jar')
     compileOnly files('../Libraries/MCCore.jar')
 
-    compile 'com.github.mrmks:skillbar-common:7'
+    compile 'com.github.mrmks:skillbar-common:8'
 }
 
 processResources {
