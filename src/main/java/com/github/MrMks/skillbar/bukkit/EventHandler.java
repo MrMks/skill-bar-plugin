@@ -7,7 +7,6 @@ import com.github.MrMks.skillbar.bukkit.data.ClientStatus;
 import com.github.MrMks.skillbar.bukkit.pkg.BukkitByteBuilder;
 import com.github.MrMks.skillbar.bukkit.pkg.BukkitSkillInfo;
 import com.github.MrMks.skillbar.bukkit.pkg.PluginSender;
-import com.github.MrMks.skillbar.common.Constants;
 import com.github.MrMks.skillbar.common.SkillInfo;
 import com.github.MrMks.skillbar.common.pkg.SPackage;
 import com.sucy.skill.SkillAPI;
@@ -39,7 +38,7 @@ public class EventHandler {
      */
     public void onJoin(){
         if (!status.isDiscovered()) {
-            sender.send(SPackage.BUILDER.buildDiscover(BukkitByteBuilder::new, Constants.VERSION));
+            sender.send(SPackage.BUILDER.buildDiscover(BukkitByteBuilder::new));
         }
     }
 
@@ -115,12 +114,12 @@ public class EventHandler {
 
     public void onUpdateCoolDownInfo(){
         Optional<Condition> optional = conditionData.getCondition();
-        boolean flag = optional.isPresent() && optional.get().isEnableFix() && optional.get().isAllowFreeSlots();
+        boolean flag = optional.isPresent() && optional.get().isEnableFix();
         PlayerAccounts accounts = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid));
         PlayerData data = accounts.getActiveData();
         Map<String, Integer> map = new HashMap<>();
         if (flag) {
-            optional.get().getBarList().values().forEach(key->{
+            optional.get().getFixMap().values().forEach(key->{
                 if (data.hasSkill(key)) map.put(key, data.getSkill(key).getCooldown());
             });
             conditionData.getConditionBar().values().forEach(key->{
@@ -135,9 +134,18 @@ public class EventHandler {
     }
 
     public void onLeaveCondition(){
+        onLeaveCondition(false);
+    }
+
+    public void onLeaveCondition(boolean isListBar){
         if (conditionData.getCondition().isPresent()) {
-            sender.send(SPackage.BUILDER.buildLeaveCondition(BukkitByteBuilder::new, conditionData.getCondition().get().getKey()));
             conditionData.leaveCondition();
+            sender.send(SPackage.BUILDER.buildLeaveCondition(BukkitByteBuilder::new));
+            if (isListBar) {
+                Map<Integer, String> map = new HashMap<>();
+                bar.keys().forEach(v -> map.put(v, bar.getSkill(v)));
+                sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, map));
+            }
         }
     }
 
@@ -149,12 +157,13 @@ public class EventHandler {
         Optional<Condition> optional = conditionData.getCondition();
         if (!optional.isPresent() || !optional.get().getKey().equals(condition.getKey())) {
             conditionData.setCondition(condition);
-            sender.send(SPackage.BUILDER.buildEnterCondition(BukkitByteBuilder::new, condition.getKey(),condition.getBarSize(),condition.isEnableFix(),condition.isAllowFreeSlots(),condition.getFreeList()));
-            if (listBar) sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, condition.getBarList()));
+            sender.send(SPackage.BUILDER.buildEnterCondition(BukkitByteBuilder::new, condition));
+            if (listBar) sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, condition.getFixMap()));
         }
     }
 
     public void onPluginDisable(){
+        sender.send(SPackage.BUILDER.buildLeaveCondition(BukkitByteBuilder::new));
         sender.send(SPackage.BUILDER.buildDisable(BukkitByteBuilder::new));
     }
 

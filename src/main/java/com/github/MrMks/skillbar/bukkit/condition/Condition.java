@@ -1,9 +1,11 @@
 package com.github.MrMks.skillbar.bukkit.condition;
 
+import com.github.MrMks.skillbar.common.ICondition;
+
 import java.util.List;
 import java.util.Map;
 
-public class Condition {
+public class Condition implements ICondition {
     private String conditionKey;
     private boolean enable;
     private int weight;
@@ -48,11 +50,11 @@ public class Condition {
         return enableFix;
     }
 
-    public Map<Integer, String> getBarList() {
+    public Map<Integer, String> getFixMap() {
         return list;
     }
 
-    public boolean isAllowFreeSlots(){
+    public boolean isEnableFree(){
         return enableFree;
     }
 

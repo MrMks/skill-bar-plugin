@@ -1,9 +1,6 @@
 package com.github.MrMks.skillbar.bukkit.condition;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public class ConditionData {
     private Condition condition;
@@ -17,13 +14,15 @@ public class ConditionData {
 
     public void setBar(Map<Integer, String> map){
         if (condition != null) {
-            Set<Integer> set = condition.getBarList().keySet();
-            set.addAll(map.keySet());
-            set.removeIf(v -> condition.getFreeList().contains(v));
+            //Set<Integer> set = new HashSet<>(condition.getFixMap().keySet());
+            //set.addAll(map.keySet());
+            //set.removeIf(v -> condition.getFreeList().contains(v) || condition.getFreeList().contains(-1));
+            /*
             set.forEach(v->{
-                if (condition.getBarList().containsKey(v)) map.put(v, condition.getBarList().get(v));
+                if (condition.getFixMap().containsKey(v)) map.put(v, condition.getFixMap().get(v));
                 else map.remove(v);
             });
+             */
             bar = map;
         }
     }

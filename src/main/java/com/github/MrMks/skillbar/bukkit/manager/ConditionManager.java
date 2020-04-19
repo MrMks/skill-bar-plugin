@@ -60,6 +60,7 @@ public class ConditionManager {
             }
             boolean freeSlot = section.getBoolean("enableFreeSlot");
             List<Integer> freeSlots = section.getIntegerList("freeSlots");
+            if (freeSlots.contains(-1)) freeSlots.removeIf(v->v != -1);
             Condition condition = new Condition(key, true,wright,world,profession,barSize,fixBar,barList,freeSlot,freeSlots);
             if (world.isEmpty()) map.computeIfAbsent("",k->new ArrayList<>()).add(condition);
             world.forEach(w-> map.computeIfAbsent(w, k->new ArrayList<>()).add(condition));

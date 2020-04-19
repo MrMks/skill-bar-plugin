@@ -30,7 +30,6 @@ import java.util.Optional;
  */
 @SuppressWarnings("unused")
 public class MainListener implements Listener {
-
     private final Plugin plugin;
     private final ClientManager manager;
     private final ClientDiscoverTask task;
@@ -92,7 +91,7 @@ public class MainListener implements Listener {
             // player change class,send AddSkill and Condition
             data.getEventHandler().onChangeProfess(e.getPlayerClass());
             if (optional.isPresent()) data.getEventHandler().onMatchCondition(optional.get(), true);
-            else data.getEventHandler().onLeaveCondition();
+            else data.getEventHandler().onLeaveCondition(true);
         } else if (pre) {
             // player profession reset, levelCondition and send disable
             data.getEventHandler().onLeaveCondition();
@@ -150,10 +149,10 @@ public class MainListener implements Listener {
 
         if (pre && post) {
             if (optional.isPresent()) data.getEventHandler().onMatchCondition(optional.get(), true);
-            else data.getEventHandler().onLeaveCondition();
+            else data.getEventHandler().onLeaveCondition(true);
         } else if (post) {
-            optional.ifPresent(condition -> data.getEventHandler().onMatchCondition(condition));
             data.getEventHandler().onWorldToEnable();
+            optional.ifPresent(condition -> data.getEventHandler().onMatchCondition(condition, true));
         } else if (pre) {
             data.getEventHandler().onLeaveCondition();
             data.getEventHandler().onWorldToDisable();

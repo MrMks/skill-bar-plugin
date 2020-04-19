@@ -66,7 +66,7 @@ public class PackageHandler implements IServerHandler {
                     if (optional.isPresent()){
                         Condition condition = optional.get();
                         conditionData.setCondition(condition);
-                        sender.send(SPackage.BUILDER.buildEnterCondition(BukkitByteBuilder::new, condition.getKey(), condition.getBarSize(), condition.isEnableFix(), condition.isAllowFreeSlots(), condition.getFreeList()));
+                        sender.send(SPackage.BUILDER.buildEnterCondition(BukkitByteBuilder::new, condition));
                     }
                     sender.send(SPackage.BUILDER.buildAccount(BukkitByteBuilder::new, accounts.getActiveId(), accounts.getActiveData().getSkills().size()));
                     status.enable();
@@ -77,7 +77,7 @@ public class PackageHandler implements IServerHandler {
     }
 
     @Override
-    public void onListSkill(List<CharSequence> keys) {
+    public void onListSkill(List<String> keys) {
         if (status.isEnable() && checkValid()){
             ArrayList<String> reList = new ArrayList<>();
             PlayerData data = SkillAPI.getPlayerData(Bukkit.getOfflinePlayer(uuid));
@@ -96,15 +96,15 @@ public class PackageHandler implements IServerHandler {
     }
 
     @Override
-    public void onUpdateSkill(CharSequence key) {
+    public void onUpdateSkill(String key) {
         if (checkValid()){
             PlayerData data = SkillAPI.getPlayerData(Bukkit.getPlayer(uuid));
             SkillInfo info;
-            if (data.hasSkill(key.toString())) {
-                PlayerSkill skill = data.getSkill(key.toString());
+            if (data.hasSkill(key)) {
+                PlayerSkill skill = data.getSkill(key);
                 info = new BukkitSkillInfo(skill);
             } else {
-                info = new BukkitSkillInfo(key.toString());
+                info = new BukkitSkillInfo(key);
             }
             sender.send(SPackage.BUILDER.buildUpdateSkill(BukkitByteBuilder::new,info));
         }
@@ -125,7 +125,7 @@ public class PackageHandler implements IServerHandler {
                 bar.setBar(SkillAPI.getPlayerAccountData(player).getActiveId(),map);
             } else {
                 //noinspection OptionalGetWithoutIsPresent
-                map = conditionData.getCondition().get().getBarList();
+                map = conditionData.getCondition().get().getFixMap();
                 map.putAll(conditionData.getConditionBar());
             }
             sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new,map));
@@ -133,17 +133,25 @@ public class PackageHandler implements IServerHandler {
     }
 
     @Override
-    public void onSaveBar(Map<Integer, CharSequence> map) {
+    public void onSaveBar(Map<Integer, String> map) {
         if (checkValid()){
             Optional<Condition> optional = conditionData.getCondition();
-            if (!optional.isPresent() || !optional.get().isEnableFix() || optional.get().isAllowFreeSlots()) {
-                boolean flag = optional.isPresent() && optional.get().isEnableFix() && optional.get().isAllowFreeSlots();
+            if (!optional.isPresent() || !optional.get().isEnableFix() || optional.get().isEnableFree()) {
+                boolean flag = optional.isPresent() && optional.get().isEnableFix() && optional.get().isEnableFree();
                 Player player = Bukkit.getPlayer(uuid);
                 PlayerData playerData = SkillAPI.getPlayerData(player);
-                Map<Integer, String> nMap = flag ? new HashMap<>(optional.get().getBarList()) : new HashMap<>();
-                for (Map.Entry<Integer, CharSequence> entry : map.entrySet()) {
-                    if (playerData.hasSkill(entry.getValue().toString()) && (!flag || optional.get().getFreeList().contains(entry.getKey()))) {
-                        nMap.put(entry.getKey(), entry.getValue().toString());
+                Map<Integer, String> nMap = new HashMap<>();
+                if (flag) {
+                    Set<Integer> set = new HashSet<>(map.keySet());
+                    set.addAll(optional.get().getFixMap().keySet());
+                    set.removeIf(v->optional.get().getFreeList().contains(v) || optional.get().getFreeList().contains(-1));
+                    set.removeIf(v->!playerData.hasSkill(map.getOrDefault(v,"")));
+                    set.removeIf(v->!playerData.hasSkill(optional.get().getFixMap().getOrDefault(v,"")));
+                    set.forEach(v->nMap.put(v,optional.get().getFixMap().get(v)));
+                }
+                for (Map.Entry<Integer, String> entry : map.entrySet()) {
+                    if (playerData.hasSkill(entry.getValue())) {
+                        nMap.put(entry.getKey(), entry.getValue());
                     }
                 }
                 if (flag) conditionData.setBar(nMap); else bar.setBar(nMap);
@@ -155,19 +163,19 @@ public class PackageHandler implements IServerHandler {
     }
 
     @Override
-    public void onCast(CharSequence key) {
+    public void onCast(String key) {
         if (checkValid()){
             Player player = Bukkit.getPlayer(uuid);
             PlayerData playerData = SkillAPI.getPlayerData(player);
             boolean exist, suc;
             byte code;
-            if (playerData.hasSkill(key.toString())) {
+            if (playerData.hasSkill(key)) {
                 exist = true;
-                if (!playerData.getSkill(key.toString()).isUnlocked()) {
+                if (!playerData.getSkill(key).isUnlocked()) {
                     suc = false;
                     code = Constants.CAST_FAILED_UNLOCK;
                 } else {
-                    suc = playerData.cast(key.toString());
+                    suc = playerData.cast(key);
                     code = suc ? Constants.CAST_SUCCESS : Constants.CAST_FAILED_UNEXPECTED;
                 }
             } else {
@@ -175,10 +183,10 @@ public class PackageHandler implements IServerHandler {
                 suc = false;
                 code = Constants.CAST_FAILED_NO_SKILL;
             }
-            sender.send(SPackage.BUILDER.buildCast(BukkitByteBuilder::new, key.toString(), exist, suc, code));
+            sender.send(SPackage.BUILDER.buildCast(BukkitByteBuilder::new, key, exist, suc, code));
             if (exist && suc) {
                 Map<String, Integer> map = new HashMap<>(1);
-                map.put(key.toString(), playerData.getSkill(key.toString()).getCooldown());
+                map.put(key, playerData.getSkill(key).getCooldown());
                 sender.send(SPackage.BUILDER.buildCoolDown(BukkitByteBuilder::new, map));
             }
         }
