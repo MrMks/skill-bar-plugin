@@ -1,6 +1,7 @@
 package com.github.MrMks.skillbar.bukkit;
 
 import com.github.MrMks.skillbar.bukkit.condition.Condition;
+import com.github.MrMks.skillbar.bukkit.condition.ConditionData;
 import com.github.MrMks.skillbar.bukkit.data.ClientBar;
 import com.github.MrMks.skillbar.bukkit.data.ClientStatus;
 import com.github.MrMks.skillbar.bukkit.pkg.BukkitByteBuilder;
@@ -23,11 +24,13 @@ public class EventHandler {
     private final ClientStatus status;
     private final ClientBar bar;
     private final PluginSender sender;
-    public EventHandler(UUID uuid, ClientStatus status, ClientBar bar, PluginSender sender){
+    private final ConditionData conditionData;
+    public EventHandler(UUID uuid, ClientStatus status, ClientBar bar, ConditionData conditionData, PluginSender sender){
         this.uuid = uuid;
         this.status = status;
         this.bar = bar;
         this.sender = sender;
+        this.conditionData = conditionData;
     }
 
     /**
@@ -111,7 +114,7 @@ public class EventHandler {
     }
 
     public void onUpdateCoolDownInfo(){
-        Optional<Condition> optional = status.getCondition();
+        Optional<Condition> optional = conditionData.getCondition();
         boolean flag = optional.isPresent() && optional.get().isEnableFix() && optional.get().isAllowFreeSlots();
         PlayerAccounts accounts = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid));
         PlayerData data = accounts.getActiveData();
@@ -120,7 +123,7 @@ public class EventHandler {
             optional.get().getBarList().values().forEach(key->{
                 if (data.hasSkill(key)) map.put(key, data.getSkill(key).getCooldown());
             });
-            bar.getConditionMap().values().forEach(key->{
+            conditionData.getConditionBar().values().forEach(key->{
                 if (data.hasSkill(key)) map.put(key, data.getSkill(key).getCooldown());
             });
         }
@@ -132,9 +135,9 @@ public class EventHandler {
     }
 
     public void onLeaveCondition(){
-        if (status.getCondition().isPresent()) {
-            sender.send(SPackage.BUILDER.buildLeaveCondition(BukkitByteBuilder::new, status.getCondition().get().getKey()));
-            status.leaveCondition();
+        if (conditionData.getCondition().isPresent()) {
+            sender.send(SPackage.BUILDER.buildLeaveCondition(BukkitByteBuilder::new, conditionData.getCondition().get().getKey()));
+            conditionData.leaveCondition();
         }
     }
 
@@ -143,9 +146,9 @@ public class EventHandler {
     }
 
     public void onMatchCondition(Condition condition, boolean listBar){
-        Optional<Condition> optional = status.getCondition();
+        Optional<Condition> optional = conditionData.getCondition();
         if (!optional.isPresent() || !optional.get().getKey().equals(condition.getKey())) {
-            status.setCondition(condition);
+            conditionData.setCondition(condition);
             sender.send(SPackage.BUILDER.buildEnterCondition(BukkitByteBuilder::new, condition.getKey(),condition.getBarSize(),condition.isEnableFix(),condition.isAllowFreeSlots(),condition.getFreeList()));
             if (listBar) sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, condition.getBarList()));
         }

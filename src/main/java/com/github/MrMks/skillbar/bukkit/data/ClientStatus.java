@@ -12,7 +12,7 @@ public class ClientStatus {
     private boolean discovered = false;
     private boolean justBlock = false;
     private EnumStatus status = EnumStatus.Discovering;
-    private Condition condition = null;
+    @Deprecated private Condition condition = null;
     //private ClientBar bar;
     public ClientStatus(UUID uuid){
         this.uid = uuid;
@@ -68,14 +68,17 @@ public class ClientStatus {
         return status == EnumStatus.Disabled;
     }
 
+    @Deprecated
     public Optional<Condition> getCondition(){
         return Optional.ofNullable(condition);
     }
 
+    @Deprecated
     public void setCondition(Condition condition){
         this.condition = condition;
     }
 
+    @Deprecated
     public void leaveCondition(){
         condition = null;
     }

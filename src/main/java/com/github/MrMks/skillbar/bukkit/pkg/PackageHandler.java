@@ -2,6 +2,7 @@ package com.github.MrMks.skillbar.bukkit.pkg;
 
 import com.github.MrMks.skillbar.bukkit.Setting;
 import com.github.MrMks.skillbar.bukkit.condition.Condition;
+import com.github.MrMks.skillbar.bukkit.condition.ConditionData;
 import com.github.MrMks.skillbar.bukkit.data.ClientBar;
 import com.github.MrMks.skillbar.bukkit.data.ClientStatus;
 import com.github.MrMks.skillbar.bukkit.manager.ConditionManager;
@@ -25,11 +26,13 @@ public class PackageHandler implements IServerHandler {
     private final ClientStatus status;
     private final ClientBar bar;
     private final PluginSender sender;
-    public PackageHandler(UUID uuid,  ClientStatus status, ClientBar bar, PluginSender sender){
+    private final ConditionData conditionData;
+    public PackageHandler(UUID uuid, ClientStatus status, ClientBar bar, ConditionData conditionData, PluginSender sender){
         this.uuid = uuid;
         this.status = status;
         this.bar = bar;
         this.sender = sender;
+        this.conditionData = conditionData;
     }
 
     private boolean checkValid(){
@@ -62,7 +65,7 @@ public class PackageHandler implements IServerHandler {
                     Optional<Condition> optional = ConditionManager.match(player.getWorld().getName(), getProfessionKeys(accounts.getActiveData()));
                     if (optional.isPresent()){
                         Condition condition = optional.get();
-                        status.setCondition(condition);
+                        conditionData.setCondition(condition);
                         sender.send(SPackage.BUILDER.buildEnterCondition(BukkitByteBuilder::new, condition.getKey(), condition.getBarSize(), condition.isEnableFix(), condition.isAllowFreeSlots(), condition.getFreeList()));
                     }
                     sender.send(SPackage.BUILDER.buildAccount(BukkitByteBuilder::new, accounts.getActiveId(), accounts.getActiveData().getSkills().size()));
@@ -111,7 +114,7 @@ public class PackageHandler implements IServerHandler {
     public void onListBar() {
         if (checkValid()){
             Map<Integer, String> map;
-            Optional<Condition> optional = status.getCondition();
+            Optional<Condition> optional = conditionData.getCondition();
             if (!optional.isPresent() || !optional.get().isEnableFix()) {
                 Player player = Bukkit.getPlayer(uuid);
                 PlayerData playerData = SkillAPI.getPlayerData(player);
@@ -122,8 +125,8 @@ public class PackageHandler implements IServerHandler {
                 bar.setBar(SkillAPI.getPlayerAccountData(player).getActiveId(),map);
             } else {
                 //noinspection OptionalGetWithoutIsPresent
-                map = status.getCondition().get().getBarList();
-                map.putAll(bar.getConditionMap());
+                map = conditionData.getCondition().get().getBarList();
+                map.putAll(conditionData.getConditionBar());
             }
             sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new,map));
         }
@@ -132,7 +135,7 @@ public class PackageHandler implements IServerHandler {
     @Override
     public void onSaveBar(Map<Integer, CharSequence> map) {
         if (checkValid()){
-            Optional<Condition> optional = status.getCondition();
+            Optional<Condition> optional = conditionData.getCondition();
             if (!optional.isPresent() || !optional.get().isEnableFix() || optional.get().isAllowFreeSlots()) {
                 boolean flag = optional.isPresent() && optional.get().isEnableFix() && optional.get().isAllowFreeSlots();
                 Player player = Bukkit.getPlayer(uuid);
@@ -143,7 +146,7 @@ public class PackageHandler implements IServerHandler {
                         nMap.put(entry.getKey(), entry.getValue().toString());
                     }
                 }
-                if (flag) bar.setConditionMap(nMap); else bar.setBar(nMap);
+                if (flag) conditionData.setBar(nMap); else bar.setBar(nMap);
                 if (map.size() != nMap.size()) {
                     sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, nMap));
                 }
