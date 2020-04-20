@@ -20,15 +20,17 @@ public class ClientBar {
 
     private UUID uuid;
     private File file;
-    private Map<Integer, Map<Integer, String>> map;
+    private AccountBar accountBar = new AccountBar();
+    private ConditionBar conditionBar = new ConditionBar();
+    // private Map<Integer, Map<Integer, String>> map;
+    // private Map<String, Map<Integer, String>> conditionMap;
     // global setting
-    private int maxLine;
-    // setting related to activeAcc
-    private int nowLine = 0;
+    // private int maxLine;
+
     public ClientBar(UUID uid){
         uuid = uid;
         file = new File(f,"player/" + uuid.toString() + ".json");
-        maxLine = Setting.getInstance().getBarMaxLine();
+        //maxLine = Setting.getInstance().getBarMaxLine();
         readFromFile();
     }
 
@@ -36,52 +38,51 @@ public class ClientBar {
         return SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid)).getActiveId();
     }
 
-    public boolean isEmpty(){
+    public Map<Integer, String> getAccountBar(){
+        return accountBar.getMap(getActiveId());
+    }
+
+    public Set<Integer> getAccountBarKeys(){
+        int id  = getActiveId();
+        return accountBar.getMap(id).keySet();
+    }
+
+    public String getAccountBarSkill(Integer order){
         int id = getActiveId();
-        return map == null || map.get(id) == null || map.get(id).isEmpty();
+        return accountBar.getMap(order).getOrDefault(order,"");
     }
 
-    public int size(){
-        int id = getActiveId();
-        return (map == null || map.get(id) == null) ? 0 : map.get(id).size();
+    public boolean hasConditionBar(String key) {
+        return conditionBar.map.containsKey(key);
     }
 
-    public int max(){
-        return maxLine;
+    public Map<Integer, String> getConditionBar(String key){
+        return conditionBar.getMap(key);
     }
 
-    //this two method may not be used in short time;
-    public int getNowLine(){
-        return nowLine;
+    public Set<Integer> getConditionBarKeys(String key){
+        return conditionBar.getMap(key).keySet();
     }
 
-    public void setNowLine(int nLine){
-        nowLine = Math.min(nLine, maxLine);
+    public String getConditionBarSkill(String key, int order){
+        return conditionBar.getMap(key).getOrDefault(order, "");
     }
 
-    public Set<Integer> keys(){
-        int id = getActiveId();
-        return (map == null || map.get(id) == null) ? Collections.emptySet() : map.get(id).keySet();
+    public void setAccountBar(Map<Integer, String> map){
+        setAccountBar(getActiveId(), map);
     }
 
-    public String getSkill(Integer order){
-        int id = getActiveId();
-        return (map == null || map.get(id) == null) ? "" : map.get(id).get(order);
-    }
-
-    public void setBar(Map<Integer, String> map){
-        setBar(getActiveId(), map);
-    }
-
-    public void setBar(int activeId, Map<Integer, String> map) {
-        if (this.map == null) this.map = new HashMap<>();
+    public void setAccountBar(int activeId, Map<Integer, String> map) {
+        if (this.accountBar.map == null) this.accountBar.map = new HashMap<>();
         if (map == null) return;
-        ArrayList<Integer> list = new ArrayList<>();
-        for (Map.Entry<Integer,String> entry : map.entrySet()){
-            if (entry.getKey() >= (maxLine + 1) * 9) list.add(entry.getKey());
-        }
-        for (Integer key : list) map.remove(key);
-        this.map.put(activeId, map);
+        map.keySet().removeIf(v->v < 0 || v >= Setting.getInstance().getBarMaxLine());
+        this.accountBar.setMap(activeId, map);
+    }
+
+    public void setConditionBar(String key, Map<Integer, String> map){
+        if (this.conditionBar.map == null) this.conditionBar.map = new HashMap<>();
+        if (key == null || map == null) return;
+        conditionBar.setMap(key, map);
     }
 
     public void readFromFile(){
@@ -89,38 +90,37 @@ public class ClientBar {
             try (FileReader reader = new FileReader(file)) {
                 Gson gson = new Gson();
                 Save saveFile = gson.fromJson(reader, Save.class);
-                nowLine = saveFile.nowLine;
-                map = saveFile.map;
+                accountBar.map = saveFile.map;
+                conditionBar.map = saveFile.conditionMap;
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        if (map == null) map = new HashMap<>();
+        if (accountBar.map == null) accountBar.map = new HashMap<>();
+        if (conditionBar.map == null) conditionBar.map = new HashMap<>();
         PlayerData data = SkillAPI.getPlayerData(Bukkit.getOfflinePlayer(uuid));
-        for (Map<Integer, String> sMap : map.values()){
+        for (Map<Integer, String> sMap : conditionBar.map.values()){
             ArrayList<Integer> list = new ArrayList<>();
             for (Map.Entry<Integer, String> entry : sMap.entrySet()){
                 if (data != null && !data.hasSkill(entry.getValue())) list.add(entry.getKey());
-                if (entry.getKey() >= (maxLine + 1) * 9) list.add(entry.getKey());
+                if (entry.getKey() >= (Setting.getInstance().getBarMaxLine() + 1) * 9) list.add(entry.getKey());
             }
             for (Integer k : list) sMap.remove(k);
         }
     }
 
     public void saveToFile(){
-        if (file.exists()) file.delete();
-        if (map.isEmpty()) return;
-        boolean flag = false;
-        for (Map<Integer, String> m : map.values()){
-            flag = flag || m.isEmpty();
-        }
-        if (flag) return;
-        try (FileWriter writer = new FileWriter(file)){
-            Gson gson = new Gson();
-            gson.toJson(new Save(Math.min(nowLine, maxLine), map),writer);
-            writer.flush();
-        } catch (IOException e){
-            e.printStackTrace();
+        boolean del = !file.exists();
+        if (!del) del = file.delete();
+        if (del) {
+            if (accountBar.map.isEmpty() && conditionBar.map.isEmpty()) return;
+            try (FileWriter writer = new FileWriter(file)) {
+                Gson gson = new Gson();
+                gson.toJson(new Save(accountBar.map, conditionBar.map), writer);
+                writer.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -130,11 +130,41 @@ public class ClientBar {
         //private int version = 3;
 
         // considering do not save this value; return to 0 every time the client join;
-        private int nowLine;
-        private Map<Integer, Map<Integer, String>> map;
-        Save(int nowLine, Map<Integer, Map<Integer, String>> map){
-            this.nowLine = nowLine;
+        private final Map<Integer, Map<Integer, String>> map;
+        private final Map<String, Map<Integer, String>> conditionMap;
+        Save(Map<Integer, Map<Integer, String>> map, Map<String, Map<Integer, String>> conditionMap){
             this.map = map;
+            this.conditionMap = conditionMap;
         }
+    }
+
+    private static class AccountBar {
+        private Map<Integer, Map<Integer, String>> map;
+        private AccountBar(){}
+        void setMap(Integer active, Map<Integer, String> map) {
+            if (map == null || map.isEmpty()) return;
+            Set<Integer> set = new HashSet<>(map.keySet());
+            set.removeIf(v -> v >= 0 && v < Setting.getInstance().getBarMaxLine());
+            set.forEach(map::remove);
+            this.map.put(active, map);
+        }
+
+        Map<Integer,String> getMap(Integer active){
+            return new HashMap<>(map.getOrDefault(active, Collections.emptyMap()));
+        }
+    }
+
+    public static class ConditionBar {
+        private Map<String, Map<Integer, String>> map;
+        private ConditionBar(){}
+        void setMap(String key, Map<Integer, String> map) {
+            if (map == null) return;
+            this.map.put(key, map);
+        }
+
+        Map<Integer,String> getMap(String key){
+            return new HashMap<>(map.getOrDefault(key, Collections.emptyMap()));
+        }
+
     }
 }

@@ -4,10 +4,11 @@ conditionName1: #conditionName可以随便写，只要不重复
   conditions: #当world和profession都匹配成功时则认为这个配置匹配成功，如world和profession都为空时，这条规则将被忽略
     world: [] #限定worldName，多个世界名被列出时则匹配任意一个
     profession: [] #限定职业的Key，多个key被列出时则匹配任意一个
-  barSize: 1 #在这个情况下玩家的技能栏行数
+  barSize: 1 #在该规则应用时玩家的技能栏行数，注意该值永远不会超过在config.yml中定义的maxBarSize;
   enableFixBar: true #是否要固定barList，false时下面的barList中的配置将被忽略
   barList:
     'skillKey1': 2 # key为SkillKey的技能的栏位是 index1，在index超出barSize和0的范围时，这个配置将被忽略，key所代表的技能不存在时，这个配置将被忽略
     'skillKey2': 6
   enableFreeSlot: false #是否允许玩家拥有部分栏位可自由放置技能
-  freeSlots: []
+  freeSlots: [] #留空则视enableFreeSlot为false, 填入-1等效于填入所有数字
+  saveBarToDisk: false #enableFixBar为false,或enableFixBar及enableFreeSlot均为true时，若此项为true, 则将保存玩家在应用此规则时对技能栏位的更改

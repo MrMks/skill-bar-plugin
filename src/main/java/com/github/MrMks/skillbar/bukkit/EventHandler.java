@@ -17,6 +17,7 @@ import com.sucy.skill.api.skills.Skill;
 import org.bukkit.Bukkit;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public class EventHandler {
     private final UUID uuid;
@@ -52,7 +53,7 @@ public class EventHandler {
             int active = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid)).getActiveId();
             sender.send(SPackage.BUILDER.buildCleanUp(BukkitByteBuilder::new, active));
             sendDisable();
-            bar.setBar(active, Collections.emptyMap());
+            bar.setAccountBar(active, Collections.emptyMap());
         }
     }
 
@@ -97,6 +98,7 @@ public class EventHandler {
     }
 
     public void onWorldToEnable(){
+        sendAccount();
         sendEnable();
     }
     public void onWorldToDisable(){
@@ -114,22 +116,18 @@ public class EventHandler {
 
     public void onUpdateCoolDownInfo(){
         Optional<Condition> optional = conditionData.getCondition();
-        boolean flag = optional.isPresent() && optional.get().isEnableFix();
         PlayerAccounts accounts = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid));
         PlayerData data = accounts.getActiveData();
         Map<String, Integer> map = new HashMap<>();
-        if (flag) {
-            optional.get().getFixMap().values().forEach(key->{
-                if (data.hasSkill(key)) map.put(key, data.getSkill(key).getCooldown());
-            });
-            conditionData.getConditionBar().values().forEach(key->{
-                if (data.hasSkill(key)) map.put(key, data.getSkill(key).getCooldown());
-            });
-        }
-        else bar.keys().forEach(index->{
-            String key = bar.getSkill(index);
-            if (data.hasSkill(key)) map.put(key, data.getSkill(key).getCooldown());
-        });
+        Map<Integer, String> nMap;
+
+        if (optional.isPresent()) {
+            Condition condition = optional.get();
+            if (condition.isEnableFree() || !condition.isEnableFix()) nMap = conditionData.getConditionBar();
+            else nMap = condition.getFixMap();
+        } else nMap = bar.getAccountBar();
+        nMap.values().forEach(key->{if (data.hasSkill(key)) map.put(key, data.getSkill(key).getCooldown());});
+
         sender.send(SPackage.BUILDER.buildCoolDown(BukkitByteBuilder::new, map));
     }
 
@@ -142,9 +140,7 @@ public class EventHandler {
             conditionData.leaveCondition();
             sender.send(SPackage.BUILDER.buildLeaveCondition(BukkitByteBuilder::new));
             if (isListBar) {
-                Map<Integer, String> map = new HashMap<>();
-                bar.keys().forEach(v -> map.put(v, bar.getSkill(v)));
-                sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, map));
+                sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, bar.getAccountBar()));
             }
         }
     }

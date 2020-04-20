@@ -113,52 +113,57 @@ public class PackageHandler implements IServerHandler {
     @Override
     public void onListBar() {
         if (checkValid()){
-            Map<Integer, String> map;
+            Map<Integer, String> map = new HashMap<>();
             Optional<Condition> optional = conditionData.getCondition();
-            if (!optional.isPresent() || !optional.get().isEnableFix()) {
-                Player player = Bukkit.getPlayer(uuid);
-                PlayerData playerData = SkillAPI.getPlayerData(player);
-                map = new HashMap<>();
-                for (int index : bar.keys()) {
-                    if (playerData.hasSkill(bar.getSkill(index))) map.put(index,bar.getSkill(index));
+            Player player = Bukkit.getPlayer(uuid);
+            PlayerData playerData = SkillAPI.getPlayerData(player);
+            if (optional.isPresent()) {
+                Condition condition = optional.get();
+                if (condition.isEnableFree() || !condition.isEnableFix()) {
+                    map.putAll(conditionData.getConditionBar());
+                    map.values().removeIf(v->!playerData.hasSkill(v));
+                } else {
+                    map.putAll(condition.getFixMap());
                 }
-                bar.setBar(SkillAPI.getPlayerAccountData(player).getActiveId(),map);
             } else {
-                //noinspection OptionalGetWithoutIsPresent
-                map = conditionData.getCondition().get().getFixMap();
-                map.putAll(conditionData.getConditionBar());
+                map.putAll(bar.getAccountBar());
+                map.values().removeIf(v->!playerData.hasSkill(v));
+                if (map.size() != bar.getAccountBar().size()) bar.setAccountBar(map);
             }
-            sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new,map));
+            sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, map));
         }
     }
 
     @Override
     public void onSaveBar(Map<Integer, String> map) {
         if (checkValid()){
+            int size = map.size();
             Optional<Condition> optional = conditionData.getCondition();
-            if (!optional.isPresent() || !optional.get().isEnableFix() || optional.get().isEnableFree()) {
-                boolean flag = optional.isPresent() && optional.get().isEnableFix() && optional.get().isEnableFree();
-                Player player = Bukkit.getPlayer(uuid);
-                PlayerData playerData = SkillAPI.getPlayerData(player);
-                Map<Integer, String> nMap = new HashMap<>();
-                if (flag) {
-                    Set<Integer> set = new HashSet<>(map.keySet());
-                    set.addAll(optional.get().getFixMap().keySet());
-                    set.removeIf(v->optional.get().getFreeList().contains(v) || optional.get().getFreeList().contains(-1));
-                    set.removeIf(v->!playerData.hasSkill(map.getOrDefault(v,"")));
-                    set.removeIf(v->!playerData.hasSkill(optional.get().getFixMap().getOrDefault(v,"")));
-                    set.forEach(v->nMap.put(v,optional.get().getFixMap().get(v)));
+            Player player = Bukkit.getPlayer(uuid);
+            PlayerData playerData = SkillAPI.getPlayerData(player);
+            map.values().removeIf(v->!playerData.hasSkill(v));
+            boolean flag = size != map.size();
+            if (optional.isPresent()) {
+                Condition condition = optional.get();
+                Map<Integer, String> fM = condition.getFixMap();
+                List<Integer> fL = condition.getFreeList();
+                size = map.size();
+                if (condition.isEnableFree() || !condition.isEnableFix()) {
+                    map.keySet().removeIf(v -> fM.containsKey(v) && !fL.contains(v) && !fL.contains(-1));
+                    fM.forEach(map::putIfAbsent);
+                    flag = flag || size != map.size();
+                    conditionData.setBar(map);
+                } else {
+                    map.keySet().removeIf(v->!fM.containsKey(v));
+                    flag = size != map.size();
+                    size = map.size();
+                    fM.forEach(map::put);
+                    flag = flag || size != map.size();
                 }
-                for (Map.Entry<Integer, String> entry : map.entrySet()) {
-                    if (playerData.hasSkill(entry.getValue())) {
-                        nMap.put(entry.getKey(), entry.getValue());
-                    }
-                }
-                if (flag) conditionData.setBar(nMap); else bar.setBar(nMap);
-                if (map.size() != nMap.size()) {
-                    sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, nMap));
-                }
+            } else {
+                bar.setAccountBar(map);
             }
+            if (flag) sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, map));
         }
     }
 

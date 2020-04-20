@@ -20,8 +20,8 @@ public class ClientData {
         this.uuid = uuid;
         status = new ClientStatus(uuid);
         bar = new ClientBar(uuid);
-        conditionData = new ConditionData();
         sender = new PluginSender(uuid);
+        conditionData = new ConditionData(bar);
         handler = new PackageHandler(uuid, status, bar, conditionData, sender);
         eventHandler = new EventHandler(uuid, status, bar, conditionData, sender);
     }

@@ -39,13 +39,13 @@ public class ConditionManager {
             if (section == null) continue;
             boolean enable = section.getBoolean("enable");
             if (!enable) continue;
-            int wright = section.getInt("weight");
+            int weight = section.getInt("weight");
             List<String> world = section.getStringList("conditions.world");
             world.removeIf(v->!SkillAPI.getSettings().isWorldEnabled(v));
             List<String> profession = section.getStringList("conditions.profession");
             profession.removeIf(v->!SkillAPI.isClassRegistered(v));
             if (world.isEmpty() && profession.isEmpty()) continue;
-            int barSize = section.getInt("barSize");
+            int barSize = Math.min(Math.max(section.getInt("barSize") - 1,0), Setting.getInstance().getBarMaxLine());
             boolean fixBar = section.getBoolean("enableFixBar");
             Map<Integer, String> barList = new HashMap<>();
             ConfigurationSection barSection = section.getConfigurationSection("barList");
@@ -53,15 +53,16 @@ public class ConditionManager {
                 Set<String> barKeys = barSection.getKeys(false);
                 for (String skillKey : barKeys) {
                     int index = barSection.getInt(skillKey);
-                    if (index >= 0 && index < barSize * 9){
+                    if (index >= 0 && index < barSize * 9 + 9){
                         barList.put(index,skillKey);
                     }
                 }
             }
             boolean freeSlot = section.getBoolean("enableFreeSlot");
             List<Integer> freeSlots = section.getIntegerList("freeSlots");
+            boolean enableSave = section.getBoolean("saveBarToDisk");
             if (freeSlots.contains(-1)) freeSlots.removeIf(v->v != -1);
-            Condition condition = new Condition(key, true,wright,world,profession,barSize,fixBar,barList,freeSlot,freeSlots);
+            Condition condition = new Condition(key, true,weight,world,profession,barSize,fixBar,barList,freeSlot,freeSlots,enableSave);
             if (world.isEmpty()) map.computeIfAbsent("",k->new ArrayList<>()).add(condition);
             world.forEach(w-> map.computeIfAbsent(w, k->new ArrayList<>()).add(condition));
         }
