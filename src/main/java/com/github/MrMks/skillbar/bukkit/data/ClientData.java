@@ -9,7 +9,6 @@ import com.github.MrMks.skillbar.bukkit.pkg.PluginSender;
 import java.util.UUID;
 
 public class ClientData {
-    private UUID uuid;
     private ClientStatus status;
     private ClientBar bar;
     private PluginSender sender;
@@ -17,7 +16,6 @@ public class ClientData {
     private EventHandler eventHandler;
     private ConditionData conditionData;
     public ClientData(UUID uuid){
-        this.uuid = uuid;
         status = new ClientStatus(uuid);
         bar = new ClientBar(uuid);
         sender = new PluginSender(uuid);
@@ -26,7 +24,7 @@ public class ClientData {
         eventHandler = new EventHandler(uuid, status, bar, conditionData, sender);
     }
 
-    public ClientStatus getStatus() {
+    public IClientStatus getStatus() {
         return status;
     }
 
@@ -41,8 +39,8 @@ public class ClientData {
     public void save(){
         bar.saveToFile();
     }
+
     public void clean(){
-        uuid = null;
         status = null;
         bar = null;
         sender = null;

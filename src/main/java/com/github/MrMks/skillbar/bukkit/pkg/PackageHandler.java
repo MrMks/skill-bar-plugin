@@ -6,8 +6,6 @@ import com.github.MrMks.skillbar.bukkit.condition.ConditionData;
 import com.github.MrMks.skillbar.bukkit.data.ClientBar;
 import com.github.MrMks.skillbar.bukkit.data.ClientStatus;
 import com.github.MrMks.skillbar.bukkit.manager.ConditionManager;
-import com.github.MrMks.skillbar.common.ByteBuilder;
-import com.github.MrMks.skillbar.common.Constants;
 import com.github.MrMks.skillbar.common.SkillInfo;
 import com.github.MrMks.skillbar.common.handler.IServerHandler;
 import com.github.MrMks.skillbar.common.pkg.SPackage;
@@ -53,24 +51,44 @@ public class PackageHandler implements IServerHandler {
         return list;
     }
 
+    private List<SkillInfo> getSkillInfoList(PlayerData data) {
+        List<SkillInfo> list = new ArrayList<>();
+        data.getSkills().forEach(skill -> list.add(new BukkitSkillInfo(skill)));
+        return list;
+    }
+
     @Override
     public void onDiscover() {
         if (!status.isDiscovered()) {
             status.discover();
-            sender.send(SPackage.BUILDER.buildSetting(BukkitByteBuilder::new, Setting.getInstance().getBarMaxLine()));
+            sender.send(SPackage.BUILDER.buildSetting(Setting.getInstance().getBarMaxLine()));
             if (!status.isBlocked()) {
                 if (checkValid()) {
                     Player player = Bukkit.getPlayer(uuid);
                     PlayerAccounts accounts = SkillAPI.getPlayerAccountData(player);
-                    Optional<Condition> optional = ConditionManager.match(player.getWorld().getName(), getProfessionKeys(accounts.getActiveData()));
+                    int active = accounts.getActiveId();
+
+                    if (status.getClientAccount() != active) {
+                        status.setClientAccount(active);
+                        sender.send(SPackage.BUILDER.buildAccount(active, accounts.getActiveData().getSkills().size()));
+                    }
+
+                    if (!status.isCached(active)) {
+                        status.cache(active);
+                        sender.send(SPackage.BUILDER.buildListSkill(getSkillInfoList(accounts.getActiveData())));
+                    }
+
+                    Optional<Condition> optional = ConditionManager.match(player.getWorld(), getProfessionKeys(accounts.getActiveData()));
                     if (optional.isPresent()){
                         Condition condition = optional.get();
                         conditionData.setCondition(condition);
-                        sender.send(SPackage.BUILDER.buildEnterCondition(BukkitByteBuilder::new, condition));
+                        sender.send(SPackage.BUILDER.buildEnterCondition(condition));
+                        sender.send(SPackage.BUILDER.buildListBar(conditionData.getConditionBar()));
+                    } else {
+                        sender.send(SPackage.BUILDER.buildListBar(bar.getAccountBar()));
                     }
-                    sender.send(SPackage.BUILDER.buildAccount(BukkitByteBuilder::new, accounts.getActiveId(), accounts.getActiveData().getSkills().size()));
                     status.enable();
-                    sender.send(SPackage.BUILDER.buildEnable(BukkitByteBuilder::new));
+                    sender.send(SPackage.BUILDER.buildEnable());
                 }
             }
         }
@@ -78,20 +96,18 @@ public class PackageHandler implements IServerHandler {
 
     @Override
     public void onListSkill(List<String> keys) {
-        if (status.isEnable() && checkValid()){
-            ArrayList<String> reList = new ArrayList<>();
+        if (status.isEnabled() && checkValid()){
             PlayerData data = SkillAPI.getPlayerData(Bukkit.getOfflinePlayer(uuid));
-            for (CharSequence key : keys){
-                if (!data.hasSkill(key.toString())) reList.add(key.toString());
-            }
-            ArrayList<SkillInfo> aList = new ArrayList<>();
+            List<String> reList = new ArrayList<>();
+            for (String key : keys) if (!data.hasSkill(key)) reList.add(key);
+            List<SkillInfo> aList = new ArrayList<>();
             for (PlayerSkill skill : data.getSkills()){
                 if (!keys.contains(skill.getData().getKey())) {
                     aList.add(new BukkitSkillInfo(skill));
                 }
             }
-            ByteBuilder builder = SPackage.BUILDER.buildListSkill(BukkitByteBuilder::new,aList,reList);
-            sender.send(builder);
+            sender.send(SPackage.BUILDER.buildAddSkill(aList));
+            sender.send(SPackage.BUILDER.buildRemoveSkill(reList));
         }
     }
 
@@ -106,7 +122,7 @@ public class PackageHandler implements IServerHandler {
             } else {
                 info = new BukkitSkillInfo(key);
             }
-            sender.send(SPackage.BUILDER.buildUpdateSkill(BukkitByteBuilder::new,info));
+            sender.send(SPackage.BUILDER.buildUpdateSkill(info));
         }
     }
 
@@ -118,19 +134,17 @@ public class PackageHandler implements IServerHandler {
             Player player = Bukkit.getPlayer(uuid);
             PlayerData playerData = SkillAPI.getPlayerData(player);
             if (optional.isPresent()) {
-                Condition condition = optional.get();
-                if (condition.isEnableFree() || !condition.isEnableFix()) {
-                    map.putAll(conditionData.getConditionBar());
-                    map.values().removeIf(v->!playerData.hasSkill(v));
-                } else {
-                    map.putAll(condition.getFixMap());
-                }
+                map.putAll(conditionData.getConditionBar());
+                int size = map.size();
+                map.values().removeIf(v->!playerData.hasSkill(v));
+                if (size != map.size()) conditionData.setBar(map);
             } else {
                 map.putAll(bar.getAccountBar());
+                int size = map.size();
                 map.values().removeIf(v->!playerData.hasSkill(v));
-                if (map.size() != bar.getAccountBar().size()) bar.setAccountBar(map);
+                if (map.size() != size) bar.setAccountBar(map);
             }
-            sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, map));
+            sender.send(SPackage.BUILDER.buildListBar(map));
         }
     }
 
@@ -163,7 +177,7 @@ public class PackageHandler implements IServerHandler {
             } else {
                 bar.setAccountBar(map);
             }
-            if (flag) sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, map));
+            if (flag) sender.send(SPackage.BUILDER.buildListBar(map));
         }
     }
 
@@ -173,26 +187,22 @@ public class PackageHandler implements IServerHandler {
             Player player = Bukkit.getPlayer(uuid);
             PlayerData playerData = SkillAPI.getPlayerData(player);
             boolean exist, suc;
-            byte code;
             if (playerData.hasSkill(key)) {
                 exist = true;
                 if (!playerData.getSkill(key).isUnlocked()) {
                     suc = false;
-                    code = Constants.CAST_FAILED_UNLOCK;
                 } else {
                     suc = playerData.cast(key);
-                    code = suc ? Constants.CAST_SUCCESS : Constants.CAST_FAILED_UNEXPECTED;
                 }
             } else {
                 exist = false;
                 suc = false;
-                code = Constants.CAST_FAILED_NO_SKILL;
             }
-            sender.send(SPackage.BUILDER.buildCast(BukkitByteBuilder::new, key, exist, suc, code));
+            sender.send(SPackage.BUILDER.buildCast(key, exist, suc));
             if (exist && suc) {
                 Map<String, Integer> map = new HashMap<>(1);
                 map.put(key, playerData.getSkill(key).getCooldown());
-                sender.send(SPackage.BUILDER.buildCoolDown(BukkitByteBuilder::new, map));
+                sender.send(SPackage.BUILDER.buildCoolDown(map));
             }
         }
     }

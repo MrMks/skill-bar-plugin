@@ -1,5 +1,6 @@
-package com.github.MrMks.skillbar.bukkit.data;
+package com.github.MrMks.skillbar.bukkit.manager;
 
+import com.github.MrMks.skillbar.bukkit.data.ClientData;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -7,11 +8,12 @@ import java.util.*;
 public class ClientManager {
     private final Map<UUID, ClientData> map = new HashMap<>();
 
-    public void prepare(Player player) {
-        if (player != null) prepare(player.getUniqueId());
+    public ClientData generate(Player player) {
+        return player == null ? null : generate(player.getUniqueId());
     }
-    public void prepare(UUID uuid) {
+    public ClientData generate(UUID uuid) {
         if (uuid != null && !map.containsKey(uuid)) map.put(uuid, new ClientData(uuid));
+        return map.get(uuid);
     }
 
     public ClientData get(Player player){

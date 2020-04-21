@@ -4,7 +4,6 @@ import com.github.MrMks.skillbar.bukkit.condition.Condition;
 import com.github.MrMks.skillbar.bukkit.condition.ConditionData;
 import com.github.MrMks.skillbar.bukkit.data.ClientBar;
 import com.github.MrMks.skillbar.bukkit.data.ClientStatus;
-import com.github.MrMks.skillbar.bukkit.pkg.BukkitByteBuilder;
 import com.github.MrMks.skillbar.bukkit.pkg.BukkitSkillInfo;
 import com.github.MrMks.skillbar.bukkit.pkg.PluginSender;
 import com.github.MrMks.skillbar.common.SkillInfo;
@@ -17,7 +16,6 @@ import com.sucy.skill.api.skills.Skill;
 import org.bukkit.Bukkit;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 public class EventHandler {
     private final UUID uuid;
@@ -39,7 +37,7 @@ public class EventHandler {
      */
     public void onJoin(){
         if (!status.isDiscovered()) {
-            sender.send(SPackage.BUILDER.buildDiscover(BukkitByteBuilder::new));
+            sender.send(SPackage.BUILDER.buildDiscover());
         }
     }
 
@@ -49,9 +47,10 @@ public class EventHandler {
      * will set status to disabled
      */
     public void onResetProfess(){
-        if (status.isDiscovered() && status.isEnable()) {
+        if (status.isDiscovered() && status.isEnabled()) {
             int active = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid)).getActiveId();
-            sender.send(SPackage.BUILDER.buildCleanUp(BukkitByteBuilder::new, active));
+            status.cleanCache(active);
+            sender.send(SPackage.BUILDER.buildCleanUp(active));
             sendDisable();
             bar.setAccountBar(active, Collections.emptyMap());
         }
@@ -62,14 +61,14 @@ public class EventHandler {
      * send if discovered, not blocked and not enabled 
      */
     public void onStartProfess(){
-        if (status.isDiscovered() && !status.isBlocked() && !status.isEnable()) {
+        if (status.isDiscovered() && !status.isBlocked() && !status.isEnabled()) {
             sendAccount();
             sendEnable();
         }
     }
 
     public void onChangeProfess(PlayerClass playerClass){
-        if (status.isDiscovered() && status.isEnable()) {
+        if (status.isDiscovered() && status.isEnabled()) {
             List<Skill> skills = playerClass.getData().getSkills();
             List<SkillInfo> infoList = new ArrayList<>();
             PlayerData data = playerClass.getPlayerData();
@@ -77,12 +76,12 @@ public class EventHandler {
                 String skillKey = skill.getKey();
                 if (data.hasSkill(skillKey)) infoList.add(new BukkitSkillInfo(data.getSkill(skillKey)));
             }
-            sender.send(SPackage.BUILDER.buildAddSkill(BukkitByteBuilder::new, infoList));
+            sender.send(SPackage.BUILDER.buildAddSkill(infoList));
         }
     }
 
     public void onAccountSwitch(){
-        if (status.isDiscovered() && status.isEnable()) {
+        if (status.isDiscovered() && status.isEnabled()) {
             sendAccount();
         }
     }
@@ -111,7 +110,7 @@ public class EventHandler {
         if (data.hasSkill(key)) {
             info = new BukkitSkillInfo(data.getSkill(key));
         } else info = SkillInfo.Empty;
-        sender.send(SPackage.BUILDER.buildUpdateSkill(BukkitByteBuilder::new,info));
+        sender.send(SPackage.BUILDER.buildUpdateSkill(info));
     }
 
     public void onUpdateCoolDownInfo(){
@@ -128,7 +127,7 @@ public class EventHandler {
         } else nMap = bar.getAccountBar();
         nMap.values().forEach(key->{if (data.hasSkill(key)) map.put(key, data.getSkill(key).getCooldown());});
 
-        sender.send(SPackage.BUILDER.buildCoolDown(BukkitByteBuilder::new, map));
+        sender.send(SPackage.BUILDER.buildCoolDown(map));
     }
 
     public void onLeaveCondition(){
@@ -138,9 +137,9 @@ public class EventHandler {
     public void onLeaveCondition(boolean isListBar){
         if (conditionData.getCondition().isPresent()) {
             conditionData.leaveCondition();
-            sender.send(SPackage.BUILDER.buildLeaveCondition(BukkitByteBuilder::new));
+            sender.send(SPackage.BUILDER.buildLeaveCondition());
             if (isListBar) {
-                sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, bar.getAccountBar()));
+                sender.send(SPackage.BUILDER.buildListBar(bar.getAccountBar()));
             }
         }
     }
@@ -153,34 +152,34 @@ public class EventHandler {
         Optional<Condition> optional = conditionData.getCondition();
         if (!optional.isPresent() || !optional.get().getKey().equals(condition.getKey())) {
             conditionData.setCondition(condition);
-            sender.send(SPackage.BUILDER.buildEnterCondition(BukkitByteBuilder::new, condition));
-            if (listBar) sender.send(SPackage.BUILDER.buildListBar(BukkitByteBuilder::new, condition.getFixMap()));
+            sender.send(SPackage.BUILDER.buildEnterCondition(condition));
+            if (listBar) sender.send(SPackage.BUILDER.buildListBar(condition.getFixMap()));
         }
     }
 
     public void onPluginDisable(){
-        sender.send(SPackage.BUILDER.buildLeaveCondition(BukkitByteBuilder::new));
-        sender.send(SPackage.BUILDER.buildDisable(BukkitByteBuilder::new));
+        sender.send(SPackage.BUILDER.buildLeaveCondition());
+        sender.send(SPackage.BUILDER.buildDisable());
     }
 
     public void sendAccount() {
         if (status.isDiscovered() && !status.isBlocked()) {
             int active = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid)).getActiveId();
             int size = SkillAPI.getPlayerData(Bukkit.getOfflinePlayer(uuid)).getSkills().size();
-            sender.send(SPackage.BUILDER.buildAccount(BukkitByteBuilder::new, active, size));
+            sender.send(SPackage.BUILDER.buildAccount(active, size));
         }
     }
 
     public void sendEnable(){
-        if (status.isDiscovered() && !status.isEnable()) {
+        if (status.isDiscovered() && !status.isEnabled()) {
             status.enable();
-            sender.send(SPackage.BUILDER.buildEnable(BukkitByteBuilder::new));
+            sender.send(SPackage.BUILDER.buildEnable());
         }
     }
     public void sendDisable(){
-        if (status.isDiscovered() && status.isEnable()) {
+        if (status.isDiscovered() && status.isEnabled()) {
             status.disable();
-            sender.send(SPackage.BUILDER.buildDisable(BukkitByteBuilder::new));
+            sender.send(SPackage.BUILDER.buildDisable());
         }
     }
 }

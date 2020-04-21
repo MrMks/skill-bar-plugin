@@ -2,7 +2,7 @@ package com.github.MrMks.skillbar.bukkit;
 
 import com.github.MrMks.skillbar.bukkit.condition.Condition;
 import com.github.MrMks.skillbar.bukkit.data.ClientData;
-import com.github.MrMks.skillbar.bukkit.data.ClientManager;
+import com.github.MrMks.skillbar.bukkit.manager.ClientManager;
 import com.github.MrMks.skillbar.bukkit.manager.ConditionManager;
 import com.github.MrMks.skillbar.bukkit.task.ClientDiscoverTask;
 import com.github.MrMks.skillbar.bukkit.task.ReloadCheckTask;
@@ -49,8 +49,7 @@ public class MainListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent e){
         Player p = e.getPlayer();
-        manager.prepare(p);
-        ClientData data = manager.get(p);
+        ClientData data = manager.generate(p);
         // data should never be null as manager#prepare(Player) just generate a ClientData with key p.getUniqueId()
         if (data != null && !data.getStatus().isDiscovered()) {
             scheduler(()->{
@@ -236,7 +235,7 @@ public class MainListener implements Listener {
     }
 
     private boolean checkClient(ClientData m){
-        return m != null && m.getStatus().isEnable();
+        return m != null && m.getStatus().isEnabled();
     }
 
     private ArrayList<String> getProfessionKeyList(PlayerData data){

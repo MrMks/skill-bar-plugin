@@ -34,7 +34,7 @@ public class Condition implements ICondition {
     }
 
     public boolean match(String world, List<String> professions){
-        return (worlds.isEmpty() || worlds.contains(world)) && (professions.isEmpty() || professions.removeAll(professionKeys));
+        return (worlds.isEmpty() || worlds.contains(world)) && (professionKeys.isEmpty() || (professions != null && professions.removeAll(professionKeys)));
     }
 
     public String getKey(){

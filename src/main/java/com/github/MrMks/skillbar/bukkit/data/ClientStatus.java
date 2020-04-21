@@ -1,18 +1,20 @@
 package com.github.MrMks.skillbar.bukkit.data;
 
 import com.github.MrMks.skillbar.bukkit.BlackList;
-import com.github.MrMks.skillbar.bukkit.condition.Condition;
 import org.bukkit.Bukkit;
 
-import java.util.Optional;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
-public class ClientStatus {
-    private UUID uid;
+public class ClientStatus implements IClientStatus {
+    private final UUID uid;
     private boolean discovered = false;
     private boolean justBlock = false;
     private EnumStatus status = EnumStatus.Discovering;
-    @Deprecated private Condition condition = null;
+    private final Set<Integer> cacheSet = new HashSet<>();
+    private int acc = -1;
+
     //private ClientBar bar;
     public ClientStatus(UUID uuid){
         this.uid = uuid;
@@ -42,7 +44,7 @@ public class ClientStatus {
         return BlackList.getInstance().contain(Bukkit.getOfflinePlayer(uid).getName());
     }
 
-    public boolean isSendDisable(){
+    public boolean canDisableOnBlocked(){
         if (justBlock){
             justBlock = false;
             return true;
@@ -60,32 +62,17 @@ public class ClientStatus {
         status = EnumStatus.Disabled;
     }
 
-    public boolean isEnable(){
+    public boolean isEnabled(){
         return status == EnumStatus.Enabled;
     }
 
-    public boolean isDisable(){
+    public boolean isDisabled(){
         return status == EnumStatus.Disabled;
-    }
-
-    @Deprecated
-    public Optional<Condition> getCondition(){
-        return Optional.ofNullable(condition);
-    }
-
-    @Deprecated
-    public void setCondition(Condition condition){
-        this.condition = condition;
-    }
-
-    @Deprecated
-    public void leaveCondition(){
-        condition = null;
     }
 
     private int timesInSeconds = 0;
     private long timeLastUpdate = System.currentTimeMillis();
-    public void onReceive(){
+    public void receive(){
         long now = System.currentTimeMillis();
         if (now - timeLastUpdate >= 1000){
             timesInSeconds = 0;
@@ -95,7 +82,7 @@ public class ClientStatus {
         if (timesInSeconds > 20) block();
     }
 
-    public void onReceiveBad(){
+    public void receiveBad(){
         long now = System.currentTimeMillis();
         if (now - timeLastUpdate >= 1000){
             timesInSeconds = 0;
@@ -103,5 +90,30 @@ public class ClientStatus {
         }
         timesInSeconds += 3;
         if (timesInSeconds > 20) block();
+    }
+
+    @Override
+    public void cache(int id) {
+        cacheSet.add(id);
+    }
+
+    @Override
+    public void cleanCache(int id) {
+        cacheSet.remove(id);
+    }
+
+    @Override
+    public boolean isCached(int id) {
+        return cacheSet.contains(id);
+    }
+
+    @Override
+    public void setClientAccount(int account) {
+        acc = account;
+    }
+
+    @Override
+    public int getClientAccount() {
+        return acc;
     }
 }

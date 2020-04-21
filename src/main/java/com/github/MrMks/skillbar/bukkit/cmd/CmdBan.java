@@ -1,7 +1,7 @@
 package com.github.MrMks.skillbar.bukkit.cmd;
 
 import com.github.MrMks.skillbar.bukkit.data.ClientData;
-import com.github.MrMks.skillbar.bukkit.data.ClientManager;
+import com.github.MrMks.skillbar.bukkit.manager.ClientManager;
 import com.rit.sucy.commands.ConfigurableCommand;
 import com.rit.sucy.commands.IFunction;
 import org.bukkit.Bukkit;

@@ -1,8 +1,8 @@
 package com.github.MrMks.skillbar.bukkit.cmd;
 
 import com.github.MrMks.skillbar.bukkit.data.ClientData;
-import com.github.MrMks.skillbar.bukkit.data.ClientStatus;
-import com.github.MrMks.skillbar.bukkit.data.ClientManager;
+import com.github.MrMks.skillbar.bukkit.data.IClientStatus;
+import com.github.MrMks.skillbar.bukkit.manager.ClientManager;
 import com.rit.sucy.commands.ConfigurableCommand;
 import com.rit.sucy.commands.IFunction;
 import com.sucy.skill.SkillAPI;
@@ -24,14 +24,14 @@ public class CmdInfo implements IFunction {
             if (SkillAPI.isLoaded()){
                 Player player = (Player) commandSender;
                 ClientData data = manager.get(player);
-                ClientStatus status = data.getStatus();
+                IClientStatus status = data.getStatus();
                 boolean hasPlayer = SkillAPI.hasPlayerData(player);
                 PlayerData pData = SkillAPI.getPlayerData(player);
                 boolean passCheck = hasPlayer && pData.getClasses().size() > 0 && pData.getSkills().size() > 0;
                 boolean world = SkillAPI.getSettings().isWorldEnabled(player.getWorld());
                 boolean block = status.isBlocked();
                 boolean discovered = status.isDiscovered();
-                boolean enable = status.isEnable();
+                boolean enable = status.isEnabled();
 
                 String builder = "§2Skill Bar info:\n" +
                         "§6=====\n§r" +

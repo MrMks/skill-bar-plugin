@@ -1,10 +1,10 @@
 package com.github.MrMks.skillbar.bukkit;
 
 import com.github.MrMks.skillbar.bukkit.manager.ConditionManager;
+import com.github.MrMks.skillbar.bukkit.pkg.BukkitByteBuilder;
 import com.github.MrMks.skillbar.common.Constants;
 import com.github.MrMks.skillbar.bukkit.data.ClientBar;
-import com.github.MrMks.skillbar.bukkit.data.ClientData;
-import com.github.MrMks.skillbar.bukkit.data.ClientManager;
+import com.github.MrMks.skillbar.bukkit.manager.ClientManager;
 import com.github.MrMks.skillbar.bukkit.manager.CmdManager;
 import com.github.MrMks.skillbar.bukkit.pkg.PackageListener;
 import com.github.MrMks.skillbar.bukkit.pkg.PluginSender;
@@ -12,6 +12,7 @@ import com.github.MrMks.skillbar.bukkit.task.AutoSaveTask;
 import com.github.MrMks.skillbar.bukkit.task.ClientDiscoverTask;
 import com.github.MrMks.skillbar.bukkit.task.CoolDownTask;
 import com.github.MrMks.skillbar.bukkit.task.LoopThread;
+import com.github.MrMks.skillbar.common.pkg.SPackage;
 import com.rit.sucy.version.VersionManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -56,6 +57,7 @@ public class SkillBar extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(new MainListener(this, manager, cdt), this);
 
         // register channels
+        SPackage.BUILDER.init(BukkitByteBuilder::new);
         Bukkit.getMessenger().registerOutgoingPluginChannel(this, Constants.CHANNEL_NAME);
         Bukkit.getMessenger().registerIncomingPluginChannel(this,Constants.CHANNEL_NAME,new PackageListener(manager));
 
@@ -67,8 +69,7 @@ public class SkillBar extends JavaPlugin implements Listener {
 
         // discover all players
         for (Player player : VersionManager.getOnlinePlayers()){
-            manager.prepare(player);
-            manager.get(player).getEventHandler().onJoin();
+            if (player != null) manager.generate(player).getEventHandler().onJoin();
         }
 
         // register cmd
@@ -96,6 +97,7 @@ public class SkillBar extends JavaPlugin implements Listener {
         // unregister channels
         Bukkit.getMessenger().unregisterIncomingPluginChannel(this);
         Bukkit.getMessenger().unregisterOutgoingPluginChannel(this);
+        SPackage.BUILDER.init(null);
 
         // clean static classes
         PluginSender.clean();

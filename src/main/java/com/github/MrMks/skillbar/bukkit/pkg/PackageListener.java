@@ -5,7 +5,7 @@ import com.github.MrMks.skillbar.common.Constants;
 import com.github.MrMks.skillbar.common.handler.IServerHandler;
 import com.github.MrMks.skillbar.common.pkg.CPackage;
 import com.github.MrMks.skillbar.bukkit.data.ClientData;
-import com.github.MrMks.skillbar.bukkit.data.ClientManager;
+import com.github.MrMks.skillbar.bukkit.manager.ClientManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
@@ -21,7 +21,7 @@ public class PackageListener implements PluginMessageListener {
         if (!s.equals(Constants.CHANNEL_NAME) || player == null) return;
         if (manager.has(player)) {
             ClientData data = manager.get(player);
-            if ((data.getStatus().isBlocked() && data.getStatus().isSendDisable()) || data.getStatus().isDisable()) {
+            if ((data.getStatus().isBlocked() && data.getStatus().canDisableOnBlocked()) || data.getStatus().isDisabled()) {
                 data.getEventHandler().sendDisable();
                 return;
             }
@@ -29,32 +29,32 @@ public class PackageListener implements PluginMessageListener {
                 ByteDecoder decoder = new ByteDecoder(bytes);
                 IServerHandler handler = data.getPackageHandler();
                 switch (decoder.getHeader()) {
-                    case Constants.DISCOVER:
+                    case Discover:
                         CPackage.DECODER.decodeDiscover(handler, decoder);
                         break;
-                    case Constants.LIST_SKILL:
+                    case ListSkill:
                         CPackage.DECODER.decodeListSkill(handler, decoder);
                         break;
-                    case Constants.UPDATE_SKILL:
+                    case UpdateSkill:
                         CPackage.DECODER.decodeUpdateSkill(handler, decoder);
                         break;
-                    case Constants.CAST:
+                    case Cast:
                         CPackage.DECODER.decodeCast(handler, decoder);
                         break;
-                    case Constants.LIST_BAR:
+                    case ListBar:
                         CPackage.DECODER.decodeListBar(handler, decoder);
                         break;
-                    case Constants.SAVE_BAR:
+                    case SaveBar:
                         CPackage.DECODER.decodeSaveBar(handler, decoder);
                         break;
                     default:
                         Bukkit.getLogger().warning("Undefined package header received from player: " + player.getName());
                         break;
                 }
-                data.getStatus().onReceive();
+                data.getStatus().receive();
             } catch (Throwable tr) {
                 tr.printStackTrace();
-                data.getStatus().onReceiveBad();
+                data.getStatus().receiveBad();
             }
         }
     }

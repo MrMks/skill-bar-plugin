@@ -4,6 +4,7 @@ import com.github.MrMks.skillbar.bukkit.FileConfigStore;
 import com.github.MrMks.skillbar.bukkit.Setting;
 import com.github.MrMks.skillbar.bukkit.condition.Condition;
 import com.sucy.skill.SkillAPI;
+import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -70,6 +71,10 @@ public class ConditionManager {
 
     public static void clean(){
         map.clear();
+    }
+
+    public static Optional<Condition> match(World world, List<String> professions) {
+        return world == null ? Optional.empty() : match(world.getName(), professions);
     }
 
     public static Optional<Condition> match(String world, List<String> professions){

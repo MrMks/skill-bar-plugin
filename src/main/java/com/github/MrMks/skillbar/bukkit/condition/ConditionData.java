@@ -23,19 +23,9 @@ public class ConditionData {
 
     public void setBar(Map<Integer, String> map){
         if (condition != null) {
-            //Set<Integer> set = new HashSet<>(condition.getFixMap().keySet());
-            //set.addAll(map.keySet());
-            //set.removeIf(v -> condition.getFreeList().contains(v) || condition.getFreeList().contains(-1));
-            /*
-            set.forEach(v->{
-                if (condition.getFixMap().containsKey(v)) map.put(v, condition.getFixMap().get(v));
-                else map.remove(v);
-            });
-             */
-            if (condition.isSave()) {
-                saveBar.setConditionBar(condition.getKey(), map);
-            } else {
-                bar = map;
+            if (condition.isEnableFree() || !condition.isEnableFix()) {
+                if (condition.isSave()) saveBar.setConditionBar(condition.getKey(), map);
+                else bar = map;
             }
         }
     }
@@ -46,7 +36,15 @@ public class ConditionData {
     }
 
     public Map<Integer, String> getConditionBar(){
-        return (condition.isSave()) ? saveBar.getConditionBar(condition.getKey()) : (bar == null ? Collections.emptyMap() : bar);
+        if (condition == null) return Collections.emptyMap();
+        else {
+            if (condition.isEnableFree() || !condition.isEnableFix()) {
+                if (condition.isSave()) return saveBar.getConditionBar(condition.getKey());
+                else return bar == null ? Collections.emptyMap() : bar;
+            } else {
+                return condition.getFixMap();
+            }
+        }
     }
 
     public void leaveCondition(){
