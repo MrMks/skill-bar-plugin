@@ -18,7 +18,7 @@ public class PluginSender {
     }
 
     private byte index = 0;
-    private UUID uuid;
+    private final UUID uuid;
     public PluginSender(UUID uuid){
         this.uuid = uuid;
     }

@@ -10,7 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 public class CmdUnban implements IFunction {
-    private ClientManager manager;
+    private final ClientManager manager;
 
     public CmdUnban(ClientManager manager){
         this.manager = manager;

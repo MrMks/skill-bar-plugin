@@ -6,8 +6,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 
 public class ReloadCheckTask implements Runnable {
-    private Plugin pl;
-    private CommandSender sender;
+    private final Plugin pl;
+    private final CommandSender sender;
     public ReloadCheckTask(Plugin plugin, CommandSender sender){
         this.pl = plugin;
         this.sender = sender;

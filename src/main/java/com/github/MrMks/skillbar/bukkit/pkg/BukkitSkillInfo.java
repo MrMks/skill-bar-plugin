@@ -9,7 +9,6 @@ import org.bukkit.inventory.ItemStack;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 
 public class BukkitSkillInfo extends SkillInfo {
     private static int itemMethodFlag = 0;
@@ -56,8 +55,5 @@ public class BukkitSkillInfo extends SkillInfo {
     }
     public BukkitSkillInfo(PlayerSkill skill){
         this(skill.getData().getKey(), skill.isUnlocked(), skill.getData().canCast(), getItemStack(skill));
-    }
-    public BukkitSkillInfo(String key){
-        super(key,false,false,false,0,(short) 0,"", Collections.emptyList());
     }
 }

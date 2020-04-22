@@ -69,7 +69,7 @@ public class MainListener implements Listener {
         Player p = e.getPlayer();
         ClientData data = manager.get(p);
         if (data != null) task.removeName(data);
-        manager.unload(p.getUniqueId());
+        manager.unload(p);
     }
 
     /**

@@ -8,7 +8,7 @@ public class LoopThread extends Thread {
     private boolean enable = true;
     private long time = System.currentTimeMillis();
 
-    private List<Task> tasks = new LinkedList<>();
+    private final List<Task> tasks = new LinkedList<>();
 
     @Override
     public void run() {
@@ -25,7 +25,7 @@ public class LoopThread extends Thread {
             for (Task task : re) tasks.remove(task);
             try {
                 time += 500;
-                sleep(Math.max(1L, time - System.currentTimeMillis()));
+                wait(Math.max(1L, time - System.currentTimeMillis()));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

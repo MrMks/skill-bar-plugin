@@ -7,21 +7,19 @@ import java.util.List;
 import java.util.Map;
 
 public class Condition implements ICondition {
-    private String conditionKey;
-    private boolean enable;
-    private int weight;
-    private List<String> worlds;
-    private List<String> professionKeys;
-    private int barSize;
-    private boolean enableFix;
-    private Map<Integer,String> list;
-    private boolean enableFree;
-    private List<Integer> freeList;
-    private boolean save;
+    private final String conditionKey;
+    private final int weight;
+    private final List<String> worlds;
+    private final List<String> professionKeys;
+    private final int barSize;
+    private final boolean enableFix;
+    private final Map<Integer,String> list;
+    private final boolean enableFree;
+    private final List<Integer> freeList;
+    private final boolean save;
 
-    public Condition(String key, boolean enable, int weight, List<String> worlds, List<String> professionKeys, int barSize, boolean enableFix, Map<Integer, String> list, boolean enableFree, List<Integer> freeList, boolean save){
+    public Condition(String key, int weight, List<String> worlds, List<String> professionKeys, int barSize, boolean enableFix, Map<Integer, String> list, boolean enableFree, List<Integer> freeList, boolean save){
         this.conditionKey = key;
-        this.enable = enable;
         this.weight = weight;
         this.worlds = worlds;
         this.professionKeys = professionKeys;

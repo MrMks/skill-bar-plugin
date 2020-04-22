@@ -3,7 +3,7 @@ package com.github.MrMks.skillbar.bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 
 public class Setting {
-    private static Setting instance = new Setting();
+    private static final Setting instance = new Setting();
     public static Setting getInstance() {
         return instance;
     }

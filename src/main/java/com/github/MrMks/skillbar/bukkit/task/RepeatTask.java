@@ -3,7 +3,7 @@ package com.github.MrMks.skillbar.bukkit.task;
 public abstract class RepeatTask implements Task{
 
     private long time = System.currentTimeMillis();
-    private int interval;
+    private final int interval;
     public RepeatTask(int delay, int interval){
         time += delay;
         this.interval = Math.max(interval, 500);

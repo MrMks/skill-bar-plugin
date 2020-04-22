@@ -13,7 +13,7 @@ import org.bukkit.plugin.Plugin;
 
 public class CmdInfo implements IFunction {
 
-    private ClientManager manager;
+    private final ClientManager manager;
     public CmdInfo(ClientManager manager){
         this.manager = manager;
     }

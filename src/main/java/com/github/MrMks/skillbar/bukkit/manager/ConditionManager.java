@@ -12,7 +12,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 public class ConditionManager {
-    private static Map<String, List<Condition>> map = new HashMap<>();
+    private static final Map<String, List<Condition>> map = new HashMap<>();
 
     public static void init(FileConfigStore store, Logger logger){
         FileConfiguration config = store.getConfig();
@@ -63,7 +63,7 @@ public class ConditionManager {
             List<Integer> freeSlots = section.getIntegerList("freeSlots");
             boolean enableSave = section.getBoolean("saveBarToDisk");
             if (freeSlots.contains(-1)) freeSlots.removeIf(v->v != -1);
-            Condition condition = new Condition(key, true,weight,world,profession,barSize,fixBar,barList,freeSlot,freeSlots,enableSave);
+            Condition condition = new Condition(key, weight,world,profession,barSize,fixBar,barList,freeSlot,freeSlots,enableSave);
             if (world.isEmpty()) map.computeIfAbsent("",k->new ArrayList<>()).add(condition);
             world.forEach(w-> map.computeIfAbsent(w, k->new ArrayList<>()).add(condition));
         }

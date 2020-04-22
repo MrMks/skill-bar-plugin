@@ -11,7 +11,7 @@ import org.bukkit.plugin.Plugin;
 
 public class CmdBan implements IFunction {
 
-    private ClientManager manager;
+    private final ClientManager manager;
 
     public CmdBan(ClientManager manager){
         this.manager = manager;
