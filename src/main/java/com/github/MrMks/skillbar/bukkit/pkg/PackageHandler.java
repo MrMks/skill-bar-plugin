@@ -70,7 +70,7 @@ public class PackageHandler implements IServerHandler {
 
                     if (status.getClientAccount() != active) {
                         status.setClientAccount(active);
-                        sender.send(SPackage.BUILDER.buildAccount(active, accounts.getActiveData().getSkills().size()));
+                        sender.send(SPackage.BUILDER.buildAccount(active));
                     }
 
                     if (!status.isCached(active)) {
@@ -83,7 +83,7 @@ public class PackageHandler implements IServerHandler {
                         Condition condition = optional.get();
                         conditionData.setCondition(condition);
                         sender.send(SPackage.BUILDER.buildEnterCondition(condition));
-                        sender.send(SPackage.BUILDER.buildListBar(conditionData.getConditionBar()));
+                        if (!condition.isEnableFix() || condition.isEnableFree()) sender.send(SPackage.BUILDER.buildListBar(conditionData.getConditionBar()));
                     } else {
                         sender.send(SPackage.BUILDER.buildListBar(bar.getAccountBar()));
                     }
@@ -107,7 +107,7 @@ public class PackageHandler implements IServerHandler {
                 }
             }
             sender.send(SPackage.BUILDER.buildAddSkill(aList));
-            sender.send(SPackage.BUILDER.buildRemoveSkill(reList));
+            if (!reList.isEmpty()) sender.send(SPackage.BUILDER.buildRemoveSkill(reList));
         }
     }
 
@@ -119,10 +119,10 @@ public class PackageHandler implements IServerHandler {
             if (data.hasSkill(key)) {
                 PlayerSkill skill = data.getSkill(key);
                 info = new BukkitSkillInfo(skill);
+                sender.send(SPackage.BUILDER.buildUpdateSkill(info));
             } else {
-                info = new BukkitSkillInfo(key);
+                sender.send(SPackage.BUILDER.buildRemoveSkill(Collections.singletonList(key)));
             }
-            sender.send(SPackage.BUILDER.buildUpdateSkill(info));
         }
     }
 

@@ -79,7 +79,7 @@ public class ClientStatus implements IClientStatus {
             timeLastUpdate = now;
         }
         timesInSeconds += 1;
-        if (timesInSeconds > 20) block();
+        //if (timesInSeconds > 20) block();
     }
 
     public void receiveBad(){
@@ -89,7 +89,7 @@ public class ClientStatus implements IClientStatus {
             timeLastUpdate = now;
         }
         timesInSeconds += 3;
-        if (timesInSeconds > 20) block();
+        //if (timesInSeconds > 20) block();
     }
 
     @Override

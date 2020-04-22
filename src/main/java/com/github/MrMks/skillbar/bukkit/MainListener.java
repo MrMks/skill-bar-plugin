@@ -68,8 +68,8 @@ public class MainListener implements Listener {
         //Player exit server, clear instances;
         Player p = e.getPlayer();
         ClientData data = manager.get(p);
-        manager.unload(p.getUniqueId());
         if (data != null) task.removeName(data);
+        manager.unload(p.getUniqueId());
     }
 
     /**

@@ -31,7 +31,7 @@ public class CmdUnban implements IFunction {
                 } else {
                     if (data.getStatus().isBlocked()) {
                         data.getStatus().unblock();
-                        if (data.getStatus().isDiscovered()) data.getEventHandler().sendDisable();
+                        if (data.getStatus().isDiscovered()) data.getPackageHandler().onDiscover();
                         commandSender.sendMessage("player " + strings[0] + " has been un-banned");
                     } else {
                         commandSender.sendMessage("player " + strings[0] + " is not banned before");

@@ -12,6 +12,7 @@ import com.sucy.skill.SkillAPI;
 import com.sucy.skill.api.player.PlayerAccounts;
 import com.sucy.skill.api.player.PlayerClass;
 import com.sucy.skill.api.player.PlayerData;
+import com.sucy.skill.api.player.PlayerSkill;
 import com.sucy.skill.api.skills.Skill;
 import org.bukkit.Bukkit;
 
@@ -83,6 +84,7 @@ public class EventHandler {
     public void onAccountSwitch(){
         if (status.isDiscovered() && status.isEnabled()) {
             sendAccount();
+
         }
     }
 
@@ -153,7 +155,9 @@ public class EventHandler {
         if (!optional.isPresent() || !optional.get().getKey().equals(condition.getKey())) {
             conditionData.setCondition(condition);
             sender.send(SPackage.BUILDER.buildEnterCondition(condition));
-            if (listBar) sender.send(SPackage.BUILDER.buildListBar(condition.getFixMap()));
+            if (listBar) {
+                if (!condition.isEnableFix() || condition.isEnableFree()) sender.send(SPackage.BUILDER.buildListBar(conditionData.getConditionBar()));
+            }
         }
     }
 
@@ -165,8 +169,25 @@ public class EventHandler {
     public void sendAccount() {
         if (status.isDiscovered() && !status.isBlocked()) {
             int active = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid)).getActiveId();
-            int size = SkillAPI.getPlayerData(Bukkit.getOfflinePlayer(uuid)).getSkills().size();
-            sender.send(SPackage.BUILDER.buildAccount(active, size));
+            if (status.getClientAccount() != active) {
+                status.setClientAccount(active);
+                sender.send(SPackage.BUILDER.buildAccount(active));
+            }
+            if (!status.isCached(active)) {
+                List<SkillInfo> list = new ArrayList<>();
+                for (PlayerSkill skill : SkillAPI.getPlayerData(Bukkit.getOfflinePlayer(uuid)).getSkills()) {
+                    list.add(new BukkitSkillInfo(skill));
+                }
+                status.cache(active);
+                sender.send(SPackage.BUILDER.buildListSkill(list));
+            }
+            Optional<Condition> optional = conditionData.getCondition();
+            if (optional.isPresent()) {
+                Condition c = optional.get();
+                if (!c.isEnableFix() || c.isEnableFree()) sender.send(SPackage.BUILDER.buildListBar(conditionData.getConditionBar()));
+            } else {
+                sender.send(SPackage.BUILDER.buildListBar(bar.getAccountBar()));
+            }
         }
     }
 
