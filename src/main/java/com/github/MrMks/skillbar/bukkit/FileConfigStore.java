@@ -12,10 +12,10 @@ import java.io.InputStreamReader;
 import java.util.logging.Level;
 
 public class FileConfigStore {
-    private String fileName;
-    private File configFile;
+    private final String fileName;
+    private final File configFile;
     private FileConfiguration newConfig;
-    private JavaPlugin plugin;
+    private final JavaPlugin plugin;
     public FileConfigStore(JavaPlugin plugin, String fileName){
         if (plugin == null || !plugin.isEnabled()) throw new IllegalArgumentException();
         this.plugin = plugin;
