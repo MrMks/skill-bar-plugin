@@ -75,7 +75,6 @@ public class ClientBar {
     public void setAccountBar(int activeId, Map<Integer, String> map) {
         if (this.accountBar.map == null) this.accountBar.map = new HashMap<>();
         if (map == null) return;
-        map.keySet().removeIf(v->v < 0 || v >= Setting.getInstance().getBarMaxLine());
         this.accountBar.setMap(activeId, map);
     }
 
@@ -142,10 +141,8 @@ public class ClientBar {
         private Map<Integer, Map<Integer, String>> map;
         private AccountBar(){}
         void setMap(Integer active, Map<Integer, String> map) {
-            if (map == null || map.isEmpty()) return;
-            Set<Integer> set = new HashSet<>(map.keySet());
-            set.removeIf(v -> v >= 0 && v < Setting.getInstance().getBarMaxLine());
-            set.forEach(map::remove);
+            if (map == null) return;
+            map.keySet().removeIf(v -> v >= 0 && v < Setting.getInstance().getBarMaxLine());
             this.map.put(active, map);
         }
 
