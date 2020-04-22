@@ -18,10 +18,10 @@ public class ClientBar {
         f = folder;
     }
 
-    private UUID uuid;
-    private File file;
-    private AccountBar accountBar = new AccountBar();
-    private ConditionBar conditionBar = new ConditionBar();
+    private final UUID uuid;
+    private final File file;
+    private final AccountBar accountBar = new AccountBar();
+    private final ConditionBar conditionBar = new ConditionBar();
     // private Map<Integer, Map<Integer, String>> map;
     // private Map<String, Map<Integer, String>> conditionMap;
     // global setting
@@ -42,30 +42,12 @@ public class ClientBar {
         return accountBar.getMap(getActiveId());
     }
 
-    public Set<Integer> getAccountBarKeys(){
-        int id  = getActiveId();
-        return accountBar.getMap(id).keySet();
-    }
-
-    public String getAccountBarSkill(Integer order){
-        int id = getActiveId();
-        return accountBar.getMap(order).getOrDefault(order,"");
-    }
-
     public boolean hasConditionBar(String key) {
         return conditionBar.map.containsKey(key);
     }
 
     public Map<Integer, String> getConditionBar(String key){
         return conditionBar.getMap(key);
-    }
-
-    public Set<Integer> getConditionBarKeys(String key){
-        return conditionBar.getMap(key).keySet();
-    }
-
-    public String getConditionBarSkill(String key, int order){
-        return conditionBar.getMap(key).getOrDefault(order, "");
     }
 
     public void setAccountBar(Map<Integer, String> map){
