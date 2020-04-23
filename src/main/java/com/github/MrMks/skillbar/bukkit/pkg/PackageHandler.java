@@ -96,7 +96,7 @@ public class PackageHandler implements IServerHandler {
 
     @Override
     public void onListSkill(List<String> keys) {
-        if (status.isEnabled() && checkValid()){
+        if (checkValid()){
             PlayerData data = SkillAPI.getPlayerData(Bukkit.getOfflinePlayer(uuid));
             List<String> reList = new ArrayList<>();
             for (String key : keys) if (!data.hasSkill(key)) reList.add(key);

@@ -48,7 +48,7 @@ public class EventHandler {
      * will set status to disabled
      */
     public void onResetProfess(){
-        if (status.isDiscovered() && status.isEnabled()) {
+        if (status.isEnabled()) {
             int active = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid)).getActiveId();
             status.cleanCache(active);
             sender.send(SPackage.BUILDER.buildCleanUp(active));
@@ -69,7 +69,7 @@ public class EventHandler {
     }
 
     public void onChangeProfess(PlayerClass playerClass){
-        if (status.isDiscovered() && status.isEnabled()) {
+        if (status.isEnabled()) {
             List<Skill> skills = playerClass.getData().getSkills();
             List<SkillInfo> infoList = new ArrayList<>();
             PlayerData data = playerClass.getPlayerData();
@@ -82,9 +82,8 @@ public class EventHandler {
     }
 
     public void onAccountSwitch(){
-        if (status.isDiscovered() && status.isEnabled()) {
+        if (status.isEnabled()) {
             sendAccount();
-
         }
     }
 
@@ -107,29 +106,35 @@ public class EventHandler {
     }
 
     public void onUpdateSkillInfo(String key){
-        PlayerData data = SkillAPI.getPlayerData(Bukkit.getOfflinePlayer(uuid));
-        SkillInfo info;
-        if (data.hasSkill(key)) {
-            info = new BukkitSkillInfo(data.getSkill(key));
-        } else info = SkillInfo.Empty;
-        sender.send(SPackage.BUILDER.buildUpdateSkill(info));
+        if (status.isDiscovered() && !status.isBlocked()) {
+            PlayerData data = SkillAPI.getPlayerData(Bukkit.getOfflinePlayer(uuid));
+            SkillInfo info;
+            if (data.hasSkill(key)) {
+                info = new BukkitSkillInfo(data.getSkill(key));
+            } else info = SkillInfo.Empty;
+            sender.send(SPackage.BUILDER.buildUpdateSkill(info));
+        }
     }
 
     public void onUpdateCoolDownInfo(){
-        Optional<Condition> optional = conditionData.getCondition();
-        PlayerAccounts accounts = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid));
-        PlayerData data = accounts.getActiveData();
-        Map<String, Integer> map = new HashMap<>();
-        Map<Integer, String> nMap;
+        if (status.isEnabled()) {
+            Optional<Condition> optional = conditionData.getCondition();
+            PlayerAccounts accounts = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid));
+            PlayerData data = accounts.getActiveData();
+            Map<String, Integer> map = new HashMap<>();
+            Map<Integer, String> nMap;
 
-        if (optional.isPresent()) {
-            Condition condition = optional.get();
-            if (condition.isEnableFree() || !condition.isEnableFix()) nMap = conditionData.getConditionBar();
-            else nMap = condition.getFixMap();
-        } else nMap = bar.getAccountBar();
-        nMap.values().forEach(key->{if (data.hasSkill(key)) map.put(key, data.getSkill(key).getCooldown());});
+            if (optional.isPresent()) {
+                Condition condition = optional.get();
+                if (condition.isEnableFree() || !condition.isEnableFix()) nMap = conditionData.getConditionBar();
+                else nMap = condition.getFixMap();
+            } else nMap = bar.getAccountBar();
+            nMap.values().forEach(key -> {
+                if (data.hasSkill(key)) map.put(key, data.getSkill(key).getCooldown());
+            });
 
-        sender.send(SPackage.BUILDER.buildCoolDown(map));
+            sender.send(SPackage.BUILDER.buildCoolDown(map));
+        }
     }
 
     public void onLeaveCondition(){
