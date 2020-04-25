@@ -1,17 +1,17 @@
 package com.github.MrMks.skillbar.bukkit;
 
-import com.github.MrMks.skillbar.bukkit.manager.ConditionManager;
-import com.github.MrMks.skillbar.bukkit.pkg.BukkitByteBuilder;
-import com.github.MrMks.skillbar.common.Constants;
-import com.github.MrMks.skillbar.bukkit.data.ClientBar;
+import com.github.MrMks.skillbar.bukkit.data.ClientAccounts;
 import com.github.MrMks.skillbar.bukkit.manager.ClientManager;
 import com.github.MrMks.skillbar.bukkit.manager.CmdManager;
+import com.github.MrMks.skillbar.bukkit.manager.ConditionManager;
+import com.github.MrMks.skillbar.bukkit.pkg.BukkitByteBuilder;
 import com.github.MrMks.skillbar.bukkit.pkg.PackageListener;
 import com.github.MrMks.skillbar.bukkit.pkg.PluginSender;
 import com.github.MrMks.skillbar.bukkit.task.AutoSaveTask;
 import com.github.MrMks.skillbar.bukkit.task.ClientDiscoverTask;
 import com.github.MrMks.skillbar.bukkit.task.CoolDownTask;
 import com.github.MrMks.skillbar.bukkit.task.LoopThread;
+import com.github.MrMks.skillbar.common.Constants;
 import com.github.MrMks.skillbar.common.pkg.SPackage;
 import com.rit.sucy.version.VersionManager;
 import org.bukkit.Bukkit;
@@ -34,7 +34,7 @@ public class SkillBar extends JavaPlugin implements Listener {
         if (!getDataFolder().exists()) getDataFolder().mkdir();
         File file = new File(getDataFolder(), "player");
         if (!file.exists()) file.mkdir();
-        ClientBar.setPath(getDataFolder());
+        ClientAccounts.setPath(getDataFolder());
         if (!new File(getDataFolder(), "config.yml").exists()) this.saveDefaultConfig();
         if (!new File(getDataFolder(), "conditions.yml").exists()) this.saveDefaultConfig();
     }

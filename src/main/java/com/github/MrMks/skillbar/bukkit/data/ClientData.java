@@ -1,27 +1,25 @@
 package com.github.MrMks.skillbar.bukkit.data;
 
 import com.github.MrMks.skillbar.bukkit.EventHandler;
-import com.github.MrMks.skillbar.bukkit.condition.ConditionData;
-import com.github.MrMks.skillbar.common.handler.IServerHandler;
 import com.github.MrMks.skillbar.bukkit.pkg.PackageHandler;
 import com.github.MrMks.skillbar.bukkit.pkg.PluginSender;
+import com.github.MrMks.skillbar.common.handler.IServerHandler;
 
 import java.util.UUID;
 
 public class ClientData {
     private ClientStatus status;
-    private ClientBar bar;
+    private ClientAccounts accounts;
     private PluginSender sender;
     private IServerHandler handler;
     private EventHandler eventHandler;
-    private ConditionData conditionData;
+
     public ClientData(UUID uuid){
         status = new ClientStatus(uuid);
-        bar = new ClientBar(uuid);
         sender = new PluginSender(uuid);
-        conditionData = new ConditionData(bar);
-        handler = new PackageHandler(uuid, status, bar, conditionData, sender);
-        eventHandler = new EventHandler(uuid, status, bar, conditionData, sender);
+        accounts = new ClientAccounts(uuid);
+        handler = new PackageHandler(uuid, status, accounts, sender);
+        eventHandler = new EventHandler(uuid, status, accounts, sender);
     }
 
     public IClientStatus getStatus() {
@@ -37,15 +35,14 @@ public class ClientData {
     }
 
     public void save(){
-        bar.saveToFile();
+        accounts.saveToDisk();
     }
 
     public void clean(){
         status = null;
-        bar = null;
         sender = null;
+        accounts = null;
         handler = null;
         eventHandler = null;
-        conditionData = null;
     }
 }

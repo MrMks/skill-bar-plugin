@@ -1,8 +1,8 @@
 package com.github.MrMks.skillbar.bukkit;
 
 import com.github.MrMks.skillbar.bukkit.condition.Condition;
-import com.github.MrMks.skillbar.bukkit.condition.ConditionData;
-import com.github.MrMks.skillbar.bukkit.data.ClientBar;
+import com.github.MrMks.skillbar.bukkit.data.ClientAccount;
+import com.github.MrMks.skillbar.bukkit.data.ClientAccounts;
 import com.github.MrMks.skillbar.bukkit.data.ClientStatus;
 import com.github.MrMks.skillbar.bukkit.pkg.BukkitSkillInfo;
 import com.github.MrMks.skillbar.bukkit.pkg.PluginSender;
@@ -21,15 +21,13 @@ import java.util.*;
 public class EventHandler {
     private final UUID uuid;
     private final ClientStatus status;
-    private final ClientBar bar;
     private final PluginSender sender;
-    private final ConditionData conditionData;
-    public EventHandler(UUID uuid, ClientStatus status, ClientBar bar, ConditionData conditionData, PluginSender sender){
+    private final ClientAccounts accounts;
+    public EventHandler(UUID uuid, ClientStatus status, ClientAccounts accounts, PluginSender sender){
         this.uuid = uuid;
         this.status = status;
-        this.bar = bar;
         this.sender = sender;
-        this.conditionData = conditionData;
+        this.accounts = accounts;
     }
 
     /**
@@ -53,7 +51,7 @@ public class EventHandler {
             status.cleanCache(active);
             sender.send(SPackage.BUILDER.buildCleanUp(active));
             sendDisable();
-            bar.setAccountBar(active, Collections.emptyMap());
+            accounts.getAccount(active).clean();
         }
     }
 
@@ -118,17 +116,11 @@ public class EventHandler {
 
     public void onUpdateCoolDownInfo(){
         if (status.isEnabled()) {
-            Optional<Condition> optional = conditionData.getCondition();
             PlayerAccounts accounts = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid));
             PlayerData data = accounts.getActiveData();
             Map<String, Integer> map = new HashMap<>();
-            Map<Integer, String> nMap;
+            Map<Integer, String> nMap = this.accounts.getAccount(accounts.getActiveId()).getBarMap();
 
-            if (optional.isPresent()) {
-                Condition condition = optional.get();
-                if (condition.isEnableFree() || !condition.isEnableFix()) nMap = conditionData.getConditionBar();
-                else nMap = condition.getFixMap();
-            } else nMap = bar.getAccountBar();
             nMap.values().forEach(key -> {
                 if (data.hasSkill(key)) map.put(key, data.getSkill(key).getCooldown());
             });
@@ -142,12 +134,11 @@ public class EventHandler {
     }
 
     public void onLeaveCondition(boolean isListBar){
-        if (conditionData.getCondition().isPresent()) {
-            conditionData.leaveCondition();
-            sender.send(SPackage.BUILDER.buildLeaveCondition());
-            if (isListBar) {
-                sender.send(SPackage.BUILDER.buildListBar(bar.getAccountBar()));
-            }
+        ClientAccount account = accounts.getAccount(getActiveId());
+        account.setCondition(null);
+        sender.send(SPackage.BUILDER.buildLeaveCondition());
+        if (isListBar) {
+            sender.send(SPackage.BUILDER.buildListBar(account.getBarMap()));
         }
     }
 
@@ -156,14 +147,10 @@ public class EventHandler {
     }
 
     public void onMatchCondition(Condition condition, boolean listBar){
-        Optional<Condition> optional = conditionData.getCondition();
-        if (!optional.isPresent() || !optional.get().getKey().equals(condition.getKey())) {
-            conditionData.setCondition(condition);
-            sender.send(SPackage.BUILDER.buildEnterCondition(condition));
-            if (listBar) {
-                if (!condition.isEnableFix() || condition.isEnableFree()) sender.send(SPackage.BUILDER.buildListBar(conditionData.getConditionBar()));
-            }
-        }
+        ClientAccount account = accounts.getAccount(getActiveId());
+        account.setCondition(condition);
+        sender.send(SPackage.BUILDER.buildEnterCondition(condition));
+        if (listBar) sender.send(SPackage.BUILDER.buildListBar(account.getBarMap()));
     }
 
     public void onPluginDisable(){
@@ -173,7 +160,7 @@ public class EventHandler {
 
     public void sendAccount() {
         if (status.isDiscovered() && !status.isBlocked()) {
-            int active = SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid)).getActiveId();
+            int active = getActiveId();
             if (status.getClientAccount() != active) {
                 status.setClientAccount(active);
                 sender.send(SPackage.BUILDER.buildAccount(active));
@@ -186,13 +173,7 @@ public class EventHandler {
                 status.cache(active);
                 sender.send(SPackage.BUILDER.buildListSkill(list));
             }
-            Optional<Condition> optional = conditionData.getCondition();
-            if (optional.isPresent()) {
-                Condition c = optional.get();
-                if (!c.isEnableFix() || c.isEnableFree()) sender.send(SPackage.BUILDER.buildListBar(conditionData.getConditionBar()));
-            } else {
-                sender.send(SPackage.BUILDER.buildListBar(bar.getAccountBar()));
-            }
+            sender.send(SPackage.BUILDER.buildListBar(accounts.getAccount(active).getBarMap()));
         }
     }
 
@@ -207,5 +188,9 @@ public class EventHandler {
             status.disable();
             sender.send(SPackage.BUILDER.buildDisable());
         }
+    }
+
+    private int getActiveId(){
+        return SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid)).getActiveId();
     }
 }

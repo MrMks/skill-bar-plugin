@@ -2,8 +2,7 @@ package com.github.MrMks.skillbar.bukkit.pkg;
 
 import com.github.MrMks.skillbar.bukkit.Setting;
 import com.github.MrMks.skillbar.bukkit.condition.Condition;
-import com.github.MrMks.skillbar.bukkit.condition.ConditionData;
-import com.github.MrMks.skillbar.bukkit.data.ClientBar;
+import com.github.MrMks.skillbar.bukkit.data.ClientAccounts;
 import com.github.MrMks.skillbar.bukkit.data.ClientStatus;
 import com.github.MrMks.skillbar.bukkit.manager.ConditionManager;
 import com.github.MrMks.skillbar.common.SkillInfo;
@@ -22,15 +21,13 @@ import java.util.*;
 public class PackageHandler implements IServerHandler {
     private final UUID uuid;
     private final ClientStatus status;
-    private final ClientBar bar;
     private final PluginSender sender;
-    private final ConditionData conditionData;
-    public PackageHandler(UUID uuid, ClientStatus status, ClientBar bar, ConditionData conditionData, PluginSender sender){
+    private final ClientAccounts accounts;
+    public PackageHandler(UUID uuid, ClientStatus status, ClientAccounts accounts, PluginSender sender){
         this.uuid = uuid;
         this.status = status;
-        this.bar = bar;
         this.sender = sender;
-        this.conditionData = conditionData;
+        this.accounts = accounts;
     }
 
     private boolean checkValid(){
@@ -43,6 +40,10 @@ public class PackageHandler implements IServerHandler {
                 && SkillAPI.hasPlayerData(player)
                 && playerData.getClasses().size() > 0
                 && playerData.getSkills().size() > 0;
+    }
+
+    private int getActiveId(){
+        return SkillAPI.getPlayerAccountData(Bukkit.getOfflinePlayer(uuid)).getActiveId();
     }
 
     private List<String> getProfessionKeys(PlayerData data) {
@@ -81,12 +82,11 @@ public class PackageHandler implements IServerHandler {
                     Optional<Condition> optional = ConditionManager.match(player.getWorld(), getProfessionKeys(accounts.getActiveData()));
                     if (optional.isPresent()){
                         Condition condition = optional.get();
-                        conditionData.setCondition(condition);
+                        this.accounts.getAccount(active).setCondition(condition);
                         sender.send(SPackage.BUILDER.buildEnterCondition(condition));
-                        if (!condition.isEnableFix() || condition.isEnableFree()) sender.send(SPackage.BUILDER.buildListBar(conditionData.getConditionBar()));
-                    } else {
-                        sender.send(SPackage.BUILDER.buildListBar(bar.getAccountBar()));
                     }
+                    sender.send(SPackage.BUILDER.buildListBar(this.accounts.getAccount(active).getBarMap()));
+
                     status.enable();
                     sender.send(SPackage.BUILDER.buildEnable());
                 }
@@ -129,21 +129,12 @@ public class PackageHandler implements IServerHandler {
     @Override
     public void onListBar() {
         if (checkValid()){
-            Map<Integer, String> map = new HashMap<>();
-            Optional<Condition> optional = conditionData.getCondition();
+            Map<Integer, String> map = new HashMap<>(accounts.getAccount(getActiveId()).getBarMap());
+            int size = map.size();
             Player player = Bukkit.getPlayer(uuid);
             PlayerData playerData = SkillAPI.getPlayerData(player);
-            if (optional.isPresent()) {
-                map.putAll(conditionData.getConditionBar());
-                int size = map.size();
-                map.values().removeIf(v->!playerData.hasSkill(v));
-                if (size != map.size()) conditionData.setBar(map);
-            } else {
-                map.putAll(bar.getAccountBar());
-                int size = map.size();
-                map.values().removeIf(v->!playerData.hasSkill(v));
-                if (map.size() != size) bar.setAccountBar(map);
-            }
+            map.values().removeIf(v->!playerData.hasSkill(v));
+            if (size != map.size()) accounts.getAccount(getActiveId()).setBarMap(map);
             sender.send(SPackage.BUILDER.buildListBar(map));
         }
     }
@@ -152,31 +143,11 @@ public class PackageHandler implements IServerHandler {
     public void onSaveBar(Map<Integer, String> map) {
         if (checkValid()){
             int size = map.size();
-            Optional<Condition> optional = conditionData.getCondition();
             Player player = Bukkit.getPlayer(uuid);
             PlayerData playerData = SkillAPI.getPlayerData(player);
             map.values().removeIf(v->!playerData.hasSkill(v));
             boolean flag = size != map.size();
-            if (optional.isPresent()) {
-                Condition condition = optional.get();
-                Map<Integer, String> fM = condition.getFixMap();
-                List<Integer> fL = condition.getFreeList();
-                size = map.size();
-                if (condition.isEnableFree() || !condition.isEnableFix()) {
-                    map.keySet().removeIf(v -> fM.containsKey(v) && !fL.contains(v) && !fL.contains(-1));
-                    fM.forEach(map::putIfAbsent);
-                    flag = flag || size != map.size();
-                    conditionData.setBar(map);
-                } else {
-                    map.keySet().removeIf(v->!fM.containsKey(v));
-                    flag = size != map.size();
-                    size = map.size();
-                    fM.forEach(map::put);
-                    flag = flag || size != map.size();
-                }
-            } else {
-                bar.setAccountBar(map);
-            }
+            flag = flag || accounts.getAccount(getActiveId()).setBarMap(map);
             if (flag) sender.send(SPackage.BUILDER.buildListBar(map));
         }
     }

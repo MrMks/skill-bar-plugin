@@ -14,20 +14,22 @@ public class LoopThread extends Thread {
     public void run() {
         while (enable){
             ArrayList<Task> re = new ArrayList<>();
-            for (Task task : tasks) {
-                try {
-                    if (task.shouldRun(time)) task.run();
-                    if (task.isFinish()) re.add(task);
-                } catch (Throwable tr){
-                    tr.printStackTrace();
+            synchronized (tasks) {
+                for (Task task : tasks) {
+                    try {
+                        if (task.shouldRun(time)) task.run();
+                        if (task.isFinish()) re.add(task);
+                    } catch (Throwable tr) {
+                        tr.printStackTrace();
+                    }
                 }
-            }
-            for (Task task : re) tasks.remove(task);
-            try {
-                time += 500;
-                wait(Math.max(1L, time - System.currentTimeMillis()));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                for (Task task : re) tasks.remove(task);
+                try {
+                    time += 500;
+                    tasks.wait(Math.max(1L, time - System.currentTimeMillis()));
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -39,10 +41,14 @@ public class LoopThread extends Thread {
 
     public void disable(){
         this.enable = false;
-        tasks.clear();
+        synchronized (tasks) {
+            tasks.clear();
+        }
     }
 
     public void addTask(RepeatTask task){
-        tasks.add(task);
+        synchronized (tasks) {
+            tasks.add(task);
+        }
     }
 }
