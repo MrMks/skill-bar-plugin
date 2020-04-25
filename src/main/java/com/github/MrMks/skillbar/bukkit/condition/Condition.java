@@ -2,7 +2,6 @@ package com.github.MrMks.skillbar.bukkit.condition;
 
 import com.github.MrMks.skillbar.common.ICondition;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -25,10 +24,10 @@ public class Condition implements ICondition {
         this.professionKeys = professionKeys;
         this.barSize = barSize;
         this.enableFix = enableFix;
-        this.list = enableFix ? list : Collections.emptyMap();
-        this.enableFree = enableFix && enableFree;
-        this.freeList = this.enableFree ? freeList : Collections.emptyList();
-        this.save = (!this.enableFix || this.isEnableFree()) && save;
+        this.list = list;
+        this.enableFree = enableFree;
+        this.freeList = freeList;
+        this.save = save;
     }
 
     public boolean match(String world, List<String> professions){

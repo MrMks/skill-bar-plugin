@@ -1,14 +1,26 @@
-conditionName1: #conditionName可以随便写，只要不重复
-  enable: false # false 时这条规则将被忽略
-  weight: 0 #数越高权重越大，多个规则都匹配时，权重最大的将被应用
-  conditions: #当world和profession都匹配成功时则认为这个配置匹配成功，如world和profession都为空时，这条规则将被忽略
-    world: [] #限定worldName，多个世界名被列出时则匹配任意一个
-    profession: [] #限定职业的Key，多个key被列出时则匹配任意一个
-  barSize: 1 #在该规则应用时玩家的技能栏行数，注意该值永远不会超过在config.yml中定义的maxBarSize;
-  enableFixBar: true #是否要固定barList，false时下面的barList中的配置将被忽略
+# conditionName可以随便写，只要不重复不为空
+conditionName1:
+  # false 时这条规则将被忽略
+  enable: false
+  # 数越高权重越大，多个规则都匹配时，权重最高的将被应用
+  weight: 0
+  # 当world和profession都匹配成功时则认为这个配置匹配成功
+  # 在world和profession都为空时，这条规则将被忽略
+  conditions:
+    # 限定worldName，多个世界名被列出时匹配任意一个，列表为空时认为匹配成功。若填入不允许使用技能的世界名，这个世界名会被从列表中移除。
+    world: []
+    # 限定职业的Key，多个key被列出时匹配任意一个，列表为空时认为匹配成功。若填入的职业名没有在sapi中被注册，则这个职业名会被从列表中移除。
+    profession: []
+  # 规则应用时玩家的技能栏行数，该值会被限制在大等于0且小于config.yml中定义的maxBarSize，定义为0时等同于定义为maxBarSize
+  barSize: 1
+  #是否要固定技能栏栏位，false时下面的barList中的配置将被忽略
+  enableFixBar: true
   barList:
-    'skillKey1': 2 # key为SkillKey的技能的栏位是 index1，在index超出barSize和0的范围时，这个配置将被忽略，key所代表的技能不存在时，这个配置将被忽略
+    # key为SkillKey的技能的栏位是 index1，index从0开始计算，在index超出barSize和0的范围时，这个配置将被忽略，key所代表的技能不存在时，这个配置将被忽略
+    'skillkey': index1
+    'skillKey1': 2
     'skillKey2': 6
-  enableFreeSlot: false #是否允许玩家拥有部分栏位可自由放置技能
-  freeSlots: [] #留空则视enableFreeSlot为false, 填入-1等效于填入所有数字
-  saveBarToDisk: false #enableFixBar为false,或enableFixBar及enableFreeSlot均为true时，若此项为true, 则将保存玩家在应用此规则时对技能栏位的更改
+  #是否允许玩家拥有部分栏位可自由放置技能， 这个选项在enableFixBar设定为false时将被设定为false（尽管在这里填入true）
+  enableFreeSlot: false
+  freeSlots: [] #仅在enableFreeSlot为true时生效，填入可以自由放置技能的栏位序号，序号自0开始，应小于barSize * 9，填入-1等效于填入所有数字
+  saveBarToDisk: false #enableFixBar为false,或enableFixBar及enableFreeSlot均为true时，若此项为true, 则将保存玩家在应用此规则时对技能栏位的更改，否则技能栏栏位信息将在玩家离开该规则时被清除
