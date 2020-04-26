@@ -7,7 +7,10 @@ import com.rit.sucy.commands.ConfigurableCommand;
 import com.rit.sucy.commands.IFunction;
 import com.sucy.skill.SkillAPI;
 import com.sucy.skill.api.player.PlayerData;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
@@ -20,9 +23,26 @@ public class CmdInfo implements IFunction {
 
     @Override
     public void execute(ConfigurableCommand configurableCommand, Plugin plugin, CommandSender commandSender, String[] strings) {
-        if (commandSender instanceof Player) {
+        Player player = null;
+        if (strings.length > 0) {
+            if (commandSender instanceof Player || commandSender instanceof ConsoleCommandSender) {
+                if (commandSender.hasPermission("skillbar.info.other")) {
+                    OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(strings[0]);
+                    if (offlinePlayer == null || !offlinePlayer.isOnline()) commandSender.sendMessage("§cPlayer doesn't exist");
+                    else player = offlinePlayer.getPlayer();
+                } else {
+                    commandSender.sendMessage("§cYou have no permission to do this");
+                }
+            }
+        } else {
+            if (commandSender instanceof Player) {
+                player = (Player) commandSender;
+            } else {
+                commandSender.sendMessage("§cThis command can only use by player");
+            }
+        }
+        if (player != null) {
             if (SkillAPI.isLoaded()){
-                Player player = (Player) commandSender;
                 ClientData data = manager.get(player);
                 IClientStatus status = data.getStatus();
                 boolean hasPlayer = SkillAPI.hasPlayerData(player);
@@ -47,6 +67,7 @@ public class CmdInfo implements IFunction {
             } else {
                 commandSender.sendMessage("SkillAPI is not loaded");
             }
+
         }
     }
 

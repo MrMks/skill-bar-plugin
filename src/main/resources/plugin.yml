@@ -16,6 +16,9 @@ permissions:
   skillbar.info:
     default: true
     description: permission to see info related to a player
+  skillbar.info.other:
+    default: op
+    description: permission to see info related to other player
   skillbar.*:
     default: op
     description: permission to use all command
