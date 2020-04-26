@@ -15,6 +15,7 @@ public class ConditionManager {
     private static final Map<String, List<Condition>> map = new HashMap<>();
 
     public static void init(FileConfigStore store, Logger logger){
+        if (!Setting.getInstance().isEnableCondition()) return;
         FileConfiguration config = store.getConfig();
         if (config == null) {
             store.saveDefaultConfig();
