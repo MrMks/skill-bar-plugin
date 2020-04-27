@@ -44,14 +44,14 @@ public class CmdInfo implements IFunction {
         if (player != null) {
             if (SkillAPI.isLoaded()){
                 ClientData data = manager.get(player);
-                IClientStatus status = data.getStatus();
+                IClientStatus status = data == null ? null : data.getStatus();
                 boolean hasPlayer = SkillAPI.hasPlayerData(player);
                 PlayerData pData = SkillAPI.getPlayerData(player);
                 boolean passCheck = hasPlayer && pData.getClasses().size() > 0 && pData.getSkills().size() > 0;
                 boolean world = SkillAPI.getSettings().isWorldEnabled(player.getWorld());
-                boolean block = status.isBlocked();
-                boolean discovered = status.isDiscovered();
-                boolean enable = status.isEnabled();
+                boolean block = status != null && status.isBlocked();
+                boolean discovered = status != null && status.isDiscovered();
+                boolean enable = status != null && status.isEnabled();
 
                 String builder = "§2Skill Bar info:\n" +
                         "§6=====\n§r" +

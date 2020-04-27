@@ -24,7 +24,7 @@ public class BlackList {
     }
 
     public static void saveUnload(){
-        instance.writeToDisk();
+        if (instance != null) instance.writeToDisk();
         instance = null;
     }
 

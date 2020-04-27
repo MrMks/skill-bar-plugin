@@ -8,7 +8,13 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class CmdManager {
-    public static void init(JavaPlugin plugin, ClientManager manager){
+
+    private final JavaPlugin plugin;
+    public CmdManager(JavaPlugin plugin){
+        this.plugin = plugin;
+    }
+
+    public void init(ClientManager manager){
         ConfigurableCommand root = new ConfigurableCommand(plugin, "bar", SenderType.ANYONE);
         ConfigurableCommand ban = new ConfigurableCommand(plugin, "ban", SenderType.ANYONE,new CmdBan(manager),"ban a player from Skill Bar", "<player>", "skillbar.ban");
         ConfigurableCommand un_ban = new ConfigurableCommand(plugin, "unban", SenderType.ANYONE,new CmdUnban(manager),"unban a player from Skill Bar", "<player>", "skillbar.ban");
@@ -21,7 +27,7 @@ public class CmdManager {
         CommandManager.registerCommand(root);
     }
 
-    public static void unload(Plugin plugin){
+    public void unload(){
         CommandManager.unregisterCommands(plugin);
     }
 }

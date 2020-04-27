@@ -17,7 +17,7 @@ public class FileConfigStore {
     private FileConfiguration newConfig;
     private final JavaPlugin plugin;
     public FileConfigStore(JavaPlugin plugin, String fileName){
-        if (plugin == null || !plugin.isEnabled()) throw new IllegalArgumentException();
+        if (plugin == null) throw new IllegalArgumentException();
         this.plugin = plugin;
         this.fileName = fileName;
         this.configFile = new File(plugin.getDataFolder(), fileName);

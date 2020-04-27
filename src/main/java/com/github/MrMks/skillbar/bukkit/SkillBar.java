@@ -27,6 +27,7 @@ import java.io.File;
 public class SkillBar extends JavaPlugin implements Listener {
     private LoopThread task;
     private ClientManager manager;
+    private CmdManager cmd;
 
     @Override
     public void onLoad() {
@@ -73,13 +74,18 @@ public class SkillBar extends JavaPlugin implements Listener {
         }
 
         // register cmd
-        CmdManager.init(this, manager);
+        if (cmd != null) cmd.unload();
+        cmd = new CmdManager(this);
+        cmd.init(manager);
     }
 
     @Override
     public void onDisable() {
         // unregister cmd
-        CmdManager.unload(this);
+        if (cmd != null) {
+            cmd.unload();
+            cmd = null;
+        }
 
         // stop task loop
         if (task != null) task.disable();
