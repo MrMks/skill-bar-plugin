@@ -1,6 +1,5 @@
-#how many lines can a player have,
+#how many lines can a player have, this value can be set in range 1 to 10;
 maxBarSize: 3
 
 #enable condition matches or not
-#Please notice that if a player who is in a condition changed the skills in bar, the changes will not save to disk
 enableCondition: false

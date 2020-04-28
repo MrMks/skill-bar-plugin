@@ -16,11 +16,14 @@ conditionName1:
   #是否要固定技能栏栏位，false时下面的barList中的配置将被忽略
   enableFixBar: true
   barList:
-    # key为SkillKey的技能的栏位是 index1，index从0开始计算，在index超出barSize和0的范围时，这个配置将被忽略，key所代表的技能不存在时，这个配置将被忽略
+    # key为SkillKey的技能的栏位是 index1，index从0开始计算，在index超出许用范围时，这个配置将被忽略，key所代表的技能不存在时，这个配置将被忽略
+    # 许用范围用数学上的区间表示为 [0,barSize * 9 + 9)
     'skillkey': index1
     'skillKey1': 2
     'skillKey2': 6
   #是否允许玩家拥有部分栏位可自由放置技能， 这个选项在enableFixBar设定为false时将被设定为false（尽管在这里填入true）
   enableFreeSlot: false
   freeSlots: [] #仅在enableFreeSlot为true时生效，填入可以自由放置技能的栏位序号，序号自0开始，应小于barSize * 9，填入-1等效于填入所有数字
-  saveBarToDisk: false #enableFixBar为false,或enableFixBar及enableFreeSlot均为true时，若此项为true, 则将保存玩家在应用此规则时对技能栏位的更改，否则技能栏栏位信息将在玩家离开该规则时被清除
+  #enableFixBar为false,或enableFixBar及enableFreeSlot均为true时，若此项为true, 则将保存玩家在应用此规则时对技能栏位的更改，否则技能栏栏位信息将在玩家离开该规则时被清除。
+  #即便是保存更改，在玩家的职业被reset时，对于当前玩家所在的Account而言，所保存的技能栏栏位信息将会被一同清除
+  saveBarToDisk: false

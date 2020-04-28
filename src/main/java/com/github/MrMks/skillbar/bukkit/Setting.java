@@ -9,7 +9,7 @@ public class Setting {
     }
 
     public void readConfig(FileConfiguration config){
-        this.barMaxLine = config.getInt("maxBarSize") - 1;
+        this.barMaxLine = Math.max(Math.min(config.getInt("maxBarSize") - 1,9),0);
         this.enableCondition = config.getBoolean("enableCondition");
     }
 

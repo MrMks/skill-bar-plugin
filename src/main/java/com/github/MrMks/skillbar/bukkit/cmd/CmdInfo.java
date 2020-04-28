@@ -66,7 +66,6 @@ public class CmdInfo implements IFunction {
                         "Enabled on Server: " + format(enable) + "\n" +
                         "§6=====";
                 commandSender.sendMessage(builder);
-
             } else {
                 commandSender.sendMessage("SkillAPI is not loaded");
             }
