@@ -29,7 +29,9 @@ public class CmdInfo implements IFunction {
                 if (commandSender.hasPermission("skillbar.info.other")) {
                     OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(strings[0]);
                     if (offlinePlayer == null || !offlinePlayer.isOnline()) commandSender.sendMessage("§cPlayer doesn't exist");
-                    else player = offlinePlayer.getPlayer();
+                    else {
+                        player = offlinePlayer.getPlayer();
+                    }
                 } else {
                     commandSender.sendMessage("§cYou have no permission to do this");
                 }
@@ -43,6 +45,7 @@ public class CmdInfo implements IFunction {
         }
         if (player != null) {
             if (SkillAPI.isLoaded()){
+                boolean other = !player.getName().equals(commandSender.getName());
                 ClientData data = manager.get(player);
                 IClientStatus status = data == null ? null : data.getStatus();
                 boolean hasPlayer = SkillAPI.hasPlayerData(player);
@@ -53,7 +56,7 @@ public class CmdInfo implements IFunction {
                 boolean discovered = status != null && status.isDiscovered();
                 boolean enable = status != null && status.isEnabled();
 
-                String builder = "§2Skill Bar info:\n" +
+                String builder = "§2Skill Bar info " + (other ? "of §6" + player.getName() : "") + "§r :\n" +
                         "§6=====\n§r" +
                         "Have data in SkillAPI: " + format(hasPlayer) + "\n" +
                         "Valid check about skills: " + format(passCheck) + "\n" +
