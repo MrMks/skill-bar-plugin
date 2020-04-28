@@ -56,7 +56,7 @@ public class CmdInfo implements IFunction {
                 boolean discovered = status != null && status.isDiscovered();
                 boolean enable = status != null && status.isEnabled();
 
-                String builder = "§2Skill Bar info " + (other ? "of §6" + player.getName() : "") + "§r :\n" +
+                String builder = "§2Skill Bar info" + (other ? " of §6" + player.getName() : "") + "§r:\n" +
                         "§6=====\n§r" +
                         "Have data in SkillAPI: " + format(hasPlayer) + "\n" +
                         "Valid check about skills: " + format(passCheck) + "\n" +

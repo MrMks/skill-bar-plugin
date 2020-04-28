@@ -50,13 +50,13 @@ public class ClientAccounts {
 
     public void saveToDisk(){
         Gson gson = new Gson();
-        Type type = new TypeToken<HashMap<Integer, ClientAccount.Save>>(){}.getType();
+        //Type type = new TypeToken<HashMap<Integer, ClientAccount.Save>>(){}.getType();
         HashMap<Integer, ClientAccount.Save> map = new HashMap<>();
         for (Map.Entry<Integer, ClientAccount> entry : this.map.entrySet()) {
             map.put(entry.getKey(), entry.getValue().getSave());
         }
         try (FileWriter writer = new FileWriter(file)) {
-            writer.write(gson.toJson(map,type));
+            writer.write(gson.toJson(map));
         } catch (IOException ignored){}
     }
 }
