@@ -12,15 +12,16 @@ import java.util.ArrayList;
 
 public class BukkitSkillInfo extends SkillInfo {
     private static int itemMethodFlag = 0;
+    private static Method method;
     private static ItemStack getItemStack(PlayerSkill skill){
         if (itemMethodFlag == 0) {
             try {
-                Skill.class.getMethod("getIndicator", PlayerSkill.class, boolean.class);
+                method = Skill.class.getMethod("getIndicator", PlayerSkill.class, boolean.class);
                 itemMethodFlag += 1;
             }catch (NoSuchMethodException ignored){}
             try {
                 //noinspection JavaReflectionMemberAccess
-                Skill.class.getMethod("getIndicator", PlayerSkill.class);
+                method = Skill.class.getMethod("getIndicator", PlayerSkill.class);
                 itemMethodFlag += 2;
             }catch (NoSuchMethodException ignored){}
         }
@@ -28,22 +29,17 @@ public class BukkitSkillInfo extends SkillInfo {
         switch (itemMethodFlag){
             case 1:
                 try {
-                    Method method = Skill.class.getMethod("getIndicator", PlayerSkill.class, boolean.class);
                     stack = (ItemStack) method.invoke(skill.getData(),skill, true);
-                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
+                } catch (IllegalAccessException | InvocationTargetException ignored) {}
                 break;
             case 2:
                 try {
                     // method used in non-premium skillapi
-                    @SuppressWarnings("JavaReflectionMemberAccess")
-                    Method method = Skill.class.getMethod("getIndicator", PlayerSkill.class);
                     stack = (ItemStack) method.invoke(skill.getData(), skill);
                 } catch (Exception ignored){}
                 break;
-            default:
-                stack = new ItemStack(Material.AIR);
-                break;
         }
+        if (stack == null) stack = new ItemStack(Material.AIR);
         return stack;
     }
 
@@ -53,6 +49,7 @@ public class BukkitSkillInfo extends SkillInfo {
                 stack.hasItemMeta() ? stack.getItemMeta().getDisplayName() : "",
                 stack.hasItemMeta() ? stack.getItemMeta().getLore() : new ArrayList<>(0));
     }
+
     public BukkitSkillInfo(PlayerSkill skill){
         this(skill.getData().getKey(), skill.isUnlocked(), skill.getData().canCast(), getItemStack(skill));
     }

@@ -73,7 +73,10 @@ public class EventHandler {
             PlayerData data = playerClass.getPlayerData();
             for (Skill skill : skills) {
                 String skillKey = skill.getKey();
-                if (data.hasSkill(skillKey)) infoList.add(new BukkitSkillInfo(data.getSkill(skillKey)));
+                if (data.hasSkill(skillKey)) {
+                    BukkitSkillInfo info = new BukkitSkillInfo(data.getSkill(skillKey));
+                    if (info.getItemId() != 0) infoList.add(info);
+                }
             }
             sender.send(SPackage.BUILDER.buildAddSkill(infoList));
         }
@@ -109,6 +112,7 @@ public class EventHandler {
             SkillInfo info;
             if (data.hasSkill(key)) {
                 info = new BukkitSkillInfo(data.getSkill(key));
+                if (info.getItemId() == 0) info = SkillInfo.Empty;
             } else info = SkillInfo.Empty;
             sender.send(SPackage.BUILDER.buildUpdateSkill(info));
         }
@@ -168,7 +172,8 @@ public class EventHandler {
             if (!status.isCached(active)) {
                 List<SkillInfo> list = new ArrayList<>();
                 for (PlayerSkill skill : SkillAPI.getPlayerData(Bukkit.getOfflinePlayer(uuid)).getSkills()) {
-                    list.add(new BukkitSkillInfo(skill));
+                    SkillInfo info = new BukkitSkillInfo(skill);
+                    if (info.getItemId() != 0) list.add(info);
                 }
                 status.cache(active);
                 sender.send(SPackage.BUILDER.buildListSkill(list));

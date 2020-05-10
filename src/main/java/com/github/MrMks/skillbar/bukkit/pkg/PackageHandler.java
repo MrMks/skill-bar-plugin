@@ -54,7 +54,10 @@ public class PackageHandler implements IServerHandler {
 
     private List<SkillInfo> getSkillInfoList(PlayerData data) {
         List<SkillInfo> list = new ArrayList<>();
-        data.getSkills().forEach(skill -> list.add(new BukkitSkillInfo(skill)));
+        data.getSkills().forEach(skill -> {
+            SkillInfo info = new BukkitSkillInfo(skill);
+            if (info.getItemId() != 0) list.add(info);
+        });
         return list;
     }
 
@@ -103,7 +106,8 @@ public class PackageHandler implements IServerHandler {
             List<SkillInfo> aList = new ArrayList<>();
             for (PlayerSkill skill : data.getSkills()){
                 if (!keys.contains(skill.getData().getKey())) {
-                    aList.add(new BukkitSkillInfo(skill));
+                    SkillInfo info = new BukkitSkillInfo(skill);
+                    if (info.getItemId() != 0) aList.add(info);
                 }
             }
             sender.send(SPackage.BUILDER.buildAddSkill(aList));
