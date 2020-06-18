@@ -2,6 +2,7 @@ package com.github.MrMks.skillbar.bukkit.pkg;
 
 import com.github.MrMks.skillbar.common.ByteBuilder;
 import com.github.MrMks.skillbar.common.Constants;
+import io.netty.util.ReferenceCountUtil;
 import org.bukkit.plugin.messaging.MessageTooLargeException;
 import org.bukkit.plugin.messaging.Messenger;
 
@@ -26,6 +27,7 @@ public class BukkitByteBuilder extends ByteBuilder {
                 readBytes(part,4,part.length - 4);
                 dst[index] = part;
             }
+            getBuf().release();
             return dst;
         }
     }
