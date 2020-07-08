@@ -44,7 +44,7 @@ public class MainListener implements Listener {
     }
 
     /**
-     * player join server, try to discover the client mod in the next short time;
+     * player join server, try to discover the client mod in the next short period;
      */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent e){

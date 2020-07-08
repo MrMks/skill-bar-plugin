@@ -11,6 +11,7 @@ import com.github.MrMks.skillbar.bukkit.task.AutoSaveTask;
 import com.github.MrMks.skillbar.bukkit.task.ClientDiscoverTask;
 import com.github.MrMks.skillbar.bukkit.task.CoolDownTask;
 import com.github.MrMks.skillbar.bukkit.task.LoopThread;
+import com.github.MrMks.skillbar.bukkit.utils.LogUtil;
 import com.github.MrMks.skillbar.common.Constants;
 import com.github.MrMks.skillbar.common.pkg.SPackage;
 import com.rit.sucy.version.VersionManager;
@@ -38,6 +39,7 @@ public class SkillBar extends JavaPlugin implements Listener {
         ClientAccounts.setPath(getDataFolder());
         if (!new File(getDataFolder(), "config.yml").exists()) this.saveDefaultConfig();
         if (!new File(getDataFolder(), "conditions.yml").exists()) this.saveDefaultConfig();
+        LogUtil.setLogger(getLogger());
     }
 
     @Override

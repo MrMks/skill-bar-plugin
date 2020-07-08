@@ -7,6 +7,9 @@ permissions:
   skillbar.ban:
     default: op
     description: permission to bar / unban a player in skillbar
+  skillbar.version:
+    default: op
+    description: permission to see the version of plugin
   skillbar.reload:
     default: op
     description: permission to reload bar plugin
