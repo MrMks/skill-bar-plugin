@@ -33,10 +33,12 @@ public class MainListener implements Listener {
     private final Plugin plugin;
     private final ClientManager manager;
     private final ClientDiscoverTask task;
-    public MainListener(Plugin plugin, ClientManager manager, ClientDiscoverTask cdt){
+    private final LogicHandler handler;
+    public MainListener(Plugin plugin, ClientManager manager, ClientDiscoverTask cdt, LogicHandler handler){
         this.plugin = plugin;
         this.manager = manager;
         this.task = cdt;
+        this.handler = handler;
     }
 
     public void scheduler(Runnable runnable, long tick) {
@@ -53,7 +55,7 @@ public class MainListener implements Listener {
         // data should never be null as manager#prepare(Player) just generate a ClientData with key p.getUniqueId()
         if (data != null && !data.getStatus().isDiscovered()) {
             scheduler(()->{
-                data.getEventHandler().onJoin();
+                handler.onJoin(data);
                 task.addName(data);
             }, 20);
         }
@@ -88,17 +90,17 @@ public class MainListener implements Listener {
         Optional<Condition> optional = ConditionManager.match(player.getWorld().getName(),getProfessionKeyList(e.getPlayerData()));
         if (pre && post) {
             // player change class,send AddSkill and Condition
-            data.getEventHandler().onChangeProfess(e.getPlayerClass());
-            if (optional.isPresent()) data.getEventHandler().onMatchCondition(optional.get(), true);
-            else data.getEventHandler().onLeaveCondition(true);
+            handler.onChangeProfess(data, e.getPlayerClass());
+            if (optional.isPresent()) handler.onMatchCondition(data, optional.get(), true);
+            else handler.onLeaveCondition(data,true);
         } else if (pre) {
             // player profession reset, levelCondition and send disable
-            data.getEventHandler().onLeaveCondition();
-            data.getEventHandler().onResetProfess();
+            handler.onLeaveCondition(data);
+            handler.onResetProfess(data);
         } else if (post) {
             // player start profess a class, send account, enable and condition
-            optional.ifPresent(condition -> data.getEventHandler().onMatchCondition(condition));
-            data.getEventHandler().onStartProfess();
+            optional.ifPresent(condition -> handler.onMatchCondition(data, condition));
+            handler.onStartProfess(data);
         }
     }
 
@@ -121,15 +123,15 @@ public class MainListener implements Listener {
 
         scheduler(()->{
             if (post && pre) {
-                if (optional.isPresent()) cData.getEventHandler().onMatchCondition(optional.get());
-                else cData.getEventHandler().onLeaveCondition();
-                cData.getEventHandler().onAccountSwitch();
+                if (optional.isPresent()) handler.onMatchCondition(cData, optional.get());
+                else handler.onLeaveCondition(cData);
+                handler.onAccountSwitch(cData);
             } else if (post) {
-                optional.ifPresent(condition -> cData.getEventHandler().onMatchCondition(condition));
-                cData.getEventHandler().onAccToEnable();
+                optional.ifPresent(condition -> handler.onMatchCondition(cData, condition));
+                handler.onAccToEnable(cData);
             } else if (pre) {
-                cData.getEventHandler().onLeaveCondition();
-                cData.getEventHandler().onAccToDisable();
+                handler.onLeaveCondition(cData);
+                handler.onAccToDisable(cData);
             }
         },2);
     }
@@ -140,21 +142,21 @@ public class MainListener implements Listener {
         Player player = e.getPlayer();
         ClientData data = manager.get(player);
         if (data == null || !data.getStatus().isDiscovered() || data.getStatus().isBlocked()) return;
-        if (!SkillAPI.hasPlayerData(player)) data.getEventHandler().onWorldToDisable();
+        if (!SkillAPI.hasPlayerData(player)) handler.onWorldToDisable(data);
 
         Optional<Condition> optional = ConditionManager.match(player.getWorld().getName(), getProfessionKeyList(SkillAPI.getPlayerData(player)));
         boolean pre = checkClient(data);
         boolean post = checkValid(player) && SkillAPI.getSettings().isWorldEnabled(player.getWorld());
 
         if (pre && post) {
-            if (optional.isPresent()) data.getEventHandler().onMatchCondition(optional.get(), true);
-            else data.getEventHandler().onLeaveCondition(true);
+            if (optional.isPresent()) handler.onMatchCondition(data, optional.get(), true);
+            else handler.onLeaveCondition(data, true);
         } else if (post) {
-            optional.ifPresent(condition -> data.getEventHandler().onMatchCondition(condition));
-            data.getEventHandler().onWorldToEnable();
+            optional.ifPresent(condition -> handler.onMatchCondition(data, condition));
+            handler.onWorldToEnable(data);
         } else if (pre) {
-            data.getEventHandler().onLeaveCondition();
-            data.getEventHandler().onWorldToDisable();
+            handler.onLeaveCondition(data);
+            handler.onWorldToDisable(data);
         }
     }
 
@@ -164,7 +166,7 @@ public class MainListener implements Listener {
         if (manager.has(e.getPlayerData().getUUID())) {
             ClientData clientData = manager.get(e.getPlayerData().getPlayer());
             if (!checkClient(clientData)) return;
-            Bukkit.getScheduler().runTaskLater(plugin, () -> clientData.getEventHandler().onUpdateSkillInfo(e.getDowngradedSkill().getData().getKey()), 2);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> handler.onUpdateSkillInfo(clientData, e.getDowngradedSkill().getData().getKey()), 2);
         }
     }
 
@@ -175,7 +177,7 @@ public class MainListener implements Listener {
             ClientData clientData = manager.get(e.getPlayerData().getPlayer());
             if (!checkClient(clientData)) return;
             Bukkit.getScheduler().runTaskLater(plugin,
-                    ()-> clientData.getEventHandler().onUpdateSkillInfo(e.getUpgradedSkill().getData().getKey()),
+                    ()-> handler.onUpdateSkillInfo(clientData, e.getUpgradedSkill().getData().getKey()),
                     2);
         }
     }
@@ -186,7 +188,7 @@ public class MainListener implements Listener {
             ClientData clientData = manager.get(e.getPlayerData().getPlayer());
             if (!checkClient(clientData)) return;
             Bukkit.getScheduler().runTaskLater(plugin,
-                    () -> clientData.getEventHandler().onUpdateSkillInfo(e.getUnlockedSkill().getData().getKey()),
+                    () -> handler.onUpdateSkillInfo(clientData, e.getUnlockedSkill().getData().getKey()),
                     2);
         }
     }

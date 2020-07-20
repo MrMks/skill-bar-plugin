@@ -28,6 +28,7 @@ import java.io.File;
 public class SkillBar extends JavaPlugin implements Listener {
     private LoopThread task;
     private ClientManager manager;
+    private LogicHandler logicHandler;
     private CmdManager cmd;
 
     @Override
@@ -47,38 +48,38 @@ public class SkillBar extends JavaPlugin implements Listener {
         // create manager && loopTask
         manager = new ClientManager();
         task = new LoopThread();
-        ClientDiscoverTask cdt = new ClientDiscoverTask();
+        logicHandler = new LogicHandler(new PluginSender(this));
+        ClientDiscoverTask cdt = new ClientDiscoverTask(logicHandler);
 
         // static class init
         Setting.getInstance().readConfig(getConfig());
         BlackList.init(getDataFolder());
-        PluginSender.init(this);
         ConditionManager.init(new FileConfigStore(this, "conditions.yml"), getLogger());
 
         // register events
         HandlerList.unregisterAll((Plugin) this);
-        Bukkit.getPluginManager().registerEvents(new MainListener(this, manager, cdt), this);
+        Bukkit.getPluginManager().registerEvents(new MainListener(this, manager, cdt, logicHandler), this);
 
         // register channels
         SPackage.BUILDER.init(BukkitByteBuilder::new);
         Bukkit.getMessenger().registerOutgoingPluginChannel(this, Constants.CHANNEL_NAME);
-        Bukkit.getMessenger().registerIncomingPluginChannel(this,Constants.CHANNEL_NAME,new PackageListener(manager));
+        Bukkit.getMessenger().registerIncomingPluginChannel(this,Constants.CHANNEL_NAME,new PackageListener(manager, logicHandler));
 
         // task adds
-        task.addTask(new CoolDownTask(manager));
+        task.addTask(new CoolDownTask(manager, logicHandler));
         task.addTask(cdt);
         task.addTask(new AutoSaveTask());
         task.enable();
 
         // discover all players
         for (Player player : VersionManager.getOnlinePlayers()){
-            if (player != null) manager.generate(player).getEventHandler().onJoin();
+            if (player != null) logicHandler.onJoin(manager.generate(player));
         }
 
         // register cmd
         if (cmd != null) cmd.unload();
         cmd = new CmdManager(this);
-        cmd.init(manager);
+        cmd.init(manager, logicHandler);
     }
 
     @Override
@@ -96,10 +97,11 @@ public class SkillBar extends JavaPlugin implements Listener {
         // disable all clients && clean client data
         if (manager != null) {
             if (isEnabled()) {
-                manager.getAll().forEach(data->data.getEventHandler().onPluginDisable());
+                manager.getAll().forEach(data->logicHandler.onPluginDisable(data));
             }
             manager.clearSaveAll();
             manager = null;
+            logicHandler = null;
         }
 
         // unregister channels
@@ -108,7 +110,6 @@ public class SkillBar extends JavaPlugin implements Listener {
         SPackage.BUILDER.init(null);
 
         // clean static classes
-        PluginSender.clean();
         BlackList.saveUnload();
         ConditionManager.clean();
         reloadConfig();

@@ -1,6 +1,7 @@
 package com.github.MrMks.skillbar.bukkit.manager;
 
 import com.github.MrMks.skillbar.bukkit.data.ClientData;
+import com.github.MrMks.skillbar.bukkit.pkg.PluginSender;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -11,6 +12,7 @@ public class ClientManager {
     public ClientData generate(Player player) {
         return player == null ? null : generate(player.getUniqueId());
     }
+
     public ClientData generate(UUID uuid) {
         if (uuid != null && !map.containsKey(uuid)) map.put(uuid, new ClientData(uuid));
         return map.get(uuid);

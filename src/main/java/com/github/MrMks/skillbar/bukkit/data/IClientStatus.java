@@ -22,4 +22,6 @@ public interface IClientStatus {
 
     void setClientAccount(int account);
     int getClientAccount();
+
+    byte getPackageIndex();
 }

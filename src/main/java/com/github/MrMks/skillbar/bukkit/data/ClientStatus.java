@@ -116,4 +116,10 @@ public class ClientStatus implements IClientStatus {
     public int getClientAccount() {
         return acc;
     }
+
+    private byte index = 0;
+    @Override
+    public byte getPackageIndex() {
+        return (index = (byte) (index + 1 >= Byte.MAX_VALUE ? 0 : index + 1));
+    }
 }

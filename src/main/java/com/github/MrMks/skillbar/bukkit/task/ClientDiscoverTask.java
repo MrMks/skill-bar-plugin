@@ -1,5 +1,6 @@
 package com.github.MrMks.skillbar.bukkit.task;
 
+import com.github.MrMks.skillbar.bukkit.LogicHandler;
 import com.github.MrMks.skillbar.bukkit.data.ClientData;
 
 import java.util.ArrayList;
@@ -7,8 +8,10 @@ import java.util.HashMap;
 
 public class ClientDiscoverTask extends RepeatTask {
     private final HashMap<ClientData, Integer> list = new HashMap<>();
-    public ClientDiscoverTask(){
+    private final LogicHandler handler;
+    public ClientDiscoverTask(LogicHandler handler){
         super(5 * 1000,5 * 1000);
+        this.handler = handler;
     }
 
     @Override
@@ -23,7 +26,7 @@ public class ClientDiscoverTask extends RepeatTask {
                         re.add(data);
                         continue;
                     }
-                    data.getEventHandler().onJoin();
+                    handler.onJoin(data);
                     list.put(data, times + 1);
                 } else {
                     re.add(data);

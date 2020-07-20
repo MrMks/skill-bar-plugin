@@ -1,5 +1,6 @@
 package com.github.MrMks.skillbar.bukkit.cmd;
 
+import com.github.MrMks.skillbar.bukkit.LogicHandler;
 import com.github.MrMks.skillbar.bukkit.data.ClientData;
 import com.github.MrMks.skillbar.bukkit.manager.ClientManager;
 import com.rit.sucy.commands.ConfigurableCommand;
@@ -11,9 +12,11 @@ import org.bukkit.plugin.Plugin;
 
 public class CmdUnban implements IFunction {
     private final ClientManager manager;
+    private final LogicHandler handler;
 
-    public CmdUnban(ClientManager manager){
+    public CmdUnban(ClientManager manager, LogicHandler handler){
         this.manager = manager;
+        this.handler = handler;
     }
 
     @Override
@@ -31,7 +34,7 @@ public class CmdUnban implements IFunction {
                 } else {
                     if (data.getStatus().isBlocked()) {
                         data.getStatus().unblock();
-                        if (data.getStatus().isDiscovered()) data.getPackageHandler().onDiscover();
+                        if (data.getStatus().isDiscovered()) handler.onDiscover(data);
                         commandSender.sendMessage("player " + strings[0] + " has been un-banned");
                     } else {
                         commandSender.sendMessage("player " + strings[0] + " is not banned before");

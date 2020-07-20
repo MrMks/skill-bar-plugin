@@ -1,5 +1,6 @@
 package com.github.MrMks.skillbar.bukkit.cmd;
 
+import com.github.MrMks.skillbar.bukkit.LogicHandler;
 import com.github.MrMks.skillbar.bukkit.data.ClientData;
 import com.github.MrMks.skillbar.bukkit.manager.ClientManager;
 import com.rit.sucy.commands.ConfigurableCommand;
@@ -12,9 +13,11 @@ import org.bukkit.plugin.Plugin;
 public class CmdBan implements IFunction {
 
     private final ClientManager manager;
+    private final LogicHandler handler;
 
-    public CmdBan(ClientManager manager){
+    public CmdBan(ClientManager manager, LogicHandler handler){
         this.manager = manager;
+        this.handler = handler;
     }
 
     @Override
@@ -32,7 +35,7 @@ public class CmdBan implements IFunction {
                     commandSender.sendMessage("player data doesn't exist");
                 } else {
                     if (!data.getStatus().isBlocked()) {
-                        if (data.getStatus().isDiscovered()) data.getEventHandler().sendDisable();
+                        if (data.getStatus().isDiscovered()) handler.sendDisable(data);
                         data.getStatus().block();
                     }
                     commandSender.sendMessage("player " + strings[0] + " has been banned to use skill bar");

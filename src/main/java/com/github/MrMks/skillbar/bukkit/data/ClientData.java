@@ -1,37 +1,45 @@
 package com.github.MrMks.skillbar.bukkit.data;
 
-import com.github.MrMks.skillbar.bukkit.EventHandler;
-import com.github.MrMks.skillbar.bukkit.pkg.PackageHandler;
-import com.github.MrMks.skillbar.bukkit.pkg.PluginSender;
-import com.github.MrMks.skillbar.common.handler.IServerHandler;
+import com.sucy.skill.SkillAPI;
+import com.sucy.skill.api.player.PlayerData;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 
 import java.util.UUID;
 
 public class ClientData {
+    private UUID uuid;
     private ClientStatus status;
     private ClientAccounts accounts;
-    private PluginSender sender;
-    private IServerHandler handler;
-    private EventHandler eventHandler;
 
     public ClientData(UUID uuid){
-        status = new ClientStatus(uuid);
-        sender = new PluginSender(uuid);
-        accounts = new ClientAccounts(uuid);
-        handler = new PackageHandler(uuid, status, accounts, sender);
-        eventHandler = new EventHandler(uuid, status, accounts, sender);
+        this.uuid = uuid;
+        this.status = new ClientStatus(uuid);
+        this.accounts = new ClientAccounts(uuid);
     }
 
-    public IClientStatus getStatus() {
+    public UUID getUniqueId(){
+        return uuid;
+    }
+
+    public ClientStatus getStatus() {
         return status;
     }
 
-    public IServerHandler getPackageHandler() {
-        return handler;
+    public ClientAccounts getAccounts() {
+        return accounts;
     }
 
-    public EventHandler getEventHandler(){
-        return eventHandler;
+    public boolean isValid(){
+        OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
+        PlayerData playerData = SkillAPI.getPlayerData(player);
+        return player != null
+                && SkillAPI.isLoaded()
+                && player.isOnline()
+                && SkillAPI.getSettings().isWorldEnabled(player.getPlayer().getWorld())
+                && SkillAPI.hasPlayerData(player)
+                && playerData.getClasses().size() > 0
+                && playerData.getSkills().size() > 0;
     }
 
     public void save(){
@@ -39,10 +47,8 @@ public class ClientData {
     }
 
     public void clean(){
+        uuid = null;
         status = null;
-        sender = null;
         accounts = null;
-        handler = null;
-        eventHandler = null;
     }
 }

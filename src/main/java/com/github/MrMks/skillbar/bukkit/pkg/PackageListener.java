@@ -1,5 +1,6 @@
 package com.github.MrMks.skillbar.bukkit.pkg;
 
+import com.github.MrMks.skillbar.bukkit.LogicHandler;
 import com.github.MrMks.skillbar.common.ByteDecoder;
 import com.github.MrMks.skillbar.common.Constants;
 import com.github.MrMks.skillbar.common.handler.IServerHandler;
@@ -12,8 +13,10 @@ import org.bukkit.plugin.messaging.PluginMessageListener;
 
 public class PackageListener implements PluginMessageListener {
     private final ClientManager manager;
-    public PackageListener(ClientManager manager){
+    private final LogicHandler handler;
+    public PackageListener(ClientManager manager, LogicHandler handler){
         this.manager = manager;
+        this.handler = handler;
     }
 
     @Override
@@ -22,12 +25,12 @@ public class PackageListener implements PluginMessageListener {
         if (manager.has(player)) {
             ClientData data = manager.get(player);
             if ((data.getStatus().isBlocked() && data.getStatus().canDisableOnBlocked()) || data.getStatus().isDisabled()) {
-                data.getEventHandler().sendDisable();
+                this.handler.sendDisable(data);
                 return;
             }
             try {
                 ByteDecoder decoder = new ByteDecoder(bytes);
-                IServerHandler handler = data.getPackageHandler();
+                IServerHandler handler = new PackageHandler(data, this.handler);
                 switch (decoder.getHeader()) {
                     case Discover:
                         CPackage.DECODER.decodeDiscover(handler, decoder);
