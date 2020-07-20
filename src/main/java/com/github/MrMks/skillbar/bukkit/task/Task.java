@@ -4,4 +4,5 @@ public interface Task {
     void run();
     boolean isFinish();
     boolean shouldRun(long nTime);
+    void clear();
 }

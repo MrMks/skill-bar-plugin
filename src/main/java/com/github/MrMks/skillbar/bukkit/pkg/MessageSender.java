@@ -8,35 +8,9 @@ import org.bukkit.plugin.Plugin;
 
 import java.util.UUID;
 
-public class PluginSender {
-    /*
-    public static void init(Plugin plugin){
-        p = plugin;
-    }
-
-    public static void clean(){
-        p = null;
-    }
-    private byte index = 0;
-    private UUID uuid;
-    public PluginSender(UUID uuid){
-        this.uuid = uuid;
-    }
-
-     */
-
-    /*
-    public void send(ByteBuilder builder) {
-        if (index == Byte.MAX_VALUE) index = 0;
-        byte i = index++;
-        for (byte[] b : builder.build(i)) {
-            Bukkit.getPlayer(uuid).sendPluginMessage(p, Constants.CHANNEL_NAME, b);
-        }
-    }
-     */
-
+public class MessageSender {
     private final Plugin p;
-    public PluginSender(Plugin plugin){
+    public MessageSender(Plugin plugin){
         this.p = plugin;
     }
 

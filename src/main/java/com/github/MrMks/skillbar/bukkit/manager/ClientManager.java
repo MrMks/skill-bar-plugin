@@ -1,7 +1,6 @@
 package com.github.MrMks.skillbar.bukkit.manager;
 
 import com.github.MrMks.skillbar.bukkit.data.ClientData;
-import com.github.MrMks.skillbar.bukkit.pkg.PluginSender;
 import org.bukkit.entity.Player;
 
 import java.util.*;

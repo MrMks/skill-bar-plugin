@@ -55,4 +55,9 @@ public class ClientDiscoverTask extends RepeatTask {
             list.remove(data);
         }
     }
+
+    @Override
+    public void clear() {
+        list.clear();
+    }
 }

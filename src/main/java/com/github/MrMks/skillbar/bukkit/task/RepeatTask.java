@@ -21,4 +21,6 @@ public abstract class RepeatTask implements Task{
 
     protected abstract void runTask();
     public abstract boolean isFinish();
+
+    public void clear(){}
 }

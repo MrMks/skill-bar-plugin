@@ -6,7 +6,7 @@ import com.github.MrMks.skillbar.bukkit.manager.CmdManager;
 import com.github.MrMks.skillbar.bukkit.manager.ConditionManager;
 import com.github.MrMks.skillbar.bukkit.pkg.BukkitByteBuilder;
 import com.github.MrMks.skillbar.bukkit.pkg.PackageListener;
-import com.github.MrMks.skillbar.bukkit.pkg.PluginSender;
+import com.github.MrMks.skillbar.bukkit.pkg.MessageSender;
 import com.github.MrMks.skillbar.bukkit.task.AutoSaveTask;
 import com.github.MrMks.skillbar.bukkit.task.ClientDiscoverTask;
 import com.github.MrMks.skillbar.bukkit.task.CoolDownTask;
@@ -47,8 +47,7 @@ public class SkillBar extends JavaPlugin implements Listener {
     public void onEnable() {
         // create manager && loopTask
         manager = new ClientManager();
-        task = new LoopThread();
-        logicHandler = new LogicHandler(new PluginSender(this));
+        logicHandler = new LogicHandler(new MessageSender(this));
         ClientDiscoverTask cdt = new ClientDiscoverTask(logicHandler);
 
         // static class init
@@ -66,6 +65,7 @@ public class SkillBar extends JavaPlugin implements Listener {
         Bukkit.getMessenger().registerIncomingPluginChannel(this,Constants.CHANNEL_NAME,new PackageListener(manager, logicHandler));
 
         // task adds
+        task = new LoopThread();
         task.addTask(new CoolDownTask(manager, logicHandler));
         task.addTask(cdt);
         task.addTask(new AutoSaveTask());

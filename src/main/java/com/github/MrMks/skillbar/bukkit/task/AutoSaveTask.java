@@ -20,4 +20,9 @@ public class AutoSaveTask extends RepeatTask {
     public boolean isFinish() {
         return true;
     }
+
+    @Override
+    public void clear() {
+
+    }
 }
